@@ -1,0 +1,10 @@
+# Assumptions and Limitations
+
+- Base vehicle dynamics are 3-DOF (`vx`, `vy`, `yaw_rate`) with bicycle abstraction.
+- Tire model implements Pacejka-style lateral force only in this phase.
+- Longitudinal force limits are represented by configurable accel/brake envelopes.
+- Aero model uses constant coefficients (`c_l`, `c_d`) and rigid ride height.
+- Track data expects closed-loop CSV with columns: `x`, `y`, `elevation`, `banking`.
+
+These simplifications are intentional to keep the architecture extensible for future modules:
+full vehicle, powertrain, and energy management.
