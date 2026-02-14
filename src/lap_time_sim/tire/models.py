@@ -1,0 +1,64 @@
+"""Dataclasses for tire model parameters."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+from lap_time_sim.utils.exceptions import ConfigurationError
+
+
+@dataclass(frozen=True)
+class PacejkaParameters:
+    """Pacejka lateral model coefficients and load-sensitivity behavior.
+
+    The lateral force model uses coefficients `B, C, D, E` in a Magic Formula style
+    equation. `D` is treated as an effective friction coefficient at the current
+    reference condition.
+    """
+
+    B: float
+    C: float
+    D: float
+    E: float
+    fz_reference_n: float = 3000.0
+    load_sensitivity: float = -0.08
+    min_mu_scale: float = 0.4
+
+    def validate(self) -> None:
+        """Validate physical and numerical constraints for coefficients."""
+        if self.B <= 0.0:
+            msg = "Pacejka B must be positive"
+            raise ConfigurationError(msg)
+        if self.C <= 0.0:
+            msg = "Pacejka C must be positive"
+            raise ConfigurationError(msg)
+        if self.D <= 0.0:
+            msg = "Pacejka D must be positive"
+            raise ConfigurationError(msg)
+        if self.fz_reference_n <= 0.0:
+            msg = "Reference normal load must be positive"
+            raise ConfigurationError(msg)
+        if self.min_mu_scale <= 0.0:
+            msg = "min_mu_scale must be positive"
+            raise ConfigurationError(msg)
+
+
+@dataclass(frozen=True)
+class AxleTireParameters:
+    """Separate tire coefficients for front and rear axle."""
+
+    front: PacejkaParameters
+    rear: PacejkaParameters
+
+    def validate(self) -> None:
+        """Validate both axle parameter sets."""
+        self.front.validate()
+        self.rear.validate()
+
+
+def default_axle_tire_parameters() -> AxleTireParameters:
+    """Create a default high-downforce race-car tire parameterization."""
+    return AxleTireParameters(
+        front=PacejkaParameters(B=9.5, C=1.35, D=1.85, E=0.97, fz_reference_n=3500.0),
+        rear=PacejkaParameters(B=10.2, C=1.33, D=1.95, E=0.95, fz_reference_n=4200.0),
+    )
