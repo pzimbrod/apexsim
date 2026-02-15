@@ -15,7 +15,18 @@ REQUIRED_COLUMNS = ("x", "y", "elevation", "banking")
 
 
 def load_track_csv(path: str | Path) -> TrackData:
-    """Load a track CSV (`x,y,elevation,banking`) into `TrackData`."""
+    """Load a track CSV into ``TrackData``.
+
+    Args:
+        path: Path to a CSV containing ``x``, ``y``, ``elevation``, and ``banking``.
+
+    Returns:
+        Parsed and validated track representation.
+
+    Raises:
+        lap_time_sim.utils.exceptions.TrackDataError: If the file does not exist,
+            has an invalid schema, or contains too few rows.
+    """
     file_path = Path(path)
     if not file_path.exists():
         msg = f"Track file not found: {file_path}"

@@ -6,7 +6,11 @@ import logging
 
 
 def configure_logging(level: int = logging.INFO) -> None:
-    """Configure a minimal logging setup for examples and scripts."""
+    """Configure a minimal logging setup for examples and scripts.
+
+    Args:
+        level: Root logging level passed to :func:`logging.basicConfig`.
+    """
     logging.basicConfig(
         level=level,
         format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",

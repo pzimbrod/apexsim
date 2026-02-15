@@ -48,13 +48,31 @@ class BicycleModel:
     """3-DOF bicycle model using lateral Pacejka tire forces."""
 
     def __init__(self, vehicle: VehicleParameters, tires: AxleTireParameters) -> None:
+        """Initialize the bicycle model with validated parameters.
+
+        Args:
+            vehicle: Vehicle and chassis parameterization.
+            tires: Front/rear Pacejka parameter sets.
+
+        Raises:
+            lap_time_sim.utils.exceptions.ConfigurationError: If vehicle or tire
+                parameters are invalid.
+        """
         self.vehicle = vehicle
         self.tires = tires
         self.vehicle.validate()
         self.tires.validate()
 
     def slip_angles(self, state: VehicleState, steer_rad: float) -> tuple[float, float]:
-        """Compute front and rear slip angles."""
+        """Compute front and rear axle slip angles.
+
+        Args:
+            state: Vehicle state ``(vx, vy, yaw_rate)``.
+            steer_rad: Front-wheel steering angle in rad.
+
+        Returns:
+            Tuple ``(alpha_front_rad, alpha_rear_rad)``.
+        """
         u = max(abs(state.vx_mps), MIN_SLIP_ANGLE_REFERENCE_SPEED_MPS)
         a = self.vehicle.cg_to_front_axle_m
         b = self.vehicle.cg_to_rear_axle_m
@@ -64,7 +82,15 @@ class BicycleModel:
         return float(alpha_front), float(alpha_rear)
 
     def force_balance(self, state: VehicleState, control: ControlInput) -> ForceBalance:
-        """Evaluate lateral forces and yaw moment for the current state."""
+        """Evaluate lateral forces and yaw moment for the current state.
+
+        Args:
+            state: Vehicle state ``(vx, vy, yaw_rate)``.
+            control: Steering and longitudinal acceleration command.
+
+        Returns:
+            Force-balance terms including slip angles, tire forces, and yaw moment.
+        """
         alpha_front, alpha_rear = self.slip_angles(state, control.steer_rad)
         loads = estimate_normal_loads(
             self.vehicle,
@@ -94,7 +120,15 @@ class BicycleModel:
         )
 
     def derivatives(self, state: VehicleState, control: ControlInput) -> VehicleState:
-        """Compute time derivatives for state integration."""
+        """Compute time derivatives for state integration.
+
+        Args:
+            state: Vehicle state ``(vx, vy, yaw_rate)``.
+            control: Steering and longitudinal acceleration command.
+
+        Returns:
+            Time derivatives ``(dvx/dt, dvy/dt, dr/dt)`` in SI units.
+        """
         fb = self.force_balance(state, control)
         aero = aero_forces(self.vehicle, state.vx_mps)
 
@@ -113,12 +147,26 @@ class BicycleModel:
 
     @staticmethod
     def to_array(state: VehicleState) -> np.ndarray:
-        """Convert state dataclass to ndarray."""
+        """Convert state dataclass to ndarray.
+
+        Args:
+            state: Vehicle state dataclass.
+
+        Returns:
+            State vector ``[vx_mps, vy_mps, yaw_rate_rps]``.
+        """
         return np.array([state.vx_mps, state.vy_mps, state.yaw_rate_rps], dtype=float)
 
     @staticmethod
     def from_array(values: np.ndarray) -> VehicleState:
-        """Convert ndarray to state dataclass."""
+        """Convert ndarray to state dataclass.
+
+        Args:
+            values: State vector with at least three elements.
+
+        Returns:
+            Parsed vehicle state dataclass.
+        """
         return VehicleState(
             vx_mps=float(values[0]),
             vy_mps=float(values[1]),
@@ -127,5 +175,12 @@ class BicycleModel:
 
     @staticmethod
     def sanitize_speed(speed_mps: float) -> float:
-        """Avoid zero speed in slip-angle calculations."""
+        """Apply a numerical lower bound to speed.
+
+        Args:
+            speed_mps: Raw speed in m/s.
+
+        Returns:
+            Speed clamped to a positive lower bound for numerical stability.
+        """
         return max(speed_mps, SMALL_EPS)

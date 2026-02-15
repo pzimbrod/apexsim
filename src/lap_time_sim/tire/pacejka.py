@@ -14,6 +14,14 @@ FloatArray: TypeAlias = npt.NDArray[np.float64]
 
 
 def _as_array(value: float | FloatArray) -> FloatArray:
+    """Convert scalar or ndarray input to ``float64`` ndarray.
+
+    Args:
+        value: Scalar or ndarray input value.
+
+    Returns:
+        ``float64`` ndarray representation of ``value``.
+    """
     return np.asarray(value, dtype=np.float64)
 
 
@@ -57,7 +65,18 @@ def axle_lateral_forces(
     rear_axle_load_n: float,
     axle_params: AxleTireParameters,
 ) -> tuple[float, float]:
-    """Compute total front/rear axle lateral force for bicycle-equivalent tires."""
+    """Compute total front/rear axle lateral force for bicycle-equivalent tires.
+
+    Args:
+        front_slip_rad: Front axle equivalent slip angle in rad.
+        rear_slip_rad: Rear axle equivalent slip angle in rad.
+        front_axle_load_n: Total front axle normal load in Newton.
+        rear_axle_load_n: Total rear axle normal load in Newton.
+        axle_params: Front/rear Pacejka parameter sets.
+
+    Returns:
+        Tuple ``(Fy_front, Fy_rear)`` with axle lateral forces in Newton.
+    """
     axle_params.validate()
     front_tire_load = max(front_axle_load_n / 2.0, SMALL_EPS)
     rear_tire_load = max(rear_axle_load_n / 2.0, SMALL_EPS)

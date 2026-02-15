@@ -26,7 +26,14 @@ class NormalLoadState:
 
 
 def _roll_stiffness_front_share(vehicle: VehicleParameters) -> float:
-    """Blend spring and ARB balance into a bounded front-roll-share value."""
+    """Blend spring and ARB balance into a bounded front-roll-share value.
+
+    Args:
+        vehicle: Vehicle parameter set.
+
+    Returns:
+        Front axle share of roll stiffness as a bounded fraction.
+    """
     spring_share = vehicle.spring_rate_front_npm / (
         vehicle.spring_rate_front_npm + vehicle.spring_rate_rear_npm
     )
@@ -41,6 +48,13 @@ def _split_axle_load(axle_load_n: float, lateral_transfer_n: float) -> tuple[flo
     """Split axle load into left/right wheel loads while preserving total load.
 
     The transfer term is saturated so neither wheel load becomes negative.
+
+    Args:
+        axle_load_n: Total normal load on an axle in Newton.
+        lateral_transfer_n: Signed lateral load transfer on that axle in Newton.
+
+    Returns:
+        Tuple ``(left_load_n, right_load_n)`` preserving axle total load.
     """
     min_axle_load = 2.0 * MIN_WHEEL_NORMAL_LOAD_N
     bounded_axle_load = max(axle_load_n, min_axle_load)
@@ -58,7 +72,21 @@ def estimate_normal_loads(
     longitudinal_accel_mps2: float,
     lateral_accel_mps2: float,
 ) -> NormalLoadState:
-    """Estimate normal load distribution with aero and basic load transfer."""
+    """Estimate normal load distribution with aero and basic load transfer.
+
+    Args:
+        vehicle: Vehicle parameter set.
+        speed_mps: Vehicle speed in m/s.
+        longitudinal_accel_mps2: Net longitudinal acceleration in m/s^2.
+        lateral_accel_mps2: Lateral acceleration in m/s^2.
+
+    Returns:
+        Axle and wheel normal loads in Newton.
+
+    Raises:
+        lap_time_sim.utils.exceptions.ConfigurationError: If vehicle parameters
+            are invalid.
+    """
     vehicle.validate()
     aero = aero_forces(vehicle, speed_mps)
 

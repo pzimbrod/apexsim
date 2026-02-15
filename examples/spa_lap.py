@@ -15,6 +15,7 @@ from lap_time_sim.vehicle import BicycleLapTimeModel, default_vehicle_parameters
 
 
 def main() -> None:
+    """Run one full Spa lap simulation and export plots plus KPI JSON."""
     configure_logging(logging.INFO)
     logger = logging.getLogger("spa_example")
 

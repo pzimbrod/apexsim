@@ -25,7 +25,12 @@ class PacejkaParameters:
     min_mu_scale: float = 0.4
 
     def validate(self) -> None:
-        """Validate physical and numerical constraints for coefficients."""
+        """Validate physical and numerical constraints for coefficients.
+
+        Raises:
+            lap_time_sim.utils.exceptions.ConfigurationError: If any coefficient
+                violates required bounds.
+        """
         if self.B <= 0.0:
             msg = "Pacejka B must be positive"
             raise ConfigurationError(msg)
@@ -51,13 +56,22 @@ class AxleTireParameters:
     rear: PacejkaParameters
 
     def validate(self) -> None:
-        """Validate both axle parameter sets."""
+        """Validate both axle parameter sets.
+
+        Raises:
+            lap_time_sim.utils.exceptions.ConfigurationError: If front or rear
+                coefficient sets are invalid.
+        """
         self.front.validate()
         self.rear.validate()
 
 
 def default_axle_tire_parameters() -> AxleTireParameters:
-    """Create a default high-downforce race-car tire parameterization."""
+    """Create a default high-downforce race-car tire parameterization.
+
+    Returns:
+        Front and rear Pacejka parameter sets tuned for a high-downforce car.
+    """
     return AxleTireParameters(
         front=PacejkaParameters(B=9.5, C=1.35, D=1.85, E=0.97, fz_reference_n=3500.0),
         rear=PacejkaParameters(B=10.2, C=1.33, D=1.95, E=0.95, fz_reference_n=4200.0),

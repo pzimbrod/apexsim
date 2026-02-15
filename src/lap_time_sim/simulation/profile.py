@@ -29,6 +29,16 @@ class SpeedProfileResult:
 
 
 def _segment_dt(ds_m: float, v0_mps: float, v1_mps: float) -> float:
+    """Compute segment travel time from adjacent speed samples.
+
+    Args:
+        ds_m: Segment length in meters.
+        v0_mps: Segment entry speed in m/s.
+        v1_mps: Segment exit speed in m/s.
+
+    Returns:
+        Segment traversal time in seconds using trapezoidal average speed.
+    """
     v_avg = max(0.5 * (v0_mps + v1_mps), SMALL_EPS)
     return ds_m / v_avg
 
@@ -47,6 +57,20 @@ def solve_speed_profile(
     4. Integrate segment times to obtain lap time.
 
     See `docs/SOLVER.md` for the full mathematical derivation.
+
+    Args:
+        track: Track geometry and derived arc-length-domain quantities.
+        model: Vehicle-model backend implementing ``LapTimeVehicleModel``.
+        config: Global simulation limits and solver iteration settings.
+
+    Returns:
+        Converged speed profile, derived accelerations, envelope iteration count,
+        and integrated lap time.
+
+    Raises:
+        lap_time_sim.utils.exceptions.TrackDataError: If ``track`` is invalid.
+        lap_time_sim.utils.exceptions.ConfigurationError: If model or solver
+            configuration is invalid.
     """
     track.validate()
     model.validate()

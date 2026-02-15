@@ -26,11 +26,20 @@ class TrackData:
 
     @property
     def length_m(self) -> float:
-        """Track length in meters."""
+        """Track length in meters.
+
+        Returns:
+            Final arc-length value of the discretized track in meters.
+        """
         return float(self.s_m[-1])
 
     def validate(self) -> None:
-        """Validate consistency of all track arrays."""
+        """Validate consistency of all track arrays.
+
+        Raises:
+            lap_time_sim.utils.exceptions.TrackDataError: If array lengths, arc
+                length monotonicity, or numeric validity checks fail.
+        """
         arrays = [
             self.x_m,
             self.y_m,

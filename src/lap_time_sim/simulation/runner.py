@@ -31,6 +31,16 @@ class LapSimulationResult:
 
 
 def _compute_energy(power_w: np.ndarray, speed_mps: np.ndarray, s_m: np.ndarray) -> float:
+    """Integrate positive tractive power along the lap.
+
+    Args:
+        power_w: Instantaneous tractive power trace in Watt.
+        speed_mps: Speed trace in m/s.
+        s_m: Cumulative arc-length samples in meters.
+
+    Returns:
+        Integrated positive traction energy in Joule.
+    """
     ds = np.diff(s_m)
     dt = ds / np.maximum(0.5 * (speed_mps[:-1] + speed_mps[1:]), MIN_AVERAGE_SPEED_FOR_DT_MPS)
     traction_power = np.maximum(power_w[:-1], 0.0)
@@ -42,7 +52,21 @@ def simulate_lap(
     model: LapTimeVehicleModel,
     config: SimulationConfig | None = None,
 ) -> LapSimulationResult:
-    """Run quasi-steady lap simulation against a vehicle-model API backend."""
+    """Run quasi-steady lap simulation against a vehicle-model API backend.
+
+    Args:
+        track: Track geometry and derived arc-length-domain quantities.
+        model: Vehicle-model backend implementing ``LapTimeVehicleModel``.
+        config: Optional solver configuration. Defaults to :class:`SimulationConfig`.
+
+    Returns:
+        Full lap simulation result including profile arrays and diagnostics.
+
+    Raises:
+        lap_time_sim.utils.exceptions.TrackDataError: If track data is invalid.
+        lap_time_sim.utils.exceptions.ConfigurationError: If model or solver
+            configuration is invalid.
+    """
     sim_config = config or SimulationConfig()
     profile = solve_speed_profile(track=track, model=model, config=sim_config)
 

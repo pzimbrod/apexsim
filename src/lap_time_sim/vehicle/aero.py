@@ -18,7 +18,19 @@ class AeroForces:
 
 
 def aero_forces(vehicle: VehicleParameters, speed_mps: float) -> AeroForces:
-    """Compute drag and downforce with axle distribution from CoP location."""
+    """Compute drag and downforce with axle distribution from CoP location.
+
+    Args:
+        vehicle: Vehicle parameter set containing aerodynamic coefficients.
+        speed_mps: Vehicle speed in m/s.
+
+    Returns:
+        Drag and downforce quantities in Newton, including axle split.
+
+    Raises:
+        lap_time_sim.utils.exceptions.ConfigurationError: If vehicle parameters
+            are invalid.
+    """
     vehicle.validate()
     speed_sq = max(speed_mps, 0.0) ** 2
     q = 0.5 * vehicle.air_density_kgpm3 * speed_sq

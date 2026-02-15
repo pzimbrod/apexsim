@@ -12,7 +12,15 @@ FloatArray = npt.NDArray[np.float64]
 
 
 def cumulative_arc_length(x_m: FloatArray, y_m: FloatArray) -> FloatArray:
-    """Compute cumulative arc length from Cartesian points."""
+    """Compute cumulative arc length from Cartesian points.
+
+    Args:
+        x_m: Track x-coordinate samples in meters.
+        y_m: Track y-coordinate samples in meters.
+
+    Returns:
+        Cumulative arc-length samples in meters.
+    """
     dx = np.diff(x_m)
     dy = np.diff(y_m)
     ds = np.hypot(dx, dy)
@@ -22,14 +30,31 @@ def cumulative_arc_length(x_m: FloatArray, y_m: FloatArray) -> FloatArray:
 
 
 def heading_from_xy(x_m: FloatArray, y_m: FloatArray) -> FloatArray:
-    """Compute heading angle along the track."""
+    """Compute heading angle along the track.
+
+    Args:
+        x_m: Track x-coordinate samples in meters.
+        y_m: Track y-coordinate samples in meters.
+
+    Returns:
+        Heading angle samples in rad.
+    """
     dx = np.gradient(x_m)
     dy = np.gradient(y_m)
     return np.asarray(np.arctan2(dy, dx), dtype=np.float64)
 
 
 def curvature_from_xy(x_m: FloatArray, y_m: FloatArray, s_m: FloatArray) -> FloatArray:
-    """Compute signed curvature from first and second derivatives."""
+    """Compute signed curvature from first and second derivatives.
+
+    Args:
+        x_m: Track x-coordinate samples in meters.
+        y_m: Track y-coordinate samples in meters.
+        s_m: Monotonic arc-length samples in meters.
+
+    Returns:
+        Signed curvature samples in 1/m.
+    """
     dx_ds = np.gradient(x_m, s_m)
     dy_ds = np.gradient(y_m, s_m)
     d2x_ds2 = np.gradient(dx_ds, s_m)
@@ -42,7 +67,15 @@ def curvature_from_xy(x_m: FloatArray, y_m: FloatArray, s_m: FloatArray) -> Floa
 
 
 def grade_from_elevation(elevation_m: FloatArray, s_m: FloatArray) -> FloatArray:
-    """Compute slope dz/ds along the track."""
+    """Compute slope ``dz/ds`` along the track.
+
+    Args:
+        elevation_m: Elevation profile in meters.
+        s_m: Monotonic arc-length samples in meters.
+
+    Returns:
+        Dimensionless grade values.
+    """
     return np.asarray(np.gradient(elevation_m, s_m), dtype=np.float64)
 
 
@@ -52,7 +85,21 @@ def build_track_data(
     elevation_m: FloatArray,
     banking_rad: FloatArray,
 ) -> TrackData:
-    """Build a complete `TrackData` object from raw coordinate arrays."""
+    """Build a complete ``TrackData`` object from raw coordinate arrays.
+
+    Args:
+        x_m: Track x-coordinate samples in meters.
+        y_m: Track y-coordinate samples in meters.
+        elevation_m: Elevation profile in meters.
+        banking_rad: Banking profile in rad.
+
+    Returns:
+        Validated track data in arc-length domain.
+
+    Raises:
+        lap_time_sim.utils.exceptions.TrackDataError: If generated track arrays
+            are inconsistent or numerically invalid.
+    """
     s_m = cumulative_arc_length(x_m, y_m)
     heading_rad = heading_from_xy(x_m, y_m)
     curvature_1pm = curvature_from_xy(x_m, y_m, s_m)

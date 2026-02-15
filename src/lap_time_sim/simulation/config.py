@@ -33,7 +33,12 @@ class SimulationConfig:
     enable_transient_refinement: bool = False
 
     def validate(self) -> None:
-        """Validate solver settings."""
+        """Validate solver settings.
+
+        Raises:
+            lap_time_sim.utils.exceptions.ConfigurationError: If any solver
+                configuration value violates its bound.
+        """
         if self.min_speed_mps <= 0.0:
             msg = "min_speed_mps must be positive"
             raise ConfigurationError(msg)

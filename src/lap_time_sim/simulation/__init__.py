@@ -20,6 +20,17 @@ __all__ = [
 
 
 def __getattr__(name: str) -> Any:
+    """Resolve lazily imported symbols for public package exports.
+
+    Args:
+        name: Attribute name requested from the package namespace.
+
+    Returns:
+        Exported class or function matching ``name``.
+
+    Raises:
+        AttributeError: If ``name`` is not part of the public export surface.
+    """
     if name == "LapTimeVehicleModel":
         from lap_time_sim.simulation.model_api import LapTimeVehicleModel
 

@@ -23,7 +23,15 @@ class KpiSummary:
 
 
 def compute_kpis(result: LapSimulationResult) -> KpiSummary:
-    """Compute mandatory and energy KPIs from simulation output."""
+    """Compute mandatory and energy KPIs from simulation output.
+
+    Args:
+        result: Full lap simulation output arrays and integrated metrics.
+
+    Returns:
+        Aggregated KPI summary containing lap time, acceleration metrics, and
+        electrical-equivalent traction energy in kWh.
+    """
     ay_g = result.ay_mps2 / GRAVITY_MPS2
     ax_g = result.ax_mps2 / GRAVITY_MPS2
 

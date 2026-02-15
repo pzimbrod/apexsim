@@ -25,7 +25,12 @@ class BicycleLapTimeModelConfig:
     max_brake_accel_mps2: float = 16.0
 
     def validate(self) -> None:
-        """Validate longitudinal envelope limits."""
+        """Validate longitudinal envelope limits.
+
+        Raises:
+            lap_time_sim.utils.exceptions.ConfigurationError: If limits are not
+                strictly positive.
+        """
         if self.max_drive_accel_mps2 <= 0.0:
             msg = "max_drive_accel_mps2 must be positive"
             raise ConfigurationError(msg)
@@ -43,6 +48,17 @@ class BicycleLapTimeModel:
         tires: AxleTireParameters,
         config: BicycleLapTimeModelConfig | None = None,
     ) -> None:
+        """Initialize bicycle-backed solver adapter.
+
+        Args:
+            vehicle: Vehicle parameterization for dynamics and aero.
+            tires: Front/rear Pacejka tire coefficients.
+            config: Optional adapter-specific longitudinal limits.
+
+        Raises:
+            lap_time_sim.utils.exceptions.ConfigurationError: If any provided
+                parameter set is invalid.
+        """
         self.vehicle = vehicle
         self.tires = tires
         self.config = config or BicycleLapTimeModelConfig()
@@ -50,13 +66,26 @@ class BicycleLapTimeModel:
         self.validate()
 
     def validate(self) -> None:
-        """Validate model configuration and parameterization."""
+        """Validate model configuration and parameterization.
+
+        Raises:
+            lap_time_sim.utils.exceptions.ConfigurationError: If vehicle, tire,
+                or adapter configuration values violate constraints.
+        """
         self.vehicle.validate()
         self.tires.validate()
         self.config.validate()
 
     def lateral_accel_limit(self, speed_mps: float, banking_rad: float) -> float:
-        """Estimate lateral acceleration capacity for the operating point."""
+        """Estimate lateral acceleration capacity for the operating point.
+
+        Args:
+            speed_mps: Vehicle speed in m/s.
+            banking_rad: Track banking angle in rad.
+
+        Returns:
+            Quasi-steady lateral acceleration limit in m/s^2.
+        """
         return bicycle_lateral_accel_limit(
             vehicle=self.vehicle,
             tires=self.tires,
@@ -65,6 +94,15 @@ class BicycleLapTimeModel:
         )
 
     def _friction_circle_scale(self, ay_required_mps2: float, ay_limit_mps2: float) -> float:
+        """Compute remaining longitudinal utilization from friction-circle usage.
+
+        Args:
+            ay_required_mps2: Required lateral acceleration magnitude in m/s^2.
+            ay_limit_mps2: Available lateral acceleration limit in m/s^2.
+
+        Returns:
+            Scalar in ``[0, 1]`` reducing longitudinal capability.
+        """
         if ay_limit_mps2 <= SMALL_EPS:
             return 0.0
         usage = min(abs(ay_required_mps2) / ay_limit_mps2, 1.0)
@@ -77,7 +115,17 @@ class BicycleLapTimeModel:
         grade: float,
         banking_rad: float,
     ) -> float:
-        """Compute net forward acceleration limit along path tangent."""
+        """Compute net forward acceleration limit along path tangent.
+
+        Args:
+            speed_mps: Vehicle speed in m/s.
+            ay_required_mps2: Required lateral acceleration magnitude in m/s^2.
+            grade: Track grade defined as ``dz/ds``.
+            banking_rad: Track banking angle in rad.
+
+        Returns:
+            Net forward acceleration along path tangent in m/s^2.
+        """
         ay_limit = self.lateral_accel_limit(speed_mps, banking_rad)
         circle_scale = self._friction_circle_scale(ay_required_mps2, ay_limit)
 
@@ -93,7 +141,17 @@ class BicycleLapTimeModel:
         grade: float,
         banking_rad: float,
     ) -> float:
-        """Compute available deceleration magnitude along path tangent."""
+        """Compute available deceleration magnitude along path tangent.
+
+        Args:
+            speed_mps: Vehicle speed in m/s.
+            ay_required_mps2: Required lateral acceleration magnitude in m/s^2.
+            grade: Track grade defined as ``dz/ds``.
+            banking_rad: Track banking angle in rad.
+
+        Returns:
+            Non-negative deceleration magnitude along path tangent in m/s^2.
+        """
         ay_limit = self.lateral_accel_limit(speed_mps, banking_rad)
         circle_scale = self._friction_circle_scale(ay_required_mps2, ay_limit)
 
@@ -109,7 +167,17 @@ class BicycleLapTimeModel:
         ay_mps2: float,
         curvature_1pm: float,
     ) -> VehicleModelDiagnostics:
-        """Evaluate yaw moment, axle loads, and power for analysis outputs."""
+        """Evaluate yaw moment, axle loads, and power for analysis outputs.
+
+        Args:
+            speed_mps: Vehicle speed in m/s.
+            ax_mps2: Net longitudinal acceleration in m/s^2.
+            ay_mps2: Lateral acceleration in m/s^2.
+            curvature_1pm: Path curvature in 1/m.
+
+        Returns:
+            Diagnostic values for plotting and KPI post-processing.
+        """
         steer_rad = float(np.arctan(self.vehicle.wheelbase_m * curvature_1pm))
 
         state = VehicleState(
@@ -140,7 +208,11 @@ class BicycleLapTimeModel:
 
 
 def build_default_bicycle_lap_time_model() -> BicycleLapTimeModel:
-    """Create a ready-to-use bicycle lap-time model with default parameters."""
+    """Create a ready-to-use bicycle lap-time model with default parameters.
+
+    Returns:
+        Fully configured bicycle-model adapter with default vehicle and tire data.
+    """
     from lap_time_sim.tire.models import default_axle_tire_parameters
     from lap_time_sim.vehicle.params import default_vehicle_parameters
 

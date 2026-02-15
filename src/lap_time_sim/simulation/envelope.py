@@ -23,7 +23,17 @@ def lateral_accel_limit(
     speed_mps: float,
     banking_rad: float,
 ) -> float:
-    """Estimate lateral acceleration limit from tire peaks and banking."""
+    """Estimate lateral acceleration limit from tire peaks and banking.
+
+    Args:
+        vehicle: Vehicle parameters used for load-transfer and aero effects.
+        tires: Front/rear tire parameter sets.
+        speed_mps: Vehicle speed in m/s.
+        banking_rad: Track banking angle in rad.
+
+    Returns:
+        Estimated quasi-steady lateral acceleration limit in m/s^2.
+    """
     ay_banking = GRAVITY_MPS2 * float(np.sin(banking_rad))
     ay_estimate = MIN_LATERAL_ACCEL_LIMIT_MPS2
 
@@ -55,7 +65,16 @@ def lateral_speed_limit(
     ay_limit_mps2: float,
     vmax_mps: float,
 ) -> float:
-    """Compute speed limit from curvature and lateral acceleration capability."""
+    """Compute speed limit from curvature and lateral acceleration capability.
+
+    Args:
+        curvature_1pm: Signed path curvature in 1/m.
+        ay_limit_mps2: Available lateral acceleration magnitude in m/s^2.
+        vmax_mps: Global hard speed cap in m/s.
+
+    Returns:
+        Maximum feasible speed in m/s under curvature and lateral limits.
+    """
     kappa = abs(curvature_1pm)
     if kappa < SMALL_EPS:
         return vmax_mps

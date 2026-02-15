@@ -11,6 +11,7 @@ Elevation and banking are currently not supplied by the source and are set to 0.
 from __future__ import annotations
 
 import csv
+import logging
 import urllib.request
 from pathlib import Path
 
@@ -20,12 +21,23 @@ RAW_COPY_PATH = Path("data/sources/tumftm_spa_raw.csv")
 
 
 def _download_text(url: str) -> str:
+    """Download a UTF-8 text resource via HTTP.
+
+    Args:
+        url: Source URL.
+
+    Returns:
+        Decoded response body.
+    """
     with urllib.request.urlopen(url, timeout=30) as response:  # nosec B310
         data = response.read().decode("utf-8")
     return data
 
 
 def main() -> None:
+    """Download and convert Spa centerline data into internal CSV schema."""
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(message)s")
+    logger = logging.getLogger("import_spa_from_tumftm")
     text = _download_text(SOURCE_URL)
     RAW_COPY_PATH.parent.mkdir(parents=True, exist_ok=True)
     RAW_COPY_PATH.write_text(text, encoding="utf-8")
@@ -72,7 +84,7 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(rows)
 
-    print(f"Wrote {OUT_PATH} with {len(rows)} points")
+    logger.info("Wrote %s with %d points", OUT_PATH, len(rows))
 
 
 if __name__ == "__main__":

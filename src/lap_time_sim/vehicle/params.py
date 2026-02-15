@@ -36,16 +36,29 @@ class VehicleParameters:
 
     @property
     def cg_to_rear_axle_m(self) -> float:
-        """Distance from center of gravity to rear axle."""
+        """Distance from center of gravity to rear axle.
+
+        Returns:
+            Rear axle distance from center of gravity in meters.
+        """
         return self.static_front_weight_fraction * self.wheelbase_m
 
     @property
     def cg_to_front_axle_m(self) -> float:
-        """Distance from center of gravity to front axle."""
+        """Distance from center of gravity to front axle.
+
+        Returns:
+            Front axle distance from center of gravity in meters.
+        """
         return self.wheelbase_m - self.cg_to_rear_axle_m
 
     def validate(self) -> None:
-        """Validate configuration values before simulation."""
+        """Validate configuration values before simulation.
+
+        Raises:
+            lap_time_sim.utils.exceptions.ConfigurationError: If any parameter
+                violates its defined bound.
+        """
         if self.mass_kg <= 0.0:
             msg = "mass_kg must be positive"
             raise ConfigurationError(msg)
@@ -80,7 +93,11 @@ class VehicleParameters:
 
 
 def default_vehicle_parameters() -> VehicleParameters:
-    """Return a representative high-downforce single-seater setup."""
+    """Return a representative high-downforce single-seater setup.
+
+    Returns:
+        Baseline vehicle parameter set for examples and tests.
+    """
     return VehicleParameters(
         mass_kg=798.0,
         yaw_inertia_kgm2=1120.0,
