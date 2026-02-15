@@ -16,12 +16,14 @@ class VehicleDynamicsTests(unittest.TestCase):
     """Vehicle-level dynamics checks."""
 
     def test_drag_scales_with_speed_square(self) -> None:
+        """Scale aerodynamic drag approximately with speed squared."""
         vehicle = default_vehicle_parameters()
         drag_50 = aero_forces(vehicle, 50.0).drag_n
         drag_100 = aero_forces(vehicle, 100.0).drag_n
         self.assertAlmostEqual(drag_100 / drag_50, 4.0, delta=0.12)
 
     def test_normal_load_total_matches_weight_plus_downforce(self) -> None:
+        """Preserve total vertical load as weight plus downforce."""
         vehicle = default_vehicle_parameters()
         loads = estimate_normal_loads(
             vehicle,
@@ -35,6 +37,7 @@ class VehicleDynamicsTests(unittest.TestCase):
         self.assertAlmostEqual(total, expected, delta=1e-6)
 
     def test_bicycle_derivatives_are_finite(self) -> None:
+        """Return finite derivatives for a representative dynamic state."""
         vehicle = default_vehicle_parameters()
         model = BicycleModel(vehicle, default_axle_tire_parameters())
         state = VehicleState(vx_mps=40.0, vy_mps=0.7, yaw_rate_rps=0.12)
@@ -46,6 +49,7 @@ class VehicleDynamicsTests(unittest.TestCase):
         self.assertTrue(abs(derivatives.yaw_rate_rps) < 100.0)
 
     def test_wheel_loads_preserve_axle_load_under_high_lateral_accel(self) -> None:
+        """Preserve axle totals and positive wheel loads under high lateral acceleration."""
         vehicle = default_vehicle_parameters()
         loads = estimate_normal_loads(
             vehicle=vehicle,

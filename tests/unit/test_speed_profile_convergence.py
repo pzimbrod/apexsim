@@ -18,6 +18,7 @@ class SpeedProfileConvergenceTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
+        """Load shared track/model fixtures for convergence tests."""
         root = Path(__file__).resolve().parents[2]
         cls.track = load_track_csv(root / "data" / "spa_francorchamps.csv")
         cls.model = BicycleLapTimeModel(
@@ -26,6 +27,7 @@ class SpeedProfileConvergenceTests(unittest.TestCase):
         )
 
     def test_large_tolerance_converges_in_single_iteration(self) -> None:
+        """Converge after one update when tolerance is intentionally loose."""
         config = SimulationConfig(
             lateral_envelope_max_iterations=20,
             lateral_envelope_convergence_tol_mps=1_000.0,
@@ -34,6 +36,7 @@ class SpeedProfileConvergenceTests(unittest.TestCase):
         self.assertEqual(result.lateral_envelope_iterations, 1)
 
     def test_small_tolerance_requires_multiple_iterations(self) -> None:
+        """Require multiple iterations when tolerance is tight."""
         config = SimulationConfig(
             lateral_envelope_max_iterations=20,
             lateral_envelope_convergence_tol_mps=0.01,

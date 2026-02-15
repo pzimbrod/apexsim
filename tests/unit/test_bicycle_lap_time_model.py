@@ -16,12 +16,14 @@ class BicycleLapTimeModelTests(unittest.TestCase):
     """Validate the model API implementation for the bicycle backend."""
 
     def test_config_validation_rejects_nonpositive_limits(self) -> None:
+        """Reject non-positive configured drive and brake limits."""
         with self.assertRaises(ConfigurationError):
             BicycleLapTimeModelConfig(max_drive_accel_mps2=0.0).validate()
         with self.assertRaises(ConfigurationError):
             BicycleLapTimeModelConfig(max_brake_accel_mps2=0.0).validate()
 
     def test_diagnostics_are_finite(self) -> None:
+        """Return finite diagnostic signals for a representative operating point."""
         model = BicycleLapTimeModel(
             vehicle=default_vehicle_parameters(),
             tires=default_axle_tire_parameters(),
@@ -39,6 +41,7 @@ class BicycleLapTimeModelTests(unittest.TestCase):
         self.assertTrue(np.isfinite(diagnostics.power_w))
 
     def test_uphill_reduces_available_acceleration(self) -> None:
+        """Reduce available forward acceleration on positive grade."""
         model = BicycleLapTimeModel(
             vehicle=default_vehicle_parameters(),
             tires=default_axle_tire_parameters(),

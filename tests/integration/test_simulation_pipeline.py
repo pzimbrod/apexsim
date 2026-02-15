@@ -18,6 +18,7 @@ class SimulationPipelineTests(unittest.TestCase):
     """End-to-end system tests."""
 
     def test_full_spa_simulation_runs_and_returns_valid_kpis(self) -> None:
+        """Verify that the full Spa pipeline returns plausible KPI ranges."""
         root = Path(__file__).resolve().parents[2]
         track = load_track_csv(root / "data" / "spa_francorchamps.csv")
         model = BicycleLapTimeModel(

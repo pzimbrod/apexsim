@@ -22,6 +22,7 @@ class AnalysisAndUtilsTests(unittest.TestCase):
     """Coverage tests for plotting, export and logging helpers."""
 
     def test_plot_and_json_exports_are_created(self) -> None:
+        """Ensure standard plot files and KPI JSON export are generated."""
         root = Path(__file__).resolve().parents[2]
         track = load_track_csv(root / "data" / "spa_francorchamps.csv")
         model = BicycleLapTimeModel(
@@ -58,6 +59,7 @@ class AnalysisAndUtilsTests(unittest.TestCase):
             self.assertIn("max_lateral_accel_g", data)
 
     def test_logging_helper_runs(self) -> None:
+        """Smoke-test logging helper configuration."""
         configure_logging(logging.INFO)
         logger = logging.getLogger("lap_time_sim_test")
         logger.info("smoke")

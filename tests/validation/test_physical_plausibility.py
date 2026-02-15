@@ -19,6 +19,7 @@ class PhysicalValidationTests(unittest.TestCase):
     """Plausibility checks against realistic racing ranges."""
 
     def test_acceleration_ranges_stay_realistic(self) -> None:
+        """Keep simulated acceleration metrics within plausible racing bounds."""
         root = Path(__file__).resolve().parents[2]
         track = load_track_csv(root / "data" / "spa_francorchamps.csv")
         model = BicycleLapTimeModel(

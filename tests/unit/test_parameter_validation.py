@@ -16,6 +16,7 @@ class ParameterValidationTests(unittest.TestCase):
     """Unit tests for parameter validation branches."""
 
     def test_pacejka_validation_rejects_invalid_values(self) -> None:
+        """Raise configuration errors for invalid Pacejka coefficients."""
         with self.assertRaises(ConfigurationError):
             PacejkaParameters(B=0.0, C=1.2, D=1.5, E=0.9).validate()
         with self.assertRaises(ConfigurationError):
@@ -26,6 +27,7 @@ class ParameterValidationTests(unittest.TestCase):
             PacejkaParameters(B=9.0, C=1.2, D=1.5, E=0.9, fz_reference_n=0.0).validate()
 
     def test_vehicle_validation_rejects_invalid_values(self) -> None:
+        """Raise configuration errors for invalid vehicle parameters."""
         base = dict(
             mass_kg=700.0,
             yaw_inertia_kgm2=1000.0,
@@ -56,6 +58,7 @@ class ParameterValidationTests(unittest.TestCase):
             VehicleParameters(**{**base, "arb_distribution_front": 1.5}).validate()
 
     def test_track_data_validation_rejects_inconsistent_arrays(self) -> None:
+        """Raise track-data errors for mismatched array lengths."""
         with self.assertRaises(TrackDataError):
             TrackData(
                 x_m=np.array([0.0, 1.0, 2.0, 3.0]),

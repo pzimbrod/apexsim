@@ -15,6 +15,7 @@ class SimulationHelpersTests(unittest.TestCase):
     """Unit tests for numerical helper modules."""
 
     def test_rk4_step_matches_linear_solution(self) -> None:
+        """Match RK4 integration output against an exponential reference."""
         # dy/dt = -2y has exact solution y(t+dt) = y * exp(-2dt).
         def rhs(_: float, state: np.ndarray) -> np.ndarray:
             return -2.0 * state
@@ -26,6 +27,7 @@ class SimulationHelpersTests(unittest.TestCase):
         self.assertAlmostEqual(float(stepped[0]), float(expected), delta=1e-5)
 
     def test_simulation_config_validation_raises_for_invalid_values(self) -> None:
+        """Raise configuration errors for invalid simulation settings."""
         with self.assertRaises(ConfigurationError):
             SimulationConfig(min_speed_mps=0.0).validate()
         with self.assertRaises(ConfigurationError):
