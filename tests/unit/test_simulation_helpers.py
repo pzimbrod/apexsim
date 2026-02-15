@@ -27,10 +27,6 @@ class SimulationHelpersTests(unittest.TestCase):
 
     def test_simulation_config_validation_raises_for_invalid_values(self) -> None:
         with self.assertRaises(ConfigurationError):
-            SimulationConfig(max_drive_accel_mps2=0.0).validate()
-        with self.assertRaises(ConfigurationError):
-            SimulationConfig(max_brake_accel_mps2=0.0).validate()
-        with self.assertRaises(ConfigurationError):
             SimulationConfig(min_speed_mps=0.0).validate()
         with self.assertRaises(ConfigurationError):
             SimulationConfig(min_speed_mps=20.0, max_speed_mps=10.0).validate()

@@ -11,9 +11,10 @@ from lap_time_sim.utils.exceptions import ConfigurationError
 class SimulationConfig:
     """Global simulation settings and envelope limits.
 
+    Vehicle-specific force limits are intentionally *not* configured here.
+    They belong to the selected `LapTimeVehicleModel` implementation.
+
     Attributes:
-        max_drive_accel_mps2: Longitudinal acceleration capability on throttle.
-        max_brake_accel_mps2: Longitudinal deceleration capability under braking.
         min_speed_mps: Numerical floor for speed to avoid singular divisions.
         max_speed_mps: Hard speed cap for straight segments.
         lateral_envelope_max_iterations: Maximum fixed-point iterations for the
@@ -24,8 +25,6 @@ class SimulationConfig:
         enable_transient_refinement: Flag for optional second-pass transient solve.
     """
 
-    max_drive_accel_mps2: float = 8.0
-    max_brake_accel_mps2: float = 16.0
     min_speed_mps: float = 8.0
     max_speed_mps: float = 115.0
     lateral_envelope_max_iterations: int = 20
@@ -35,12 +34,6 @@ class SimulationConfig:
 
     def validate(self) -> None:
         """Validate solver settings."""
-        if self.max_drive_accel_mps2 <= 0.0:
-            msg = "max_drive_accel_mps2 must be positive"
-            raise ConfigurationError(msg)
-        if self.max_brake_accel_mps2 <= 0.0:
-            msg = "max_brake_accel_mps2 must be positive"
-            raise ConfigurationError(msg)
         if self.min_speed_mps <= 0.0:
             msg = "min_speed_mps must be positive"
             raise ConfigurationError(msg)

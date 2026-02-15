@@ -7,13 +7,9 @@ from dataclasses import dataclass
 import numpy as np
 
 from lap_time_sim.simulation.config import SimulationConfig
+from lap_time_sim.simulation.model_api import LapTimeVehicleModel
 from lap_time_sim.simulation.profile import solve_speed_profile
-from lap_time_sim.tire.models import AxleTireParameters
 from lap_time_sim.track.models import TrackData
-from lap_time_sim.vehicle.aero import aero_forces
-from lap_time_sim.vehicle.bicycle import BicycleModel, ControlInput, VehicleState
-from lap_time_sim.vehicle.load_transfer import estimate_normal_loads
-from lap_time_sim.vehicle.params import VehicleParameters
 
 MIN_AVERAGE_SPEED_FOR_DT_MPS = 1e-6
 
@@ -43,15 +39,12 @@ def _compute_energy(power_w: np.ndarray, speed_mps: np.ndarray, s_m: np.ndarray)
 
 def simulate_lap(
     track: TrackData,
-    vehicle: VehicleParameters,
-    tires: AxleTireParameters,
+    model: LapTimeVehicleModel,
     config: SimulationConfig | None = None,
 ) -> LapSimulationResult:
-    """Run quasi-steady lap simulation and return all primary outputs."""
+    """Run quasi-steady lap simulation against a vehicle-model API backend."""
     sim_config = config or SimulationConfig()
-    profile = solve_speed_profile(track=track, vehicle=vehicle, tires=tires, config=sim_config)
-
-    model = BicycleModel(vehicle, tires)
+    profile = solve_speed_profile(track=track, model=model, config=sim_config)
 
     n = track.s_m.size
     yaw_moment_nm = np.zeros(n, dtype=float)
@@ -63,27 +56,17 @@ def simulate_lap(
         speed = float(profile.speed_mps[idx])
         ax = float(profile.ax_mps2[idx])
         ay = float(profile.ay_mps2[idx])
-
         kappa = float(track.curvature_1pm[idx])
-        steer = float(np.arctan(vehicle.wheelbase_m * kappa))
-
-        state = VehicleState(vx_mps=speed, vy_mps=0.0, yaw_rate_rps=speed * kappa)
-        control = ControlInput(steer_rad=steer, longitudinal_accel_cmd_mps2=ax)
-        fb = model.force_balance(state, control)
-        yaw_moment_nm[idx] = fb.yaw_moment_nm
-
-        loads = estimate_normal_loads(
-            vehicle,
+        diagnostics = model.diagnostics(
             speed_mps=speed,
-            longitudinal_accel_mps2=ax,
-            lateral_accel_mps2=ay,
+            ax_mps2=ax,
+            ay_mps2=ay,
+            curvature_1pm=kappa,
         )
-        front_axle_load_n[idx] = loads.front_axle_n
-        rear_axle_load_n[idx] = loads.rear_axle_n
-
-        aero = aero_forces(vehicle, speed)
-        tractive_force_n = vehicle.mass_kg * ax + aero.drag_n
-        power_w[idx] = tractive_force_n * speed
+        yaw_moment_nm[idx] = diagnostics.yaw_moment_nm
+        front_axle_load_n[idx] = diagnostics.front_axle_load_n
+        rear_axle_load_n[idx] = diagnostics.rear_axle_load_n
+        power_w[idx] = diagnostics.power_w
 
     energy_j = _compute_energy(power_w, profile.speed_mps, track.s_m)
 

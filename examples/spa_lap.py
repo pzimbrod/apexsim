@@ -11,7 +11,7 @@ from lap_time_sim.simulation import SimulationConfig, simulate_lap
 from lap_time_sim.tire import default_axle_tire_parameters
 from lap_time_sim.track import load_track_csv
 from lap_time_sim.utils import configure_logging
-from lap_time_sim.vehicle import default_vehicle_parameters
+from lap_time_sim.vehicle import BicycleLapTimeModel, default_vehicle_parameters
 
 
 def main() -> None:
@@ -23,9 +23,10 @@ def main() -> None:
 
     vehicle = default_vehicle_parameters()
     tires = default_axle_tire_parameters()
+    model = BicycleLapTimeModel(vehicle=vehicle, tires=tires)
     config = SimulationConfig()
 
-    result = simulate_lap(track=track, vehicle=vehicle, tires=tires, config=config)
+    result = simulate_lap(track=track, model=model, config=config)
     kpis = compute_kpis(result)
 
     output_dir = project_root / "examples" / "output"
