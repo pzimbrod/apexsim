@@ -5,15 +5,16 @@ from __future__ import annotations
 from typing import TypeAlias
 
 import numpy as np
+import numpy.typing as npt
 
 from lap_time_sim.tire.models import AxleTireParameters, PacejkaParameters
 from lap_time_sim.utils.constants import SMALL_EPS
 
-FloatArray: TypeAlias = np.ndarray
+FloatArray: TypeAlias = npt.NDArray[np.float64]
 
 
 def _as_array(value: float | FloatArray) -> FloatArray:
-    return np.asarray(value, dtype=float)
+    return np.asarray(value, dtype=np.float64)
 
 
 def magic_formula_lateral(
@@ -46,7 +47,7 @@ def magic_formula_lateral(
 
     if np.isscalar(slip_angle_rad) and np.isscalar(normal_load_n):
         return float(np.asarray(fy).item())
-    return fy
+    return np.asarray(fy, dtype=np.float64)
 
 
 def axle_lateral_forces(
@@ -61,6 +62,8 @@ def axle_lateral_forces(
     front_tire_load = max(front_axle_load_n / 2.0, SMALL_EPS)
     rear_tire_load = max(rear_axle_load_n / 2.0, SMALL_EPS)
 
-    fy_front = 2.0 * float(magic_formula_lateral(front_slip_rad, front_tire_load, axle_params.front))
+    fy_front = 2.0 * float(
+        magic_formula_lateral(front_slip_rad, front_tire_load, axle_params.front)
+    )
     fy_rear = 2.0 * float(magic_formula_lateral(rear_slip_rad, rear_tire_load, axle_params.rear))
     return fy_front, fy_rear

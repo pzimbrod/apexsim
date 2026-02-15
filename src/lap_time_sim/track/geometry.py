@@ -3,29 +3,32 @@
 from __future__ import annotations
 
 import numpy as np
+import numpy.typing as npt
 
 from lap_time_sim.track.models import TrackData
 from lap_time_sim.utils.constants import SMALL_EPS
 
+FloatArray = npt.NDArray[np.float64]
 
-def cumulative_arc_length(x_m: np.ndarray, y_m: np.ndarray) -> np.ndarray:
+
+def cumulative_arc_length(x_m: FloatArray, y_m: FloatArray) -> FloatArray:
     """Compute cumulative arc length from Cartesian points."""
     dx = np.diff(x_m)
     dy = np.diff(y_m)
     ds = np.hypot(dx, dy)
-    s = np.zeros(x_m.shape[0], dtype=float)
+    s = np.zeros(x_m.shape[0], dtype=np.float64)
     s[1:] = np.cumsum(ds)
-    return s
+    return np.asarray(s, dtype=np.float64)
 
 
-def heading_from_xy(x_m: np.ndarray, y_m: np.ndarray) -> np.ndarray:
+def heading_from_xy(x_m: FloatArray, y_m: FloatArray) -> FloatArray:
     """Compute heading angle along the track."""
     dx = np.gradient(x_m)
     dy = np.gradient(y_m)
-    return np.arctan2(dy, dx)
+    return np.asarray(np.arctan2(dy, dx), dtype=np.float64)
 
 
-def curvature_from_xy(x_m: np.ndarray, y_m: np.ndarray, s_m: np.ndarray) -> np.ndarray:
+def curvature_from_xy(x_m: FloatArray, y_m: FloatArray, s_m: FloatArray) -> FloatArray:
     """Compute signed curvature from first and second derivatives."""
     dx_ds = np.gradient(x_m, s_m)
     dy_ds = np.gradient(y_m, s_m)
@@ -35,19 +38,19 @@ def curvature_from_xy(x_m: np.ndarray, y_m: np.ndarray, s_m: np.ndarray) -> np.n
     denominator = np.power(dx_ds * dx_ds + dy_ds * dy_ds, 1.5)
     denominator = np.maximum(denominator, SMALL_EPS)
     numerator = dx_ds * d2y_ds2 - dy_ds * d2x_ds2
-    return numerator / denominator
+    return np.asarray(numerator / denominator, dtype=np.float64)
 
 
-def grade_from_elevation(elevation_m: np.ndarray, s_m: np.ndarray) -> np.ndarray:
+def grade_from_elevation(elevation_m: FloatArray, s_m: FloatArray) -> FloatArray:
     """Compute slope dz/ds along the track."""
-    return np.gradient(elevation_m, s_m)
+    return np.asarray(np.gradient(elevation_m, s_m), dtype=np.float64)
 
 
 def build_track_data(
-    x_m: np.ndarray,
-    y_m: np.ndarray,
-    elevation_m: np.ndarray,
-    banking_rad: np.ndarray,
+    x_m: FloatArray,
+    y_m: FloatArray,
+    elevation_m: FloatArray,
+    banking_rad: FloatArray,
 ) -> TrackData:
     """Build a complete `TrackData` object from raw coordinate arrays."""
     s_m = cumulative_arc_length(x_m, y_m)

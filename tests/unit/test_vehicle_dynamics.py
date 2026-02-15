@@ -23,7 +23,12 @@ class VehicleDynamicsTests(unittest.TestCase):
 
     def test_normal_load_total_matches_weight_plus_downforce(self) -> None:
         vehicle = default_vehicle_parameters()
-        loads = estimate_normal_loads(vehicle, speed_mps=60.0, longitudinal_accel_mps2=0.0, lateral_accel_mps2=0.0)
+        loads = estimate_normal_loads(
+            vehicle,
+            speed_mps=60.0,
+            longitudinal_accel_mps2=0.0,
+            lateral_accel_mps2=0.0,
+        )
         aero = aero_forces(vehicle, 60.0)
         total = loads.front_axle_n + loads.rear_axle_n
         expected = vehicle.mass_kg * GRAVITY_MPS2 + aero.downforce_n

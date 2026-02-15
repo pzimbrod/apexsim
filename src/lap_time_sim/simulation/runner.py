@@ -8,8 +8,8 @@ import numpy as np
 
 from lap_time_sim.simulation.config import SimulationConfig
 from lap_time_sim.simulation.profile import solve_speed_profile
-from lap_time_sim.track.models import TrackData
 from lap_time_sim.tire.models import AxleTireParameters
+from lap_time_sim.track.models import TrackData
 from lap_time_sim.vehicle.aero import aero_forces
 from lap_time_sim.vehicle.bicycle import BicycleModel, ControlInput, VehicleState
 from lap_time_sim.vehicle.load_transfer import estimate_normal_loads

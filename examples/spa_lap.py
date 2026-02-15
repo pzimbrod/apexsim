@@ -33,8 +33,16 @@ def main() -> None:
     export_kpi_json(kpis, output_dir / "kpis.json")
 
     logger.info("Lap time: %.2f s", kpis.lap_time_s)
-    logger.info("Avg lateral accel: %.2f g | Max lateral accel: %.2f g", kpis.avg_lateral_accel_g, kpis.max_lateral_accel_g)
-    logger.info("Avg longitudinal accel: %.2f g | Max longitudinal accel: %.2f g", kpis.avg_longitudinal_accel_g, kpis.max_longitudinal_accel_g)
+    logger.info(
+        "Avg lateral accel: %.2f g | Max lateral accel: %.2f g",
+        kpis.avg_lateral_accel_g,
+        kpis.max_lateral_accel_g,
+    )
+    logger.info(
+        "Avg longitudinal accel: %.2f g | Max longitudinal accel: %.2f g",
+        kpis.avg_longitudinal_accel_g,
+        kpis.max_longitudinal_accel_g,
+    )
     logger.info("Energy use: %.2f kWh", kpis.energy_kwh)
 
 

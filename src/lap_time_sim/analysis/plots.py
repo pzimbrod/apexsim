@@ -6,6 +6,7 @@ from pathlib import Path
 
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 
 from lap_time_sim.simulation.runner import LapSimulationResult
 from lap_time_sim.utils.constants import GRAVITY_MPS2
@@ -13,7 +14,7 @@ from lap_time_sim.utils.constants import GRAVITY_MPS2
 matplotlib.use("Agg")
 
 
-def _save_dual_format(fig: plt.Figure, out_base: Path) -> None:
+def _save_dual_format(fig: Figure, out_base: Path) -> None:
     out_base.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_base.with_suffix(".png"), dpi=180, bbox_inches="tight")
     fig.savefig(out_base.with_suffix(".pdf"), bbox_inches="tight")

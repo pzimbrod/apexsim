@@ -33,8 +33,8 @@ def lateral_accel_limit(
     fy_rear = 2.0 * float(magic_formula_lateral(PEAK_SLIP_RAD, fz_rear_tire, tires.rear))
 
     ay_tire = (fy_front + fy_rear) / vehicle.mass_kg
-    ay_banking = GRAVITY_MPS2 * np.sin(banking_rad)
-    return max(0.5, ay_tire + ay_banking)
+    ay_banking = GRAVITY_MPS2 * float(np.sin(banking_rad))
+    return float(max(0.5, ay_tire + ay_banking))
 
 
 def lateral_speed_limit(
@@ -46,4 +46,4 @@ def lateral_speed_limit(
     kappa = abs(curvature_1pm)
     if kappa < SMALL_EPS:
         return vmax_mps
-    return min(np.sqrt(max(ay_limit_mps2 / kappa, 0.0)), vmax_mps)
+    return float(min(float(np.sqrt(max(ay_limit_mps2 / kappa, 0.0))), vmax_mps))

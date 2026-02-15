@@ -8,8 +8,8 @@ import numpy as np
 
 from lap_time_sim.simulation.config import SimulationConfig
 from lap_time_sim.simulation.envelope import lateral_accel_limit, lateral_speed_limit
-from lap_time_sim.track.models import TrackData
 from lap_time_sim.tire.models import AxleTireParameters
+from lap_time_sim.track.models import TrackData
 from lap_time_sim.utils.constants import GRAVITY_MPS2, SMALL_EPS
 from lap_time_sim.vehicle.aero import aero_forces
 from lap_time_sim.vehicle.params import VehicleParameters
@@ -29,7 +29,7 @@ def _friction_circle_scale(ay_required: float, ay_limit: float) -> float:
     if ay_limit <= SMALL_EPS:
         return 0.0
     usage = min(abs(ay_required) / ay_limit, 1.0)
-    return np.sqrt(max(0.0, 1.0 - usage * usage))
+    return float(np.sqrt(max(0.0, 1.0 - usage * usage)))
 
 
 def _segment_dt(ds_m: float, v0_mps: float, v1_mps: float) -> float:
@@ -84,8 +84,13 @@ def solve_speed_profile(
         net_accel = tire_accel - drag_accel - grade_accel
 
         next_speed_sq = v_forward[idx] ** 2 + 2.0 * net_accel * ds[idx]
-        v_candidate = np.sqrt(max(next_speed_sq, config.min_speed_mps**2))
-        v_forward[idx + 1] = min(v_forward[idx + 1], v_candidate, v_lat[idx + 1], config.max_speed_mps)
+        v_candidate = float(np.sqrt(max(next_speed_sq, config.min_speed_mps**2)))
+        v_forward[idx + 1] = min(
+            v_forward[idx + 1],
+            v_candidate,
+            v_lat[idx + 1],
+            config.max_speed_mps,
+        )
 
     v_profile = np.copy(v_forward)
     for idx in range(n - 2, -1, -1):
@@ -104,7 +109,7 @@ def solve_speed_profile(
         available_decel = tire_brake + drag_accel + grade_accel
 
         entry_speed_sq = v_profile[idx + 1] ** 2 + 2.0 * available_decel * ds[idx]
-        v_entry = np.sqrt(max(entry_speed_sq, config.min_speed_mps**2))
+        v_entry = float(np.sqrt(max(entry_speed_sq, config.min_speed_mps**2)))
         v_profile[idx] = min(v_profile[idx], v_entry, v_lat[idx], config.max_speed_mps)
 
     ax = np.zeros(n, dtype=float)
