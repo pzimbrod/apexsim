@@ -36,6 +36,10 @@ class SimulationHelpersTests(unittest.TestCase):
             SimulationConfig(min_speed_mps=20.0, max_speed_mps=10.0).validate()
         with self.assertRaises(ConfigurationError):
             SimulationConfig(transient_dt_s=0.0).validate()
+        with self.assertRaises(ConfigurationError):
+            SimulationConfig(lateral_envelope_max_iterations=0).validate()
+        with self.assertRaises(ConfigurationError):
+            SimulationConfig(lateral_envelope_convergence_tol_mps=0.0).validate()
 
 
 if __name__ == "__main__":

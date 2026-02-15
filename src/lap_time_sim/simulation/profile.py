@@ -17,11 +17,16 @@ from lap_time_sim.vehicle.params import VehicleParameters
 
 @dataclass(frozen=True)
 class SpeedProfileResult:
-    """Speed profile along track arc length."""
+    """Speed profile along track arc length.
+
+    `lateral_envelope_iterations` reports how many fixed-point iterations were
+    required to converge the lateral speed envelope.
+    """
 
     speed_mps: np.ndarray
     ax_mps2: np.ndarray
     ay_mps2: np.ndarray
+    lateral_envelope_iterations: int
     lap_time_s: float
 
 
@@ -53,7 +58,9 @@ def solve_speed_profile(
     ds = np.diff(track.s_m)
 
     v_lat = np.full(n, config.max_speed_mps, dtype=float)
-    for _ in range(6):
+    lateral_envelope_iterations = 0
+    for iteration_idx in range(config.lateral_envelope_max_iterations):
+        previous_v_lat = np.copy(v_lat)
         for idx in range(n):
             ay_lim = lateral_accel_limit(
                 vehicle,
@@ -65,6 +72,10 @@ def solve_speed_profile(
                 config.min_speed_mps,
                 lateral_speed_limit(float(track.curvature_1pm[idx]), ay_lim, config.max_speed_mps),
             )
+        lateral_envelope_iterations = iteration_idx + 1
+        max_delta_mps = float(np.max(np.abs(v_lat - previous_v_lat)))
+        if max_delta_mps <= config.lateral_envelope_convergence_tol_mps:
+            break
 
     v_forward = np.copy(v_lat)
     v_forward[0] = min(v_forward[0], config.max_speed_mps)
@@ -123,4 +134,10 @@ def solve_speed_profile(
     for idx in range(n - 1):
         lap_time += _segment_dt(float(ds[idx]), float(v_profile[idx]), float(v_profile[idx + 1]))
 
-    return SpeedProfileResult(speed_mps=v_profile, ax_mps2=ax, ay_mps2=ay, lap_time_s=lap_time)
+    return SpeedProfileResult(
+        speed_mps=v_profile,
+        ax_mps2=ax,
+        ay_mps2=ay,
+        lateral_envelope_iterations=lateral_envelope_iterations,
+        lap_time_s=lap_time,
+    )

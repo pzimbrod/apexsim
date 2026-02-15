@@ -15,6 +15,10 @@
 - `lap_time_sim.simulation.SimulationConfig`
 - `lap_time_sim.simulation.simulate_lap(track, vehicle, tires, config=None) -> LapSimulationResult`
 
+Relevant `SimulationConfig` knobs:
+- `lateral_envelope_max_iterations`
+- `lateral_envelope_convergence_tol_mps`
+
 `LapSimulationResult` contains:
 - `lap_time_s`
 - `speed_mps`, `ax_mps2`, `ay_mps2`
