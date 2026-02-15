@@ -7,6 +7,7 @@ A local virtual environment is expected at `.venv`.
 ```bash
 python3 -m venv --system-site-packages .venv
 source .venv/bin/activate
+pip install -e '.[dev]'
 ```
 
 ## Test Commands
@@ -31,4 +32,11 @@ If `pytest` is available:
 ```bash
 source .venv/bin/activate
 PYTHONPATH=src pytest
+```
+
+## Refreshing Spa Data
+
+```bash
+source .venv/bin/activate
+python scripts/import_spa_from_tumftm.py
 ```

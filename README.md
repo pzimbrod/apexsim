@@ -24,7 +24,7 @@ A modular lap time simulation library for race cars using a 3-DOF bicycle model.
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e .[dev]
+pip install -e '.[dev]'
 pytest
 python examples/spa_lap.py
 ```
@@ -33,3 +33,8 @@ python examples/spa_lap.py
 
 This initial version uses a quasi-steady speed profile and a simplified longitudinal force model.
 See `docs/ASSUMPTIONS.md` for details.
+
+## Data Source
+
+The Spa centerline dataset is based on the public TUMFTM racetrack database.
+See `data/README.md` for provenance and conversion details.
