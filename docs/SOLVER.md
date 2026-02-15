@@ -166,23 +166,24 @@ for lap-time studies.
 ## 9. Equation-to-Code Mapping
 
 - $a_{y,i} = v_i^2\kappa_i$:
-  - `src/lap_time_sim/simulation/profile.py:131`
+  - `src/lap_time_sim/simulation/profile.py` (`solve_speed_profile`, `ay = ...`)
 - $v_{\text{lat},i} = \sqrt{a_{y,\text{lim},i}/|\kappa_i|}$ (with clipping):
-  - `src/lap_time_sim/simulation/envelope.py:53`
-  - `src/lap_time_sim/simulation/profile.py:71`
-- Friction-circle scaling $\lambda_i$:
-  - `src/lap_time_sim/simulation/profile.py:33`
+  - `src/lap_time_sim/simulation/envelope.py` (`lateral_speed_limit`)
+  - `src/lap_time_sim/simulation/profile.py` (`solve_speed_profile`, `v_lat[idx] = ...`)
+- Friction-circle scaling $\lambda_i$ (vehicle-model dependent):
+  - `src/lap_time_sim/vehicle/bicycle_lap_time_model.py` (`_friction_circle_scale`)
 - Forward pass $v_{i+1}^2 = v_i^2 + 2a\Delta s$:
-  - `src/lap_time_sim/simulation/profile.py:97`
+  - `src/lap_time_sim/simulation/profile.py` (`solve_speed_profile`, `next_speed_sq = ...`)
 - Backward pass braking feasibility:
-  - `src/lap_time_sim/simulation/profile.py:122`
+  - `src/lap_time_sim/simulation/profile.py` (`solve_speed_profile`, `entry_speed_sq = ...`)
 - Lap-time accumulation $T = \sum \Delta t_i$:
-  - `src/lap_time_sim/simulation/profile.py:133`
-  - `src/lap_time_sim/simulation/profile.py:135`
+  - `src/lap_time_sim/simulation/profile.py` (`lap_time += _segment_dt(...)`)
 - Segment time model $\Delta t_i = \Delta s_i / \bar v_i$:
-  - `src/lap_time_sim/simulation/profile.py:40`
+  - `src/lap_time_sim/simulation/profile.py` (`_segment_dt`)
 - Lateral limit fixed-point update:
-  - `src/lap_time_sim/simulation/envelope.py:30`
+  - `src/lap_time_sim/simulation/envelope.py` (`lateral_accel_limit`)
 - Lateral envelope fixed-point convergence in speed domain:
-  - `src/lap_time_sim/simulation/profile.py:62`
-  - `src/lap_time_sim/simulation/profile.py:76`
+  - `src/lap_time_sim/simulation/profile.py` (`for iteration_idx ...`, `max_delta_mps ...`)
+- Vehicle-model API contract consumed by the solver:
+  - `src/lap_time_sim/simulation/model_api.py` (`LapTimeVehicleModel`)
+  - `src/lap_time_sim/simulation/profile.py` (`solve_speed_profile`, calls on `model`)

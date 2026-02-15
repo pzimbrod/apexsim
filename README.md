@@ -8,6 +8,7 @@ A modular lap time simulation library for race cars using a 3-DOF bicycle model.
 - Pacejka-style lateral tire model with load sensitivity
 - Track CSV parsing (`x, y, elevation, banking`) and geometry processing
 - Quasi-steady lap simulation with forward/backward speed-profile optimization
+- Vehicle-model API abstraction for plugging in multiple model complexities
 - KPI and plot generation (lap time, g-levels, speed trace, yaw moment, G-G diagram)
 
 ## Project Layout

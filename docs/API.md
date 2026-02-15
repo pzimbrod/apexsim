@@ -9,15 +9,23 @@
 
 - `lap_time_sim.vehicle.default_vehicle_parameters() -> VehicleParameters`
 - `lap_time_sim.tire.default_axle_tire_parameters() -> AxleTireParameters`
+- `lap_time_sim.vehicle.BicycleLapTimeModel(vehicle, tires, config=None)`
 
 ## Simulation
 
 - `lap_time_sim.simulation.SimulationConfig`
-- `lap_time_sim.simulation.simulate_lap(track, vehicle, tires, config=None) -> LapSimulationResult`
+- `lap_time_sim.simulation.simulate_lap(track, model, config=None) -> LapSimulationResult`
 
 Relevant `SimulationConfig` knobs:
 - `lateral_envelope_max_iterations`
 - `lateral_envelope_convergence_tol_mps`
+
+Vehicle-model API required by the solver:
+- `validate()`
+- `lateral_accel_limit(speed_mps, banking_rad)`
+- `max_longitudinal_accel(speed_mps, ay_required_mps2, grade, banking_rad)`
+- `max_longitudinal_decel(speed_mps, ay_required_mps2, grade, banking_rad)`
+- `diagnostics(speed_mps, ax_mps2, ay_mps2, curvature_1pm)`
 
 Solver math and derivation:
 - `docs/SOLVER.md`
