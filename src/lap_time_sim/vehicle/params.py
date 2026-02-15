@@ -7,6 +7,9 @@ from dataclasses import dataclass
 from lap_time_sim.utils.constants import AIR_DENSITY_KGPM3
 from lap_time_sim.utils.exceptions import ConfigurationError
 
+MIN_STATIC_FRONT_WEIGHT_FRACTION = 0.05
+MAX_STATIC_FRONT_WEIGHT_FRACTION = 0.95
+
 
 @dataclass(frozen=True)
 class VehicleParameters:
@@ -55,8 +58,15 @@ class VehicleParameters:
         if self.track_front_m <= 0.0 or self.track_rear_m <= 0.0:
             msg = "track widths must be positive"
             raise ConfigurationError(msg)
-        if not 0.05 < self.static_front_weight_fraction < 0.95:
-            msg = "static_front_weight_fraction must be between 0.05 and 0.95"
+        if not (
+            MIN_STATIC_FRONT_WEIGHT_FRACTION
+            < self.static_front_weight_fraction
+            < MAX_STATIC_FRONT_WEIGHT_FRACTION
+        ):
+            msg = (
+                "static_front_weight_fraction must be between "
+                f"{MIN_STATIC_FRONT_WEIGHT_FRACTION} and {MAX_STATIC_FRONT_WEIGHT_FRACTION}"
+            )
             raise ConfigurationError(msg)
         if self.frontal_area_m2 <= 0.0:
             msg = "frontal_area_m2 must be positive"

@@ -8,6 +8,8 @@ import numpy as np
 
 from lap_time_sim.utils.exceptions import TrackDataError
 
+MIN_TRACK_POINT_COUNT = 4
+
 
 @dataclass(frozen=True)
 class TrackData:
@@ -40,8 +42,8 @@ class TrackData:
             self.grade,
         ]
         size = arrays[0].size
-        if size < 4:
-            msg = "Track must contain at least 4 points"
+        if size < MIN_TRACK_POINT_COUNT:
+            msg = f"Track must contain at least {MIN_TRACK_POINT_COUNT} points"
             raise TrackDataError(msg)
         if any(arr.size != size for arr in arrays):
             msg = "All track arrays must have equal length"
