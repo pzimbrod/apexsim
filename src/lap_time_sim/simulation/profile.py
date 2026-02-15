@@ -48,7 +48,16 @@ def solve_speed_profile(
     tires: AxleTireParameters,
     config: SimulationConfig,
 ) -> SpeedProfileResult:
-    """Solve lap speed profile with lateral and longitudinal constraints."""
+    """Solve lap speed profile with lateral and longitudinal constraints.
+
+    The algorithm is a quasi-steady forward/backward solver in arc-length domain:
+    1. Solve a fixed-point lateral speed envelope `v_lat(s)`.
+    2. Forward pass enforces acceleration feasibility.
+    3. Backward pass enforces braking feasibility.
+    4. Integrate segment times to obtain lap time.
+
+    See `docs/SOLVER.md` for the full mathematical derivation.
+    """
     track.validate()
     vehicle.validate()
     tires.validate()

@@ -33,6 +33,7 @@ python examples/spa_lap.py
 
 This initial version uses a quasi-steady speed profile and a simplified longitudinal force model.
 See `docs/ASSUMPTIONS.md` for details.
+For the mathematical derivation of the lap-time solver, see `docs/SOLVER.md`.
 
 ## Data Source
 
