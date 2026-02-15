@@ -13,6 +13,8 @@ from lap_time_sim.vehicle.aero import aero_forces
 from lap_time_sim.vehicle.load_transfer import estimate_normal_loads
 from lap_time_sim.vehicle.params import VehicleParameters
 
+MIN_SLIP_ANGLE_REFERENCE_SPEED_MPS = 0.5
+
 
 @dataclass(frozen=True)
 class VehicleState:
@@ -53,7 +55,7 @@ class BicycleModel:
 
     def slip_angles(self, state: VehicleState, steer_rad: float) -> tuple[float, float]:
         """Compute front and rear slip angles."""
-        u = max(abs(state.vx_mps), 0.5)
+        u = max(abs(state.vx_mps), MIN_SLIP_ANGLE_REFERENCE_SPEED_MPS)
         a = self.vehicle.cg_to_front_axle_m
         b = self.vehicle.cg_to_rear_axle_m
 

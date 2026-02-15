@@ -15,6 +15,8 @@ from lap_time_sim.vehicle.bicycle import BicycleModel, ControlInput, VehicleStat
 from lap_time_sim.vehicle.load_transfer import estimate_normal_loads
 from lap_time_sim.vehicle.params import VehicleParameters
 
+MIN_AVERAGE_SPEED_FOR_DT_MPS = 1e-6
+
 
 @dataclass(frozen=True)
 class LapSimulationResult:
@@ -34,7 +36,7 @@ class LapSimulationResult:
 
 def _compute_energy(power_w: np.ndarray, speed_mps: np.ndarray, s_m: np.ndarray) -> float:
     ds = np.diff(s_m)
-    dt = ds / np.maximum(0.5 * (speed_mps[:-1] + speed_mps[1:]), 1e-6)
+    dt = ds / np.maximum(0.5 * (speed_mps[:-1] + speed_mps[1:]), MIN_AVERAGE_SPEED_FOR_DT_MPS)
     traction_power = np.maximum(power_w[:-1], 0.0)
     return float(np.sum(traction_power * dt))
 

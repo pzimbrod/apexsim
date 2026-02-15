@@ -45,6 +45,30 @@ class VehicleDynamicsTests(unittest.TestCase):
         self.assertTrue(abs(derivatives.vy_mps) < 100.0)
         self.assertTrue(abs(derivatives.yaw_rate_rps) < 100.0)
 
+    def test_wheel_loads_preserve_axle_load_under_high_lateral_accel(self) -> None:
+        vehicle = default_vehicle_parameters()
+        loads = estimate_normal_loads(
+            vehicle=vehicle,
+            speed_mps=70.0,
+            longitudinal_accel_mps2=0.0,
+            lateral_accel_mps2=4.0 * GRAVITY_MPS2,
+        )
+
+        self.assertAlmostEqual(
+            loads.front_left_n + loads.front_right_n,
+            loads.front_axle_n,
+            delta=1e-6,
+        )
+        self.assertAlmostEqual(
+            loads.rear_left_n + loads.rear_right_n,
+            loads.rear_axle_n,
+            delta=1e-6,
+        )
+        self.assertGreater(loads.front_left_n, 0.0)
+        self.assertGreater(loads.front_right_n, 0.0)
+        self.assertGreater(loads.rear_left_n, 0.0)
+        self.assertGreater(loads.rear_right_n, 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -4,9 +4,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from lap_time_sim.utils.constants import GRAVITY_MPS2
+from lap_time_sim.utils.constants import GRAVITY_MPS2, SMALL_EPS
 from lap_time_sim.vehicle.aero import aero_forces
 from lap_time_sim.vehicle.params import VehicleParameters
+
+ROLL_STIFFNESS_FRONT_SHARE_MIN = 0.05
+ROLL_STIFFNESS_FRONT_SHARE_MAX = 0.95
+MIN_WHEEL_NORMAL_LOAD_N = SMALL_EPS
 
 
 @dataclass(frozen=True)
@@ -22,11 +26,30 @@ class NormalLoadState:
 
 
 def _roll_stiffness_front_share(vehicle: VehicleParameters) -> float:
+    """Blend spring and ARB balance into a bounded front-roll-share value."""
     spring_share = vehicle.spring_rate_front_npm / (
         vehicle.spring_rate_front_npm + vehicle.spring_rate_rear_npm
     )
     blended_share = 0.5 * (spring_share + vehicle.arb_distribution_front)
-    return min(max(blended_share, 0.05), 0.95)
+    return min(
+        max(blended_share, ROLL_STIFFNESS_FRONT_SHARE_MIN),
+        ROLL_STIFFNESS_FRONT_SHARE_MAX,
+    )
+
+
+def _split_axle_load(axle_load_n: float, lateral_transfer_n: float) -> tuple[float, float]:
+    """Split axle load into left/right wheel loads while preserving total load.
+
+    The transfer term is saturated so neither wheel load becomes negative.
+    """
+    min_axle_load = 2.0 * MIN_WHEEL_NORMAL_LOAD_N
+    bounded_axle_load = max(axle_load_n, min_axle_load)
+    max_transfer = max(bounded_axle_load - min_axle_load, 0.0)
+    bounded_transfer = min(max(lateral_transfer_n, -max_transfer), max_transfer)
+
+    left_load = 0.5 * (bounded_axle_load - bounded_transfer)
+    right_load = bounded_axle_load - left_load
+    return left_load, right_load
 
 
 def estimate_normal_loads(
@@ -40,15 +63,20 @@ def estimate_normal_loads(
     aero = aero_forces(vehicle, speed_mps)
 
     weight_n = vehicle.mass_kg * GRAVITY_MPS2
+    total_vertical_load_n = weight_n + aero.downforce_n
     front_static_n = weight_n * vehicle.static_front_weight_fraction
-    rear_static_n = weight_n - front_static_n
 
     longitudinal_transfer_n = (
         vehicle.mass_kg * longitudinal_accel_mps2 * vehicle.h_cg_m / vehicle.wheelbase_m
     )
 
-    front_axle_n = front_static_n + aero.front_downforce_n - longitudinal_transfer_n
-    rear_axle_n = rear_static_n + aero.rear_downforce_n + longitudinal_transfer_n
+    front_axle_raw_n = front_static_n + aero.front_downforce_n - longitudinal_transfer_n
+    min_axle_load = 2.0 * MIN_WHEEL_NORMAL_LOAD_N
+    front_axle_n = min(
+        max(front_axle_raw_n, min_axle_load),
+        total_vertical_load_n - min_axle_load,
+    )
+    rear_axle_n = total_vertical_load_n - front_axle_n
 
     total_roll_moment_nm = vehicle.mass_kg * lateral_accel_mps2 * vehicle.h_cg_m
     front_share = _roll_stiffness_front_share(vehicle)
@@ -56,10 +84,8 @@ def estimate_normal_loads(
     front_transfer_n = front_share * total_roll_moment_nm / vehicle.track_front_m
     rear_transfer_n = (1.0 - front_share) * total_roll_moment_nm / vehicle.track_rear_m
 
-    front_left_n = max(10.0, front_axle_n / 2.0 - front_transfer_n / 2.0)
-    front_right_n = max(10.0, front_axle_n - front_left_n)
-    rear_left_n = max(10.0, rear_axle_n / 2.0 - rear_transfer_n / 2.0)
-    rear_right_n = max(10.0, rear_axle_n - rear_left_n)
+    front_left_n, front_right_n = _split_axle_load(front_axle_n, front_transfer_n)
+    rear_left_n, rear_right_n = _split_axle_load(rear_axle_n, rear_transfer_n)
 
     return NormalLoadState(
         front_axle_n=front_axle_n,
