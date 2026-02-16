@@ -6,7 +6,12 @@ import unittest
 
 import numpy as np
 
-from lap_time_sim.simulation.config import NumericsConfig, RuntimeConfig, SimulationConfig
+from lap_time_sim.simulation.config import (
+    NumericsConfig,
+    RuntimeConfig,
+    SimulationConfig,
+    build_simulation_config,
+)
 from lap_time_sim.simulation.integrator import rk4_step
 from lap_time_sim.utils.exceptions import ConfigurationError
 
@@ -38,6 +43,12 @@ class SimulationHelpersTests(unittest.TestCase):
                     transient_dt_s=0.01,
                 ),
             ).validate()
+
+    def test_build_simulation_config_uses_stable_default_numerics(self) -> None:
+        """Build configuration with default numerics when omitted."""
+        config = build_simulation_config(max_speed_mps=115.0)
+        self.assertEqual(config.numerics, NumericsConfig())
+        self.assertFalse(config.runtime.enable_transient_refinement)
         with self.assertRaises(ConfigurationError):
             SimulationConfig(
                 runtime=RuntimeConfig(max_speed_mps=10.0, enable_transient_refinement=False),

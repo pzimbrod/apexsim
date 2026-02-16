@@ -19,6 +19,7 @@ class PackageExportTests(unittest.TestCase):
         self.assertIsNotNone(simulation_pkg.simulate_lap)
         self.assertIsNotNone(simulation_pkg.RuntimeConfig)
         self.assertIsNotNone(simulation_pkg.NumericsConfig)
+        self.assertIsNotNone(simulation_pkg.build_simulation_config)
 
     def test_vehicle_lazy_exports_resolve(self) -> None:
         """Resolve vehicle exports that are provided lazily."""
@@ -26,6 +27,7 @@ class PackageExportTests(unittest.TestCase):
         self.assertIsNotNone(vehicle_pkg.BicycleDynamicsModel)
         self.assertIsNotNone(vehicle_pkg.BicyclePhysics)
         self.assertIsNotNone(vehicle_pkg.BicycleNumerics)
+        self.assertIsNotNone(vehicle_pkg.build_bicycle_model)
 
     def test_lazy_export_raises_for_missing_symbol(self) -> None:
         """Raise ``AttributeError`` for unknown lazy export names."""

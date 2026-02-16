@@ -85,6 +85,12 @@ Keep parameter domains separate:
 Avoid mixing fixed-point tolerances, iteration limits, and numerical floors into
 physical parameter dataclasses.
 
+Defaulting guidance:
+
+- Numerical controls may include stable defaults to keep quick-start simulations
+  robust (`NumericsConfig`, `BicycleNumerics`).
+- Physical parameter classes should stay explicit and scenario-specific.
+
 ## Refreshing Spa Data
 
 ```bash

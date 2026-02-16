@@ -6,6 +6,13 @@ from dataclasses import dataclass
 
 from lap_time_sim.utils.exceptions import ConfigurationError
 
+DEFAULT_MIN_SPEED_MPS = 8.0
+DEFAULT_LATERAL_ENVELOPE_MAX_ITERATIONS = 20
+DEFAULT_LATERAL_ENVELOPE_CONVERGENCE_TOL_MPS = 0.1
+DEFAULT_TRANSIENT_DT_S = 0.01
+DEFAULT_MAX_SPEED_MPS = 115.0
+DEFAULT_ENABLE_TRANSIENT_REFINEMENT = False
+
 
 @dataclass(frozen=True)
 class NumericsConfig:
@@ -20,10 +27,10 @@ class NumericsConfig:
         transient_dt_s: Integration step for optional transient refinement.
     """
 
-    min_speed_mps: float
-    lateral_envelope_max_iterations: int
-    lateral_envelope_convergence_tol_mps: float
-    transient_dt_s: float
+    min_speed_mps: float = DEFAULT_MIN_SPEED_MPS
+    lateral_envelope_max_iterations: int = DEFAULT_LATERAL_ENVELOPE_MAX_ITERATIONS
+    lateral_envelope_convergence_tol_mps: float = DEFAULT_LATERAL_ENVELOPE_CONVERGENCE_TOL_MPS
+    transient_dt_s: float = DEFAULT_TRANSIENT_DT_S
 
     def validate(self) -> None:
         """Validate numerical solver settings.
@@ -56,7 +63,7 @@ class RuntimeConfig:
     """
 
     max_speed_mps: float
-    enable_transient_refinement: bool
+    enable_transient_refinement: bool = DEFAULT_ENABLE_TRANSIENT_REFINEMENT
 
     def validate(self, numerics: NumericsConfig) -> None:
         """Validate runtime controls against solver numerics.
@@ -94,3 +101,33 @@ class SimulationConfig:
         """
         self.numerics.validate()
         self.runtime.validate(self.numerics)
+
+
+def build_simulation_config(
+    max_speed_mps: float = DEFAULT_MAX_SPEED_MPS,
+    numerics: NumericsConfig | None = None,
+    enable_transient_refinement: bool = DEFAULT_ENABLE_TRANSIENT_REFINEMENT,
+) -> SimulationConfig:
+    """Build a validated simulation config with sensible numerical defaults.
+
+    Args:
+        max_speed_mps: Runtime speed cap for the quasi-steady profile solver.
+        numerics: Optional numerical settings. Defaults to :class:`NumericsConfig`.
+        enable_transient_refinement: Flag for optional transient post-processing.
+
+    Returns:
+        Fully validated simulation configuration.
+
+    Raises:
+        lap_time_sim.utils.exceptions.ConfigurationError: If assembled runtime or
+            numerical settings are inconsistent.
+    """
+    config = SimulationConfig(
+        runtime=RuntimeConfig(
+            max_speed_mps=max_speed_mps,
+            enable_transient_refinement=enable_transient_refinement,
+        ),
+        numerics=numerics or NumericsConfig(),
+    )
+    config.validate()
+    return config

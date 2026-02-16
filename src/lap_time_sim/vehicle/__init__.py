@@ -13,7 +13,12 @@ from lap_time_sim.vehicle.bicycle_dynamics import (
 from lap_time_sim.vehicle.params import VehicleParameters, default_vehicle_parameters
 
 if TYPE_CHECKING:
-    from lap_time_sim.vehicle.bicycle_model import BicycleModel, BicycleNumerics, BicyclePhysics
+    from lap_time_sim.vehicle.bicycle_model import (
+        BicycleModel,
+        BicycleNumerics,
+        BicyclePhysics,
+        build_bicycle_model,
+    )
 
 __all__ = [
     "BicycleDynamicsModel",
@@ -24,6 +29,7 @@ __all__ = [
     "ForceBalance",
     "VehicleParameters",
     "VehicleState",
+    "build_bicycle_model",
     "default_vehicle_parameters",
 ]
 
@@ -52,5 +58,9 @@ def __getattr__(name: str) -> Any:
         from lap_time_sim.vehicle.bicycle_model import BicycleNumerics
 
         return BicycleNumerics
+    if name == "build_bicycle_model":
+        from lap_time_sim.vehicle.bicycle_model import build_bicycle_model
+
+        return build_bicycle_model
     msg = f"module {__name__!r} has no attribute {name!r}"
     raise AttributeError(msg)

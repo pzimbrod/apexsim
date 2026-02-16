@@ -12,6 +12,7 @@ from lap_time_sim.vehicle import (
     BicycleModel,
     BicycleNumerics,
     BicyclePhysics,
+    build_bicycle_model,
 )
 from lap_time_sim.vehicle.params import default_vehicle_parameters
 
@@ -122,6 +123,19 @@ class BicycleModelTests(unittest.TestCase):
         """Return zero longitudinal capacity when lateral limit is degenerate."""
         model = _build_bicycle_model()
         self.assertEqual(model._friction_circle_scale(ay_required_mps2=5.0, ay_limit_mps2=0.0), 0.0)
+
+    def test_build_bicycle_model_uses_default_numerics(self) -> None:
+        """Build a model with default numerical controls when omitted."""
+        model = build_bicycle_model(
+            vehicle=default_vehicle_parameters(),
+            tires=default_axle_tire_parameters(),
+            physics=BicyclePhysics(
+                max_drive_accel_mps2=8.0,
+                max_brake_accel_mps2=16.0,
+                peak_slip_angle_rad=0.12,
+            ),
+        )
+        self.assertEqual(model.numerics, BicycleNumerics())
 
 
 if __name__ == "__main__":

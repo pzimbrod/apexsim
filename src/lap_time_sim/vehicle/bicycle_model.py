@@ -16,6 +16,10 @@ from lap_time_sim.vehicle.bicycle_dynamics import BicycleDynamicsModel, ControlI
 from lap_time_sim.vehicle.load_transfer import estimate_normal_loads
 from lap_time_sim.vehicle.params import VehicleParameters
 
+DEFAULT_MIN_LATERAL_ACCEL_LIMIT_MPS2 = 0.5
+DEFAULT_LATERAL_LIMIT_MAX_ITERATIONS = 12
+DEFAULT_LATERAL_LIMIT_CONVERGENCE_TOL_MPS2 = 0.05
+
 
 @dataclass(frozen=True)
 class BicyclePhysics:
@@ -65,9 +69,9 @@ class BicycleNumerics:
             acceleration fixed-point updates.
     """
 
-    min_lateral_accel_limit_mps2: float
-    lateral_limit_max_iterations: int
-    lateral_limit_convergence_tol_mps2: float
+    min_lateral_accel_limit_mps2: float = DEFAULT_MIN_LATERAL_ACCEL_LIMIT_MPS2
+    lateral_limit_max_iterations: int = DEFAULT_LATERAL_LIMIT_MAX_ITERATIONS
+    lateral_limit_convergence_tol_mps2: float = DEFAULT_LATERAL_LIMIT_CONVERGENCE_TOL_MPS2
 
     def validate(self) -> None:
         """Validate numerical settings for the adapter.
@@ -290,3 +294,28 @@ class BicycleModel:
             rear_axle_load_n=loads.rear_axle_n,
             power_w=power_w,
         )
+
+
+def build_bicycle_model(
+    vehicle: VehicleParameters,
+    tires: AxleTireParameters,
+    physics: BicyclePhysics,
+    numerics: BicycleNumerics | None = None,
+) -> BicycleModel:
+    """Build a bicycle solver model with sensible numerical defaults.
+
+    Args:
+        vehicle: Vehicle parameterization for dynamics and aero.
+        tires: Front/rear Pacejka tire coefficients.
+        physics: Physical model inputs for longitudinal and lateral limits.
+        numerics: Optional numerical controls. Defaults to :class:`BicycleNumerics`.
+
+    Returns:
+        Fully validated solver-facing bicycle model.
+    """
+    return BicycleModel(
+        vehicle=vehicle,
+        tires=tires,
+        physics=physics,
+        numerics=numerics or BicycleNumerics(),
+    )
