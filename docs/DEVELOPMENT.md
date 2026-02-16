@@ -27,6 +27,10 @@ PYTHONPATH=src python -m coverage run -m unittest discover -s tests
 python -m coverage report -m
 ```
 
+Coverage policy:
+
+- Keep overall coverage at or above `95%`.
+
 If `pytest` is available:
 
 ```bash
@@ -63,6 +67,23 @@ def lateral_speed_limit(curvature_1pm: float, ay_limit_mps2: float, vmax_mps: fl
         Maximum feasible speed in m/s under curvature and lateral limits.
     """
 ```
+
+## Parameter Layering
+
+Keep parameter domains separate:
+
+- Physical model inputs:
+  - `VehicleParameters`
+  - `PacejkaParameters` / `AxleTireParameters`
+  - `BicycleLapTimeModelPhysics`
+- Numerical/discretization controls:
+  - `SimulationNumerics`
+  - `BicycleLapTimeModelNumerics`
+- Simulation runtime controls (non-physical scenario bounds):
+  - `SimulationRuntime`
+
+Avoid mixing fixed-point tolerances, iteration limits, and numerical floors into
+physical parameter dataclasses.
 
 ## Refreshing Spa Data
 

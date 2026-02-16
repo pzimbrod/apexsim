@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import unittest
 
+import numpy as np
+
 from lap_time_sim.tire.models import PacejkaParameters, default_axle_tire_parameters
 from lap_time_sim.tire.pacejka import axle_lateral_forces, magic_formula_lateral
+from lap_time_sim.utils.exceptions import ConfigurationError
 
 
 class TireModelTests(unittest.TestCase):
@@ -38,6 +41,23 @@ class TireModelTests(unittest.TestCase):
         fy_front, fy_rear = axle_lateral_forces(0.09, 0.08, 8000.0, 8500.0, tires)
         self.assertGreater(fy_front, 0.0)
         self.assertGreater(fy_rear, 0.0)
+
+    def test_magic_formula_supports_vectorized_inputs(self) -> None:
+        """Return array output when slip angle and load inputs are arrays."""
+        params = PacejkaParameters(B=10.0, C=1.3, D=1.8, E=0.97)
+        slip = np.array([0.0, 0.05, -0.05], dtype=float)
+        load = np.array([3000.0, 3200.0, 2800.0], dtype=float)
+        output = magic_formula_lateral(slip, load, params)
+        self.assertIsInstance(output, np.ndarray)
+        self.assertEqual(output.shape, slip.shape)
+
+    def test_axle_validation_rejects_invalid_rear_parameters(self) -> None:
+        """Raise when rear axle tire parameters are invalid."""
+        tires = default_axle_tire_parameters()
+        bad_rear = PacejkaParameters(B=0.0, C=tires.rear.C, D=tires.rear.D, E=tires.rear.E)
+        with self.assertRaises(ConfigurationError):
+            bad_axle_params = type(tires)(tires.front, bad_rear)
+            axle_lateral_forces(0.05, 0.05, 7000.0, 7000.0, axle_params=bad_axle_params)
 
 
 if __name__ == "__main__":

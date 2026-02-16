@@ -25,6 +25,8 @@ class ParameterValidationTests(unittest.TestCase):
             PacejkaParameters(B=9.0, C=1.2, D=0.0, E=0.9).validate()
         with self.assertRaises(ConfigurationError):
             PacejkaParameters(B=9.0, C=1.2, D=1.5, E=0.9, fz_reference_n=0.0).validate()
+        with self.assertRaises(ConfigurationError):
+            PacejkaParameters(B=9.0, C=1.2, D=1.5, E=0.9, min_mu_scale=0.0).validate()
 
     def test_vehicle_validation_rejects_invalid_values(self) -> None:
         """Raise configuration errors for invalid vehicle parameters."""
@@ -51,11 +53,19 @@ class ParameterValidationTests(unittest.TestCase):
         with self.assertRaises(ConfigurationError):
             VehicleParameters(**{**base, "mass_kg": 0.0}).validate()
         with self.assertRaises(ConfigurationError):
+            VehicleParameters(**{**base, "yaw_inertia_kgm2": 0.0}).validate()
+        with self.assertRaises(ConfigurationError):
             VehicleParameters(**{**base, "wheelbase_m": 0.0}).validate()
+        with self.assertRaises(ConfigurationError):
+            VehicleParameters(**{**base, "track_front_m": 0.0}).validate()
         with self.assertRaises(ConfigurationError):
             VehicleParameters(**{**base, "static_front_weight_fraction": 0.99}).validate()
         with self.assertRaises(ConfigurationError):
+            VehicleParameters(**{**base, "frontal_area_m2": 0.0}).validate()
+        with self.assertRaises(ConfigurationError):
             VehicleParameters(**{**base, "arb_distribution_front": 1.5}).validate()
+        with self.assertRaises(ConfigurationError):
+            VehicleParameters(**{**base, "air_density_kgpm3": 0.0}).validate()
 
     def test_track_data_validation_rejects_inconsistent_arrays(self) -> None:
         """Raise track-data errors for mismatched array lengths."""
@@ -66,6 +76,48 @@ class ParameterValidationTests(unittest.TestCase):
                 elevation_m=np.array([0.0, 0.0, 0.0]),
                 banking_rad=np.array([0.0, 0.0, 0.0, 0.0]),
                 s_m=np.array([0.0, 1.0, 2.0, 3.0]),
+                heading_rad=np.array([0.0, 0.0, 0.0, 0.0]),
+                curvature_1pm=np.array([0.0, 0.0, 0.0, 0.0]),
+                grade=np.array([0.0, 0.0, 0.0, 0.0]),
+            ).validate()
+
+    def test_track_data_validation_rejects_too_few_points(self) -> None:
+        """Raise track-data errors for fewer than four points."""
+        with self.assertRaises(TrackDataError):
+            TrackData(
+                x_m=np.array([0.0, 1.0, 2.0]),
+                y_m=np.array([0.0, 0.0, 0.0]),
+                elevation_m=np.array([0.0, 0.0, 0.0]),
+                banking_rad=np.array([0.0, 0.0, 0.0]),
+                s_m=np.array([0.0, 1.0, 2.0]),
+                heading_rad=np.array([0.0, 0.0, 0.0]),
+                curvature_1pm=np.array([0.0, 0.0, 0.0]),
+                grade=np.array([0.0, 0.0, 0.0]),
+            ).validate()
+
+    def test_track_data_validation_rejects_nonfinite_arc_length(self) -> None:
+        """Raise track-data errors for non-finite arc-length entries."""
+        with self.assertRaises(TrackDataError):
+            TrackData(
+                x_m=np.array([0.0, 1.0, 2.0, 3.0]),
+                y_m=np.array([0.0, 0.0, 0.0, 0.0]),
+                elevation_m=np.array([0.0, 0.0, 0.0, 0.0]),
+                banking_rad=np.array([0.0, 0.0, 0.0, 0.0]),
+                s_m=np.array([0.0, np.inf, 2.0, 3.0]),
+                heading_rad=np.array([0.0, 0.0, 0.0, 0.0]),
+                curvature_1pm=np.array([0.0, 0.0, 0.0, 0.0]),
+                grade=np.array([0.0, 0.0, 0.0, 0.0]),
+            ).validate()
+
+    def test_track_data_validation_rejects_nonmonotonic_arc_length(self) -> None:
+        """Raise track-data errors for non-monotonic arc-length arrays."""
+        with self.assertRaises(TrackDataError):
+            TrackData(
+                x_m=np.array([0.0, 1.0, 2.0, 3.0]),
+                y_m=np.array([0.0, 0.0, 0.0, 0.0]),
+                elevation_m=np.array([0.0, 0.0, 0.0, 0.0]),
+                banking_rad=np.array([0.0, 0.0, 0.0, 0.0]),
+                s_m=np.array([0.0, 1.0, 1.0, 3.0]),
                 heading_rad=np.array([0.0, 0.0, 0.0, 0.0]),
                 curvature_1pm=np.array([0.0, 0.0, 0.0, 0.0]),
                 grade=np.array([0.0, 0.0, 0.0, 0.0]),

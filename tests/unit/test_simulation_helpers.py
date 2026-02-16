@@ -6,7 +6,7 @@ import unittest
 
 import numpy as np
 
-from lap_time_sim.simulation.config import SimulationConfig
+from lap_time_sim.simulation.config import SimulationConfig, SimulationNumerics, SimulationRuntime
 from lap_time_sim.simulation.integrator import rk4_step
 from lap_time_sim.utils.exceptions import ConfigurationError
 
@@ -29,15 +29,20 @@ class SimulationHelpersTests(unittest.TestCase):
     def test_simulation_config_validation_raises_for_invalid_values(self) -> None:
         """Raise configuration errors for invalid simulation settings."""
         with self.assertRaises(ConfigurationError):
-            SimulationConfig(min_speed_mps=0.0).validate()
+            SimulationConfig(numerics=SimulationNumerics(min_speed_mps=0.0)).validate()
         with self.assertRaises(ConfigurationError):
-            SimulationConfig(min_speed_mps=20.0, max_speed_mps=10.0).validate()
+            SimulationConfig(
+                runtime=SimulationRuntime(max_speed_mps=10.0),
+                numerics=SimulationNumerics(min_speed_mps=20.0),
+            ).validate()
         with self.assertRaises(ConfigurationError):
-            SimulationConfig(transient_dt_s=0.0).validate()
+            SimulationConfig(numerics=SimulationNumerics(transient_dt_s=0.0)).validate()
         with self.assertRaises(ConfigurationError):
-            SimulationConfig(lateral_envelope_max_iterations=0).validate()
+            SimulationConfig(numerics=SimulationNumerics(lateral_envelope_max_iterations=0)).validate()
         with self.assertRaises(ConfigurationError):
-            SimulationConfig(lateral_envelope_convergence_tol_mps=0.0).validate()
+            SimulationConfig(
+                numerics=SimulationNumerics(lateral_envelope_convergence_tol_mps=0.0)
+            ).validate()
 
 
 if __name__ == "__main__":

@@ -73,6 +73,14 @@ class VehicleDynamicsTests(unittest.TestCase):
         self.assertGreater(loads.rear_left_n, 0.0)
         self.assertGreater(loads.rear_right_n, 0.0)
 
+    def test_state_array_roundtrip_and_speed_sanitization(self) -> None:
+        """Round-trip state conversion helpers and sanitize very low speeds."""
+        state = VehicleState(vx_mps=15.0, vy_mps=-0.4, yaw_rate_rps=0.2)
+        values = BicycleModel.to_array(state)
+        restored = BicycleModel.from_array(values)
+        self.assertEqual(restored, state)
+        self.assertGreater(BicycleModel.sanitize_speed(0.0), 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()
