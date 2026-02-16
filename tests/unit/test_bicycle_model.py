@@ -14,7 +14,7 @@ from lap_time_sim.vehicle import (
     BicyclePhysics,
     build_bicycle_model,
 )
-from lap_time_sim.vehicle.params import default_vehicle_parameters
+from tests.helpers import sample_vehicle_parameters
 
 
 def _build_bicycle_model() -> BicycleModel:
@@ -25,7 +25,7 @@ def _build_bicycle_model() -> BicycleModel:
         settings.
     """
     return BicycleModel(
-        vehicle=default_vehicle_parameters(),
+        vehicle=sample_vehicle_parameters(),
         tires=default_axle_tire_parameters(),
         physics=BicyclePhysics(
             max_drive_accel_mps2=8.0,
@@ -127,7 +127,7 @@ class BicycleModelTests(unittest.TestCase):
     def test_build_bicycle_model_uses_default_numerics(self) -> None:
         """Build a model with default numerical controls when omitted."""
         model = build_bicycle_model(
-            vehicle=default_vehicle_parameters(),
+            vehicle=sample_vehicle_parameters(),
             tires=default_axle_tire_parameters(),
             physics=BicyclePhysics(
                 max_drive_accel_mps2=8.0,

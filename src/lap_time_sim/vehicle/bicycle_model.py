@@ -34,9 +34,9 @@ class BicyclePhysics:
             lateral force capability in the envelope iteration.
     """
 
-    max_drive_accel_mps2: float
-    max_brake_accel_mps2: float
-    peak_slip_angle_rad: float
+    max_drive_accel_mps2: float = 8.0
+    max_brake_accel_mps2: float = 16.0
+    peak_slip_angle_rad: float = 0.12
 
     def validate(self) -> None:
         """Validate physical adapter parameters.
@@ -299,7 +299,7 @@ class BicycleModel:
 def build_bicycle_model(
     vehicle: VehicleParameters,
     tires: AxleTireParameters,
-    physics: BicyclePhysics,
+    physics: BicyclePhysics | None = None,
     numerics: BicycleNumerics | None = None,
 ) -> BicycleModel:
     """Build a bicycle solver model with sensible numerical defaults.
@@ -307,7 +307,8 @@ def build_bicycle_model(
     Args:
         vehicle: Vehicle parameterization for dynamics and aero.
         tires: Front/rear Pacejka tire coefficients.
-        physics: Physical model inputs for longitudinal and lateral limits.
+        physics: Optional physical model inputs for longitudinal and lateral
+            limits. Defaults to :class:`BicyclePhysics`.
         numerics: Optional numerical controls. Defaults to :class:`BicycleNumerics`.
 
     Returns:
@@ -316,6 +317,6 @@ def build_bicycle_model(
     return BicycleModel(
         vehicle=vehicle,
         tires=tires,
-        physics=physics,
+        physics=physics or BicyclePhysics(),
         numerics=numerics or BicycleNumerics(),
     )

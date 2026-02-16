@@ -7,13 +7,13 @@
 
 ## Vehicle and Tires
 
-- `lap_time_sim.vehicle.default_vehicle_parameters() -> VehicleParameters`
 - `lap_time_sim.tire.default_axle_tire_parameters() -> AxleTireParameters`
+- `lap_time_sim.vehicle.VehicleParameters` (provide explicit vehicle data)
 - `lap_time_sim.vehicle.BicycleModel(vehicle, tires, physics, numerics)`
-- `lap_time_sim.vehicle.BicyclePhysics`
+- `lap_time_sim.vehicle.BicyclePhysics` (sensible defaults included)
 - `lap_time_sim.vehicle.BicycleNumerics` (sensible numerical defaults included)
 - `lap_time_sim.vehicle.BicycleDynamicsModel` (state-space 3-DOF backend)
-- `lap_time_sim.vehicle.build_bicycle_model(vehicle, tires, physics, numerics=None)`
+- `lap_time_sim.vehicle.build_bicycle_model(vehicle, tires, physics=None, numerics=None)`
 
 ## Simulation
 
@@ -21,7 +21,7 @@
 - `lap_time_sim.simulation.RuntimeConfig`
 - `lap_time_sim.simulation.NumericsConfig` (sensible numerical defaults included)
 - `lap_time_sim.simulation.simulate_lap(track, model, config) -> LapSimulationResult`
-- `lap_time_sim.simulation.build_simulation_config(max_speed_mps, numerics=None, enable_transient_refinement=False)`
+- `lap_time_sim.simulation.build_simulation_config(max_speed_mps=115.0, numerics=None, enable_transient_refinement=False)`
 
 Relevant `SimulationConfig` knobs:
 - `runtime.max_speed_mps`

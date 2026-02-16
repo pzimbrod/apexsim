@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from lap_time_sim.utils.constants import AIR_DENSITY_KGPM3
 from lap_time_sim.utils.exceptions import ConfigurationError
 
 MIN_STATIC_FRONT_WEIGHT_FRACTION = 0.05
@@ -90,31 +89,3 @@ class VehicleParameters:
         if self.air_density_kgpm3 <= 0.0:
             msg = "air_density_kgpm3 must be positive"
             raise ConfigurationError(msg)
-
-
-def default_vehicle_parameters() -> VehicleParameters:
-    """Return a representative high-downforce single-seater setup.
-
-    Returns:
-        Baseline vehicle parameter set for examples and tests.
-    """
-    return VehicleParameters(
-        mass_kg=798.0,
-        yaw_inertia_kgm2=1120.0,
-        h_cg_m=0.31,
-        wheelbase_m=3.60,
-        track_front_m=1.60,
-        track_rear_m=1.55,
-        static_front_weight_fraction=0.46,
-        cop_position_m=0.10,
-        c_l=3.20,
-        c_d=0.90,
-        frontal_area_m2=1.50,
-        roll_rate_nm_per_deg=4200.0,
-        spring_rate_front_npm=180000.0,
-        spring_rate_rear_npm=165000.0,
-        arb_distribution_front=0.55,
-        ride_height_front_m=0.030,
-        ride_height_rear_m=0.050,
-        air_density_kgpm3=AIR_DENSITY_KGPM3,
-    )

@@ -10,7 +10,7 @@ from lap_time_sim.simulation.profile import solve_speed_profile
 from lap_time_sim.tire.models import default_axle_tire_parameters
 from lap_time_sim.track.io import load_track_csv
 from lap_time_sim.vehicle import BicycleModel, BicycleNumerics, BicyclePhysics
-from lap_time_sim.vehicle.params import default_vehicle_parameters
+from tests.helpers import sample_vehicle_parameters
 
 
 class SpeedProfileConvergenceTests(unittest.TestCase):
@@ -22,7 +22,7 @@ class SpeedProfileConvergenceTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[2]
         cls.track = load_track_csv(root / "data" / "spa_francorchamps.csv")
         cls.model = BicycleModel(
-            vehicle=default_vehicle_parameters(),
+            vehicle=sample_vehicle_parameters(),
             tires=default_axle_tire_parameters(),
             physics=BicyclePhysics(
                 max_drive_accel_mps2=8.0,

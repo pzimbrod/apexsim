@@ -10,7 +10,7 @@ from lap_time_sim.vehicle.bicycle_dynamics import (
     ForceBalance,
     VehicleState,
 )
-from lap_time_sim.vehicle.params import VehicleParameters, default_vehicle_parameters
+from lap_time_sim.vehicle.params import VehicleParameters
 
 if TYPE_CHECKING:
     from lap_time_sim.vehicle.bicycle_model import (
@@ -30,7 +30,6 @@ __all__ = [
     "VehicleParameters",
     "VehicleState",
     "build_bicycle_model",
-    "default_vehicle_parameters",
 ]
 
 
