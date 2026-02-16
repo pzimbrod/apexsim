@@ -43,7 +43,7 @@ with clipping to $[v_{\min}, v_{\max}]$.
 
 ### 2.1 Lateral Acceleration Capacity
 
-`lateral_accel_limit(...)` solves a fixed-point problem because tire force capacity depends
+`BicycleLapTimeModel.lateral_accel_limit(...)` solves a fixed-point problem because tire force capacity depends
 on normal load, and normal load depends on lateral acceleration through load transfer.
 
 For fixed speed $v$:
@@ -138,7 +138,7 @@ $$
 ## 7. Numerical Convergence Controls
 
 Lateral envelope convergence in `solve_speed_profile(...)` is configurable via
-`SimulationConfig`:
+`SimulationConfig.numerics`:
 
 - `lateral_envelope_max_iterations`
 - `lateral_envelope_convergence_tol_mps`
@@ -181,7 +181,7 @@ for lap-time studies.
 - Segment time model $\Delta t_i = \Delta s_i / \bar v_i$:
   - `src/lap_time_sim/simulation/profile.py` (`_segment_dt`)
 - Lateral limit fixed-point update:
-  - `src/lap_time_sim/simulation/envelope.py` (`lateral_accel_limit`)
+  - `src/lap_time_sim/vehicle/bicycle_lap_time_model.py` (`lateral_accel_limit`)
 - Lateral envelope fixed-point convergence in speed domain:
   - `src/lap_time_sim/simulation/profile.py` (`for iteration_idx ...`, `max_delta_mps ...`)
 - Vehicle-model API contract consumed by the solver:

@@ -6,9 +6,9 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from lap_time_sim.simulation.envelope import lateral_accel_limit as bicycle_lateral_accel_limit
 from lap_time_sim.simulation.model_api import VehicleModelDiagnostics
 from lap_time_sim.tire.models import AxleTireParameters
+from lap_time_sim.tire.pacejka import magic_formula_lateral
 from lap_time_sim.utils.constants import GRAVITY_MPS2, SMALL_EPS
 from lap_time_sim.utils.exceptions import ConfigurationError
 from lap_time_sim.vehicle.aero import aero_forces
@@ -18,14 +18,24 @@ from lap_time_sim.vehicle.params import VehicleParameters
 
 
 @dataclass(frozen=True)
-class BicycleLapTimeModelConfig:
-    """Longitudinal performance limits for the bicycle lap-time adapter."""
+class BicycleLapTimeModelPhysics:
+    """Physical and model-level inputs for the bicycle lap-time adapter.
+
+    Attributes:
+        max_drive_accel_mps2: Maximum forward tire acceleration on flat road and
+            zero lateral demand, excluding drag and grade.
+        max_brake_accel_mps2: Maximum braking deceleration magnitude on flat road
+            and zero lateral demand, excluding drag and grade.
+        peak_slip_angle_rad: Quasi-steady peak slip angle used to evaluate tire
+            lateral force capability in the envelope iteration.
+    """
 
     max_drive_accel_mps2: float = 8.0
     max_brake_accel_mps2: float = 16.0
+    peak_slip_angle_rad: float = 0.12
 
     def validate(self) -> None:
-        """Validate longitudinal envelope limits.
+        """Validate physical adapter parameters.
 
         Raises:
             lap_time_sim.utils.exceptions.ConfigurationError: If limits are not
@@ -37,6 +47,44 @@ class BicycleLapTimeModelConfig:
         if self.max_brake_accel_mps2 <= 0.0:
             msg = "max_brake_accel_mps2 must be positive"
             raise ConfigurationError(msg)
+        if self.peak_slip_angle_rad <= 0.0:
+            msg = "peak_slip_angle_rad must be positive"
+            raise ConfigurationError(msg)
+
+
+@dataclass(frozen=True)
+class BicycleLapTimeModelNumerics:
+    """Numerical controls for the bicycle lap-time adapter.
+
+    Attributes:
+        min_lateral_accel_limit_mps2: Lower bound for lateral-acceleration
+            iteration to avoid degenerate starts.
+        lateral_limit_max_iterations: Maximum fixed-point iterations for lateral
+            acceleration limit estimation.
+        lateral_limit_convergence_tol_mps2: Convergence threshold for lateral
+            acceleration fixed-point updates.
+    """
+
+    min_lateral_accel_limit_mps2: float = 0.5
+    lateral_limit_max_iterations: int = 12
+    lateral_limit_convergence_tol_mps2: float = 0.05
+
+    def validate(self) -> None:
+        """Validate numerical settings for the adapter.
+
+        Raises:
+            lap_time_sim.utils.exceptions.ConfigurationError: If numerical values
+                violate bounds needed for robust convergence.
+        """
+        if self.min_lateral_accel_limit_mps2 <= 0.0:
+            msg = "min_lateral_accel_limit_mps2 must be positive"
+            raise ConfigurationError(msg)
+        if self.lateral_limit_max_iterations < 1:
+            msg = "lateral_limit_max_iterations must be at least 1"
+            raise ConfigurationError(msg)
+        if self.lateral_limit_convergence_tol_mps2 <= 0.0:
+            msg = "lateral_limit_convergence_tol_mps2 must be positive"
+            raise ConfigurationError(msg)
 
 
 class BicycleLapTimeModel:
@@ -46,14 +94,16 @@ class BicycleLapTimeModel:
         self,
         vehicle: VehicleParameters,
         tires: AxleTireParameters,
-        config: BicycleLapTimeModelConfig | None = None,
+        physics: BicycleLapTimeModelPhysics | None = None,
+        numerics: BicycleLapTimeModelNumerics | None = None,
     ) -> None:
         """Initialize bicycle-backed solver adapter.
 
         Args:
             vehicle: Vehicle parameterization for dynamics and aero.
             tires: Front/rear Pacejka tire coefficients.
-            config: Optional adapter-specific longitudinal limits.
+            physics: Optional physical model inputs for the adapter.
+            numerics: Optional numerical controls for iterative envelope solving.
 
         Raises:
             lap_time_sim.utils.exceptions.ConfigurationError: If any provided
@@ -61,7 +111,8 @@ class BicycleLapTimeModel:
         """
         self.vehicle = vehicle
         self.tires = tires
-        self.config = config or BicycleLapTimeModelConfig()
+        self.physics = physics or BicycleLapTimeModelPhysics()
+        self.numerics = numerics or BicycleLapTimeModelNumerics()
         self._bicycle_model = BicycleModel(vehicle, tires)
         self.validate()
 
@@ -74,7 +125,8 @@ class BicycleLapTimeModel:
         """
         self.vehicle.validate()
         self.tires.validate()
-        self.config.validate()
+        self.physics.validate()
+        self.numerics.validate()
 
     def lateral_accel_limit(self, speed_mps: float, banking_rad: float) -> float:
         """Estimate lateral acceleration capacity for the operating point.
@@ -86,12 +138,45 @@ class BicycleLapTimeModel:
         Returns:
             Quasi-steady lateral acceleration limit in m/s^2.
         """
-        return bicycle_lateral_accel_limit(
-            vehicle=self.vehicle,
-            tires=self.tires,
-            speed_mps=speed_mps,
-            banking_rad=banking_rad,
-        )
+        ay_banking = GRAVITY_MPS2 * float(np.sin(banking_rad))
+        ay_estimate = self.numerics.min_lateral_accel_limit_mps2
+
+        for _ in range(self.numerics.lateral_limit_max_iterations):
+            loads = estimate_normal_loads(
+                self.vehicle,
+                speed_mps=speed_mps,
+                longitudinal_accel_mps2=0.0,
+                lateral_accel_mps2=ay_estimate,
+            )
+            fz_front_tire = max(loads.front_axle_n / 2.0, SMALL_EPS)
+            fz_rear_tire = max(loads.rear_axle_n / 2.0, SMALL_EPS)
+
+            fy_front = 2.0 * float(
+                magic_formula_lateral(
+                    self.physics.peak_slip_angle_rad,
+                    fz_front_tire,
+                    self.tires.front,
+                )
+            )
+            fy_rear = 2.0 * float(
+                magic_formula_lateral(
+                    self.physics.peak_slip_angle_rad,
+                    fz_rear_tire,
+                    self.tires.rear,
+                )
+            )
+            ay_tire = (fy_front + fy_rear) / self.vehicle.mass_kg
+            ay_next = max(self.numerics.min_lateral_accel_limit_mps2, ay_tire + ay_banking)
+
+            if (
+                abs(ay_next - ay_estimate)
+                <= self.numerics.lateral_limit_convergence_tol_mps2
+            ):
+                ay_estimate = ay_next
+                break
+            ay_estimate = ay_next
+
+        return float(ay_estimate)
 
     def _friction_circle_scale(self, ay_required_mps2: float, ay_limit_mps2: float) -> float:
         """Compute remaining longitudinal utilization from friction-circle usage.
@@ -129,7 +214,7 @@ class BicycleLapTimeModel:
         ay_limit = self.lateral_accel_limit(speed_mps, banking_rad)
         circle_scale = self._friction_circle_scale(ay_required_mps2, ay_limit)
 
-        tire_accel = self.config.max_drive_accel_mps2 * circle_scale
+        tire_accel = self.physics.max_drive_accel_mps2 * circle_scale
         drag_accel = aero_forces(self.vehicle, speed_mps).drag_n / self.vehicle.mass_kg
         grade_accel = GRAVITY_MPS2 * grade
         return float(tire_accel - drag_accel - grade_accel)
@@ -155,7 +240,7 @@ class BicycleLapTimeModel:
         ay_limit = self.lateral_accel_limit(speed_mps, banking_rad)
         circle_scale = self._friction_circle_scale(ay_required_mps2, ay_limit)
 
-        tire_brake = self.config.max_brake_accel_mps2 * circle_scale
+        tire_brake = self.physics.max_brake_accel_mps2 * circle_scale
         drag_accel = aero_forces(self.vehicle, speed_mps).drag_n / self.vehicle.mass_kg
         grade_accel = GRAVITY_MPS2 * grade
         return float(max(tire_brake + drag_accel + grade_accel, 0.0))

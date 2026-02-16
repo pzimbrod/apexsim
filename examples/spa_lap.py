@@ -7,11 +7,21 @@ from pathlib import Path
 
 from lap_time_sim.analysis import compute_kpis, export_standard_plots
 from lap_time_sim.analysis.export import export_kpi_json
-from lap_time_sim.simulation import SimulationConfig, simulate_lap
+from lap_time_sim.simulation import (
+    SimulationConfig,
+    SimulationNumerics,
+    SimulationRuntime,
+    simulate_lap,
+)
 from lap_time_sim.tire import default_axle_tire_parameters
 from lap_time_sim.track import load_track_csv
 from lap_time_sim.utils import configure_logging
-from lap_time_sim.vehicle import BicycleLapTimeModel, default_vehicle_parameters
+from lap_time_sim.vehicle import (
+    BicycleLapTimeModel,
+    BicycleLapTimeModelNumerics,
+    BicycleLapTimeModelPhysics,
+    default_vehicle_parameters,
+)
 
 
 def main() -> None:
@@ -24,8 +34,16 @@ def main() -> None:
 
     vehicle = default_vehicle_parameters()
     tires = default_axle_tire_parameters()
-    model = BicycleLapTimeModel(vehicle=vehicle, tires=tires)
-    config = SimulationConfig()
+    model = BicycleLapTimeModel(
+        vehicle=vehicle,
+        tires=tires,
+        physics=BicycleLapTimeModelPhysics(),
+        numerics=BicycleLapTimeModelNumerics(),
+    )
+    config = SimulationConfig(
+        runtime=SimulationRuntime(),
+        numerics=SimulationNumerics(),
+    )
 
     result = simulate_lap(track=track, model=model, config=config)
     kpis = compute_kpis(result)

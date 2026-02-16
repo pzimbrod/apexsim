@@ -10,14 +10,16 @@ from lap_time_sim.vehicle.params import VehicleParameters, default_vehicle_param
 if TYPE_CHECKING:
     from lap_time_sim.vehicle.bicycle_lap_time_model import (
         BicycleLapTimeModel,
-        BicycleLapTimeModelConfig,
+        BicycleLapTimeModelNumerics,
+        BicycleLapTimeModelPhysics,
         build_default_bicycle_lap_time_model,
     )
 
 __all__ = [
     "BicycleModel",
     "BicycleLapTimeModel",
-    "BicycleLapTimeModelConfig",
+    "BicycleLapTimeModelNumerics",
+    "BicycleLapTimeModelPhysics",
     "ControlInput",
     "ForceBalance",
     "VehicleParameters",
@@ -43,10 +45,14 @@ def __getattr__(name: str) -> Any:
         from lap_time_sim.vehicle.bicycle_lap_time_model import BicycleLapTimeModel
 
         return BicycleLapTimeModel
-    if name == "BicycleLapTimeModelConfig":
-        from lap_time_sim.vehicle.bicycle_lap_time_model import BicycleLapTimeModelConfig
+    if name == "BicycleLapTimeModelPhysics":
+        from lap_time_sim.vehicle.bicycle_lap_time_model import BicycleLapTimeModelPhysics
 
-        return BicycleLapTimeModelConfig
+        return BicycleLapTimeModelPhysics
+    if name == "BicycleLapTimeModelNumerics":
+        from lap_time_sim.vehicle.bicycle_lap_time_model import BicycleLapTimeModelNumerics
+
+        return BicycleLapTimeModelNumerics
     if name == "build_default_bicycle_lap_time_model":
         from lap_time_sim.vehicle.bicycle_lap_time_model import build_default_bicycle_lap_time_model
 
