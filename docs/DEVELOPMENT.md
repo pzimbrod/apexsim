@@ -75,12 +75,12 @@ Keep parameter domains separate:
 - Physical model inputs:
   - `VehicleParameters`
   - `PacejkaParameters` / `AxleTireParameters`
-  - `BicycleLapTimeModelPhysics`
+  - `BicyclePhysics`
 - Numerical/discretization controls:
-  - `SimulationNumerics`
-  - `BicycleLapTimeModelNumerics`
+  - `NumericsConfig`
+  - `BicycleNumerics`
 - Simulation runtime controls (non-physical scenario bounds):
-  - `SimulationRuntime`
+  - `RuntimeConfig`
 
 Avoid mixing fixed-point tolerances, iteration limits, and numerical floors into
 physical parameter dataclasses.

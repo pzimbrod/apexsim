@@ -20,9 +20,9 @@ class PacejkaParameters:
     C: float
     D: float
     E: float
-    fz_reference_n: float = 3000.0
-    load_sensitivity: float = -0.08
-    min_mu_scale: float = 0.4
+    fz_reference_n: float
+    load_sensitivity: float
+    min_mu_scale: float
 
     def validate(self) -> None:
         """Validate physical and numerical constraints for coefficients.
@@ -73,6 +73,22 @@ def default_axle_tire_parameters() -> AxleTireParameters:
         Front and rear Pacejka parameter sets tuned for a high-downforce car.
     """
     return AxleTireParameters(
-        front=PacejkaParameters(B=9.5, C=1.35, D=1.85, E=0.97, fz_reference_n=3500.0),
-        rear=PacejkaParameters(B=10.2, C=1.33, D=1.95, E=0.95, fz_reference_n=4200.0),
+        front=PacejkaParameters(
+            B=9.5,
+            C=1.35,
+            D=1.85,
+            E=0.97,
+            fz_reference_n=3500.0,
+            load_sensitivity=-0.08,
+            min_mu_scale=0.4,
+        ),
+        rear=PacejkaParameters(
+            B=10.2,
+            C=1.33,
+            D=1.95,
+            E=0.95,
+            fz_reference_n=4200.0,
+            load_sensitivity=-0.08,
+            min_mu_scale=0.4,
+        ),
     )

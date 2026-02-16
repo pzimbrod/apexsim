@@ -1,4 +1,4 @@
-"""Lap-time vehicle-model adapter based on the 3-DOF bicycle model."""
+"""Solver-facing bicycle vehicle model."""
 
 from __future__ import annotations
 
@@ -12,14 +12,14 @@ from lap_time_sim.tire.pacejka import magic_formula_lateral
 from lap_time_sim.utils.constants import GRAVITY_MPS2, SMALL_EPS
 from lap_time_sim.utils.exceptions import ConfigurationError
 from lap_time_sim.vehicle.aero import aero_forces
-from lap_time_sim.vehicle.bicycle import BicycleModel, ControlInput, VehicleState
+from lap_time_sim.vehicle.bicycle_dynamics import BicycleDynamicsModel, ControlInput, VehicleState
 from lap_time_sim.vehicle.load_transfer import estimate_normal_loads
 from lap_time_sim.vehicle.params import VehicleParameters
 
 
 @dataclass(frozen=True)
-class BicycleLapTimeModelPhysics:
-    """Physical and model-level inputs for the bicycle lap-time adapter.
+class BicyclePhysics:
+    """Physical and model-level inputs for the bicycle solver model.
 
     Attributes:
         max_drive_accel_mps2: Maximum forward tire acceleration on flat road and
@@ -30,9 +30,9 @@ class BicycleLapTimeModelPhysics:
             lateral force capability in the envelope iteration.
     """
 
-    max_drive_accel_mps2: float = 8.0
-    max_brake_accel_mps2: float = 16.0
-    peak_slip_angle_rad: float = 0.12
+    max_drive_accel_mps2: float
+    max_brake_accel_mps2: float
+    peak_slip_angle_rad: float
 
     def validate(self) -> None:
         """Validate physical adapter parameters.
@@ -53,8 +53,8 @@ class BicycleLapTimeModelPhysics:
 
 
 @dataclass(frozen=True)
-class BicycleLapTimeModelNumerics:
-    """Numerical controls for the bicycle lap-time adapter.
+class BicycleNumerics:
+    """Numerical controls for the bicycle solver model.
 
     Attributes:
         min_lateral_accel_limit_mps2: Lower bound for lateral-acceleration
@@ -65,9 +65,9 @@ class BicycleLapTimeModelNumerics:
             acceleration fixed-point updates.
     """
 
-    min_lateral_accel_limit_mps2: float = 0.5
-    lateral_limit_max_iterations: int = 12
-    lateral_limit_convergence_tol_mps2: float = 0.05
+    min_lateral_accel_limit_mps2: float
+    lateral_limit_max_iterations: int
+    lateral_limit_convergence_tol_mps2: float
 
     def validate(self) -> None:
         """Validate numerical settings for the adapter.
@@ -87,23 +87,23 @@ class BicycleLapTimeModelNumerics:
             raise ConfigurationError(msg)
 
 
-class BicycleLapTimeModel:
+class BicycleModel:
     """Vehicle-model API implementation for the bicycle dynamics backend."""
 
     def __init__(
         self,
         vehicle: VehicleParameters,
         tires: AxleTireParameters,
-        physics: BicycleLapTimeModelPhysics | None = None,
-        numerics: BicycleLapTimeModelNumerics | None = None,
+        physics: BicyclePhysics,
+        numerics: BicycleNumerics,
     ) -> None:
         """Initialize bicycle-backed solver adapter.
 
         Args:
             vehicle: Vehicle parameterization for dynamics and aero.
             tires: Front/rear Pacejka tire coefficients.
-            physics: Optional physical model inputs for the adapter.
-            numerics: Optional numerical controls for iterative envelope solving.
+            physics: Physical model inputs for the adapter.
+            numerics: Numerical controls for iterative envelope solving.
 
         Raises:
             lap_time_sim.utils.exceptions.ConfigurationError: If any provided
@@ -111,9 +111,9 @@ class BicycleLapTimeModel:
         """
         self.vehicle = vehicle
         self.tires = tires
-        self.physics = physics or BicycleLapTimeModelPhysics()
-        self.numerics = numerics or BicycleLapTimeModelNumerics()
-        self._bicycle_model = BicycleModel(vehicle, tires)
+        self.physics = physics
+        self.numerics = numerics
+        self._dynamics = BicycleDynamicsModel(vehicle, tires)
         self.validate()
 
     def validate(self) -> None:
@@ -271,7 +271,7 @@ class BicycleLapTimeModel:
             yaw_rate_rps=speed_mps * curvature_1pm,
         )
         control = ControlInput(steer_rad=steer_rad, longitudinal_accel_cmd_mps2=ax_mps2)
-        force_balance = self._bicycle_model.force_balance(state, control)
+        force_balance = self._dynamics.force_balance(state, control)
 
         loads = estimate_normal_loads(
             self.vehicle,
@@ -290,18 +290,3 @@ class BicycleLapTimeModel:
             rear_axle_load_n=loads.rear_axle_n,
             power_w=power_w,
         )
-
-
-def build_default_bicycle_lap_time_model() -> BicycleLapTimeModel:
-    """Create a ready-to-use bicycle lap-time model with default parameters.
-
-    Returns:
-        Fully configured bicycle-model adapter with default vehicle and tire data.
-    """
-    from lap_time_sim.tire.models import default_axle_tire_parameters
-    from lap_time_sim.vehicle.params import default_vehicle_parameters
-
-    return BicycleLapTimeModel(
-        vehicle=default_vehicle_parameters(),
-        tires=default_axle_tire_parameters(),
-    )

@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from lap_time_sim.utils.exceptions import ConfigurationError
 
 
 @dataclass(frozen=True)
-class SimulationNumerics:
+class NumericsConfig:
     """Numerical controls for the lap-time solver.
 
     Attributes:
@@ -20,10 +20,10 @@ class SimulationNumerics:
         transient_dt_s: Integration step for optional transient refinement.
     """
 
-    min_speed_mps: float = 8.0
-    lateral_envelope_max_iterations: int = 20
-    lateral_envelope_convergence_tol_mps: float = 0.1
-    transient_dt_s: float = 0.01
+    min_speed_mps: float
+    lateral_envelope_max_iterations: int
+    lateral_envelope_convergence_tol_mps: float
+    transient_dt_s: float
 
     def validate(self) -> None:
         """Validate numerical solver settings.
@@ -47,7 +47,7 @@ class SimulationNumerics:
 
 
 @dataclass(frozen=True)
-class SimulationRuntime:
+class RuntimeConfig:
     """Runtime controls that define simulation scenario boundaries.
 
     Attributes:
@@ -55,10 +55,10 @@ class SimulationRuntime:
         enable_transient_refinement: Flag for optional second-pass transient solve.
     """
 
-    max_speed_mps: float = 115.0
-    enable_transient_refinement: bool = False
+    max_speed_mps: float
+    enable_transient_refinement: bool
 
-    def validate(self, numerics: SimulationNumerics) -> None:
+    def validate(self, numerics: NumericsConfig) -> None:
         """Validate runtime controls against solver numerics.
 
         Args:
@@ -82,8 +82,8 @@ class SimulationConfig:
         numerics: Discretization and convergence controls for numerical solving.
     """
 
-    runtime: SimulationRuntime = field(default_factory=SimulationRuntime)
-    numerics: SimulationNumerics = field(default_factory=SimulationNumerics)
+    runtime: RuntimeConfig
+    numerics: NumericsConfig
 
     def validate(self) -> None:
         """Validate combined simulation settings.

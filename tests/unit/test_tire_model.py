@@ -14,21 +14,38 @@ from lap_time_sim.utils.exceptions import ConfigurationError
 class TireModelTests(unittest.TestCase):
     """Unit-level tire model checks."""
 
+    _BASE_TIRE_ARGS = dict(
+        B=10.0,
+        C=1.3,
+        D=1.8,
+        E=0.97,
+        fz_reference_n=3000.0,
+        load_sensitivity=-0.08,
+        min_mu_scale=0.4,
+    )
+
     def test_zero_slip_produces_zero_lateral_force(self) -> None:
         """Produce zero lateral force at zero slip angle."""
-        params = PacejkaParameters(B=10.0, C=1.3, D=1.8, E=0.97)
+        params = PacejkaParameters(**self._BASE_TIRE_ARGS)
         self.assertAlmostEqual(magic_formula_lateral(0.0, 3500.0, params), 0.0, places=9)
 
     def test_force_is_odd_function_of_slip(self) -> None:
         """Preserve odd symmetry with respect to slip-angle sign."""
-        params = PacejkaParameters(B=10.0, C=1.3, D=1.8, E=0.97)
+        params = PacejkaParameters(**self._BASE_TIRE_ARGS)
         positive = magic_formula_lateral(0.08, 3500.0, params)
         negative = magic_formula_lateral(-0.08, 3500.0, params)
         self.assertAlmostEqual(positive, -negative, delta=1e-6)
 
     def test_load_sensitivity_reduces_force_per_newton(self) -> None:
         """Reduce force-per-load as normal load increases for negative sensitivity."""
-        params = PacejkaParameters(B=10.0, C=1.3, D=1.9, E=0.96, load_sensitivity=-0.2)
+        params = PacejkaParameters(
+            **{
+                **self._BASE_TIRE_ARGS,
+                "D": 1.9,
+                "E": 0.96,
+                "load_sensitivity": -0.2,
+            }
+        )
         low_load_force = magic_formula_lateral(0.10, 2000.0, params)
         high_load_force = magic_formula_lateral(0.10, 6000.0, params)
 
@@ -44,7 +61,7 @@ class TireModelTests(unittest.TestCase):
 
     def test_magic_formula_supports_vectorized_inputs(self) -> None:
         """Return array output when slip angle and load inputs are arrays."""
-        params = PacejkaParameters(B=10.0, C=1.3, D=1.8, E=0.97)
+        params = PacejkaParameters(**self._BASE_TIRE_ARGS)
         slip = np.array([0.0, 0.05, -0.05], dtype=float)
         load = np.array([3000.0, 3200.0, 2800.0], dtype=float)
         output = magic_formula_lateral(slip, load, params)
@@ -54,7 +71,15 @@ class TireModelTests(unittest.TestCase):
     def test_axle_validation_rejects_invalid_rear_parameters(self) -> None:
         """Raise when rear axle tire parameters are invalid."""
         tires = default_axle_tire_parameters()
-        bad_rear = PacejkaParameters(B=0.0, C=tires.rear.C, D=tires.rear.D, E=tires.rear.E)
+        bad_rear = PacejkaParameters(
+            B=0.0,
+            C=tires.rear.C,
+            D=tires.rear.D,
+            E=tires.rear.E,
+            fz_reference_n=tires.rear.fz_reference_n,
+            load_sensitivity=tires.rear.load_sensitivity,
+            min_mu_scale=tires.rear.min_mu_scale,
+        )
         with self.assertRaises(ConfigurationError):
             bad_axle_params = type(tires)(tires.front, bad_rear)
             axle_lateral_forces(0.05, 0.05, 7000.0, 7000.0, axle_params=bad_axle_params)

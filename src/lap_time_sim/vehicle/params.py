@@ -32,7 +32,7 @@ class VehicleParameters:
     arb_distribution_front: float
     ride_height_front_m: float
     ride_height_rear_m: float
-    air_density_kgpm3: float = AIR_DENSITY_KGPM3
+    air_density_kgpm3: float
 
     @property
     def cg_to_rear_axle_m(self) -> float:
@@ -116,4 +116,5 @@ def default_vehicle_parameters() -> VehicleParameters:
         arb_distribution_front=0.55,
         ride_height_front_m=0.030,
         ride_height_rear_m=0.050,
+        air_density_kgpm3=AIR_DENSITY_KGPM3,
     )

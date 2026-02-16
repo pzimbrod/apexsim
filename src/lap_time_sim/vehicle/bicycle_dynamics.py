@@ -44,8 +44,8 @@ class ForceBalance:
     yaw_moment_nm: float
 
 
-class BicycleModel:
-    """3-DOF bicycle model using lateral Pacejka tire forces."""
+class BicycleDynamicsModel:
+    """3-DOF bicycle dynamics model using lateral Pacejka tire forces."""
 
     def __init__(self, vehicle: VehicleParameters, tires: AxleTireParameters) -> None:
         """Initialize the bicycle model with validated parameters.

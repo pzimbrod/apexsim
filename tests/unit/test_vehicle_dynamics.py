@@ -7,7 +7,7 @@ import unittest
 from lap_time_sim.tire import default_axle_tire_parameters
 from lap_time_sim.utils.constants import GRAVITY_MPS2
 from lap_time_sim.vehicle.aero import aero_forces
-from lap_time_sim.vehicle.bicycle import BicycleModel, ControlInput, VehicleState
+from lap_time_sim.vehicle.bicycle_dynamics import BicycleDynamicsModel, ControlInput, VehicleState
 from lap_time_sim.vehicle.load_transfer import estimate_normal_loads
 from lap_time_sim.vehicle.params import default_vehicle_parameters
 
@@ -39,7 +39,7 @@ class VehicleDynamicsTests(unittest.TestCase):
     def test_bicycle_derivatives_are_finite(self) -> None:
         """Return finite derivatives for a representative dynamic state."""
         vehicle = default_vehicle_parameters()
-        model = BicycleModel(vehicle, default_axle_tire_parameters())
+        model = BicycleDynamicsModel(vehicle, default_axle_tire_parameters())
         state = VehicleState(vx_mps=40.0, vy_mps=0.7, yaw_rate_rps=0.12)
         control = ControlInput(steer_rad=0.05, longitudinal_accel_cmd_mps2=1.5)
 
@@ -76,10 +76,10 @@ class VehicleDynamicsTests(unittest.TestCase):
     def test_state_array_roundtrip_and_speed_sanitization(self) -> None:
         """Round-trip state conversion helpers and sanitize very low speeds."""
         state = VehicleState(vx_mps=15.0, vy_mps=-0.4, yaw_rate_rps=0.2)
-        values = BicycleModel.to_array(state)
-        restored = BicycleModel.from_array(values)
+        values = BicycleDynamicsModel.to_array(state)
+        restored = BicycleDynamicsModel.from_array(values)
         self.assertEqual(restored, state)
-        self.assertGreater(BicycleModel.sanitize_speed(0.0), 0.0)
+        self.assertGreater(BicycleDynamicsModel.sanitize_speed(0.0), 0.0)
 
 
 if __name__ == "__main__":

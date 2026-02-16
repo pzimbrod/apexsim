@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from lap_time_sim.simulation.config import SimulationConfig, SimulationNumerics, SimulationRuntime
+from lap_time_sim.simulation.config import NumericsConfig, RuntimeConfig, SimulationConfig
 
 if TYPE_CHECKING:
     from lap_time_sim.simulation.model_api import LapTimeVehicleModel, VehicleModelDiagnostics
@@ -13,9 +13,9 @@ if TYPE_CHECKING:
 __all__ = [
     "LapSimulationResult",
     "LapTimeVehicleModel",
+    "NumericsConfig",
+    "RuntimeConfig",
     "SimulationConfig",
-    "SimulationNumerics",
-    "SimulationRuntime",
     "VehicleModelDiagnostics",
     "simulate_lap",
 ]
@@ -37,14 +37,14 @@ def __getattr__(name: str) -> Any:
         from lap_time_sim.simulation.model_api import LapTimeVehicleModel
 
         return LapTimeVehicleModel
-    if name == "SimulationRuntime":
-        from lap_time_sim.simulation.config import SimulationRuntime
+    if name == "RuntimeConfig":
+        from lap_time_sim.simulation.config import RuntimeConfig
 
-        return SimulationRuntime
-    if name == "SimulationNumerics":
-        from lap_time_sim.simulation.config import SimulationNumerics
+        return RuntimeConfig
+    if name == "NumericsConfig":
+        from lap_time_sim.simulation.config import NumericsConfig
 
-        return SimulationNumerics
+        return NumericsConfig
     if name == "VehicleModelDiagnostics":
         from lap_time_sim.simulation.model_api import VehicleModelDiagnostics
 

@@ -50,14 +50,14 @@ def _compute_energy(power_w: np.ndarray, speed_mps: np.ndarray, s_m: np.ndarray)
 def simulate_lap(
     track: TrackData,
     model: LapTimeVehicleModel,
-    config: SimulationConfig | None = None,
+    config: SimulationConfig,
 ) -> LapSimulationResult:
     """Run quasi-steady lap simulation against a vehicle-model API backend.
 
     Args:
         track: Track geometry and derived arc-length-domain quantities.
         model: Vehicle-model backend implementing ``LapTimeVehicleModel``.
-        config: Optional solver configuration. Defaults to :class:`SimulationConfig`.
+        config: Solver configuration containing runtime and numerical controls.
 
     Returns:
         Full lap simulation result including profile arrays and diagnostics.
@@ -67,8 +67,7 @@ def simulate_lap(
         lap_time_sim.utils.exceptions.ConfigurationError: If model or solver
             configuration is invalid.
     """
-    sim_config = config or SimulationConfig()
-    profile = solve_speed_profile(track=track, model=model, config=sim_config)
+    profile = solve_speed_profile(track=track, model=model, config=config)
 
     n = track.s_m.size
     yaw_moment_nm = np.zeros(n, dtype=float)

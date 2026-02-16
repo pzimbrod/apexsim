@@ -8,18 +8,18 @@ from pathlib import Path
 from lap_time_sim.analysis import compute_kpis, export_standard_plots
 from lap_time_sim.analysis.export import export_kpi_json
 from lap_time_sim.simulation import (
+    NumericsConfig,
+    RuntimeConfig,
     SimulationConfig,
-    SimulationNumerics,
-    SimulationRuntime,
     simulate_lap,
 )
 from lap_time_sim.tire import default_axle_tire_parameters
 from lap_time_sim.track import load_track_csv
 from lap_time_sim.utils import configure_logging
 from lap_time_sim.vehicle import (
-    BicycleLapTimeModel,
-    BicycleLapTimeModelNumerics,
-    BicycleLapTimeModelPhysics,
+    BicycleModel,
+    BicycleNumerics,
+    BicyclePhysics,
     default_vehicle_parameters,
 )
 
@@ -34,15 +34,31 @@ def main() -> None:
 
     vehicle = default_vehicle_parameters()
     tires = default_axle_tire_parameters()
-    model = BicycleLapTimeModel(
+    model = BicycleModel(
         vehicle=vehicle,
         tires=tires,
-        physics=BicycleLapTimeModelPhysics(),
-        numerics=BicycleLapTimeModelNumerics(),
+        physics=BicyclePhysics(
+            max_drive_accel_mps2=8.0,
+            max_brake_accel_mps2=16.0,
+            peak_slip_angle_rad=0.12,
+        ),
+        numerics=BicycleNumerics(
+            min_lateral_accel_limit_mps2=0.5,
+            lateral_limit_max_iterations=12,
+            lateral_limit_convergence_tol_mps2=0.05,
+        ),
     )
     config = SimulationConfig(
-        runtime=SimulationRuntime(),
-        numerics=SimulationNumerics(),
+        runtime=RuntimeConfig(
+            max_speed_mps=115.0,
+            enable_transient_refinement=False,
+        ),
+        numerics=NumericsConfig(
+            min_speed_mps=8.0,
+            lateral_envelope_max_iterations=20,
+            lateral_envelope_convergence_tol_mps=0.1,
+            transient_dt_s=0.01,
+        ),
     )
 
     result = simulate_lap(track=track, model=model, config=config)

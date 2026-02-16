@@ -9,16 +9,17 @@
 
 - `lap_time_sim.vehicle.default_vehicle_parameters() -> VehicleParameters`
 - `lap_time_sim.tire.default_axle_tire_parameters() -> AxleTireParameters`
-- `lap_time_sim.vehicle.BicycleLapTimeModel(vehicle, tires, physics=None, numerics=None)`
-- `lap_time_sim.vehicle.BicycleLapTimeModelPhysics`
-- `lap_time_sim.vehicle.BicycleLapTimeModelNumerics`
+- `lap_time_sim.vehicle.BicycleModel(vehicle, tires, physics, numerics)`
+- `lap_time_sim.vehicle.BicyclePhysics`
+- `lap_time_sim.vehicle.BicycleNumerics`
+- `lap_time_sim.vehicle.BicycleDynamicsModel` (state-space 3-DOF backend)
 
 ## Simulation
 
 - `lap_time_sim.simulation.SimulationConfig`
-- `lap_time_sim.simulation.SimulationRuntime`
-- `lap_time_sim.simulation.SimulationNumerics`
-- `lap_time_sim.simulation.simulate_lap(track, model, config=None) -> LapSimulationResult`
+- `lap_time_sim.simulation.RuntimeConfig`
+- `lap_time_sim.simulation.NumericsConfig`
+- `lap_time_sim.simulation.simulate_lap(track, model, config) -> LapSimulationResult`
 
 Relevant `SimulationConfig` knobs:
 - `runtime.max_speed_mps`

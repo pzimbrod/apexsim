@@ -15,18 +15,28 @@ from lap_time_sim.vehicle.params import VehicleParameters
 class ParameterValidationTests(unittest.TestCase):
     """Unit tests for parameter validation branches."""
 
+    _BASE_TIRE_ARGS = dict(
+        B=9.0,
+        C=1.2,
+        D=1.5,
+        E=0.9,
+        fz_reference_n=3000.0,
+        load_sensitivity=-0.08,
+        min_mu_scale=0.4,
+    )
+
     def test_pacejka_validation_rejects_invalid_values(self) -> None:
         """Raise configuration errors for invalid Pacejka coefficients."""
         with self.assertRaises(ConfigurationError):
-            PacejkaParameters(B=0.0, C=1.2, D=1.5, E=0.9).validate()
+            PacejkaParameters(**{**self._BASE_TIRE_ARGS, "B": 0.0}).validate()
         with self.assertRaises(ConfigurationError):
-            PacejkaParameters(B=9.0, C=0.0, D=1.5, E=0.9).validate()
+            PacejkaParameters(**{**self._BASE_TIRE_ARGS, "C": 0.0}).validate()
         with self.assertRaises(ConfigurationError):
-            PacejkaParameters(B=9.0, C=1.2, D=0.0, E=0.9).validate()
+            PacejkaParameters(**{**self._BASE_TIRE_ARGS, "D": 0.0}).validate()
         with self.assertRaises(ConfigurationError):
-            PacejkaParameters(B=9.0, C=1.2, D=1.5, E=0.9, fz_reference_n=0.0).validate()
+            PacejkaParameters(**{**self._BASE_TIRE_ARGS, "fz_reference_n": 0.0}).validate()
         with self.assertRaises(ConfigurationError):
-            PacejkaParameters(B=9.0, C=1.2, D=1.5, E=0.9, min_mu_scale=0.0).validate()
+            PacejkaParameters(**{**self._BASE_TIRE_ARGS, "min_mu_scale": 0.0}).validate()
 
     def test_vehicle_validation_rejects_invalid_values(self) -> None:
         """Raise configuration errors for invalid vehicle parameters."""
@@ -48,6 +58,7 @@ class ParameterValidationTests(unittest.TestCase):
             arb_distribution_front=0.5,
             ride_height_front_m=0.03,
             ride_height_rear_m=0.05,
+            air_density_kgpm3=1.225,
         )
 
         with self.assertRaises(ConfigurationError):
