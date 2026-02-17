@@ -13,15 +13,19 @@ from pylapsim.analysis import compute_kpis, export_standard_plots
 from pylapsim.analysis.export import export_kpi_json
 from pylapsim.simulation import build_simulation_config, simulate_lap
 from pylapsim.simulation.runner import LapResult
+from pylapsim.tire import default_axle_tire_parameters
 from pylapsim.track import (
     build_circular_track,
     build_figure_eight_track,
     build_straight_track,
 )
-from pylapsim.tire import default_axle_tire_parameters
 from pylapsim.utils import configure_logging
 from pylapsim.utils.constants import STANDARD_AIR_DENSITY
-from pylapsim.vehicle import BicyclePhysics, PointMassPhysics, VehicleParameters, build_point_mass_model, build_bicycle_model
+from pylapsim.vehicle import (
+    BicyclePhysics,
+    VehicleParameters,
+    build_bicycle_model,
+)
 
 STRAIGHT_LENGTH = 1_000.0
 CIRCLE_RADIUS = 50.0
@@ -88,7 +92,6 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     vehicle = _example_vehicle_parameters()
-    #model = build_point_mass_model(vehicle=vehicle, physics=PointMassPhysics())
     tires = default_axle_tire_parameters()
     model = build_bicycle_model(vehicle=vehicle, tires=tires, physics=BicyclePhysics())
     config = build_simulation_config(max_speed=115.0)
