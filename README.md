@@ -1,5 +1,7 @@
 # PyLapSim
 
+[![CI](https://github.com/pzimbrod/pylapsim/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/pzimbrod/pylapsim/actions/workflows/ci.yml)
+
 A modular lap time simulation library for race cars with interchangeable vehicle models.
 
 ## Features
