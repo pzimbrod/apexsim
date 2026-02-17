@@ -58,6 +58,7 @@ nav:
   - Home: index.md
   - Guides:
       - How to Use: HOW_TO_USE.md
+      - Compute Backends: BACKENDS.md
       - API Overview: API.md
       - Solver: SOLVER.md
       - Assumptions: ASSUMPTIONS.md

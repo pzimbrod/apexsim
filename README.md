@@ -14,6 +14,7 @@ A modular lap time simulation library for race cars with interchangeable vehicle
 - Track CSV parsing (`x, y, elevation, banking`) and geometry processing
 - Synthetic benchmark layouts (straight, circle, figure-eight) for model validation
 - Quasi-steady lap simulation with forward/backward speed-profile optimization
+- Compute backends: NumPy (CPU), Numba (CPU), and PyTorch (CPU/GPU)
 - Vehicle-model API abstraction for plugging in multiple model complexities
 - KPI and plot generation (lap time, g-levels, speed trace, yaw moment, G-G diagram)
 
@@ -45,6 +46,7 @@ python examples/synthetic_track_scenarios.py
 - `examples/spa_lap_point_mass.py`: Point-mass model end-to-end run with KPI/plot export.
 - `examples/spa_model_comparison.py`: Side-by-side bicycle vs calibrated point-mass comparison with KPI deltas and speed-trace overlay.
 - `examples/synthetic_track_scenarios.py`: Straight, circle, and figure-eight benchmark runs for physical-consistency inspection.
+- `examples/backend_benchmarks.py`: Quantitative timing comparison for NumPy, Numba, and Torch backends.
 
 ## Assumptions and Limitations
 
@@ -52,6 +54,7 @@ This initial version uses a quasi-steady speed profile and a simplified longitud
 See `docs/ASSUMPTIONS.md` for details.
 For the mathematical derivation of the lap-time solver, see `docs/SOLVER.md`.
 For point-mass model equations and assumptions, see `docs/POINT_MASS_MODEL.md`.
+For backend-selection guidance and benchmark data, see `docs/BACKENDS.md`.
 
 ## Data Source
 

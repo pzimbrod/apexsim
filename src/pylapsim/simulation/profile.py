@@ -3,14 +3,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
 from pylapsim.simulation.config import SimulationConfig
-from pylapsim.simulation.envelope import lateral_speed_limit
 from pylapsim.simulation.model_api import VehicleModel
 from pylapsim.track.models import TrackData
 from pylapsim.utils.constants import SMALL_EPS
+from pylapsim.utils.exceptions import ConfigurationError
 
 
 @dataclass(frozen=True)
@@ -51,6 +52,72 @@ def _segment_dt(segment_length: float, start_speed: float, end_speed: float) -> 
     return segment_length / v_avg
 
 
+def _lateral_accel_limit_batch(
+    model: VehicleModel,
+    speed: np.ndarray,
+    banking: np.ndarray,
+) -> np.ndarray:
+    """Evaluate lateral acceleration limits over all track samples.
+
+    The solver uses an optional vectorized model API when available. If a model
+    does not provide `lateral_accel_limit_batch`, it falls back to scalar calls.
+
+    Args:
+        model: Vehicle model backend.
+        speed: Speed samples [m/s].
+        banking: Banking-angle samples [rad].
+
+    Returns:
+        Lateral acceleration limit samples [m/s^2].
+
+    Raises:
+        pylapsim.utils.exceptions.ConfigurationError: If a vectorized model
+            implementation returns an incompatible array shape.
+    """
+    batch_method: Any = getattr(model, "lateral_accel_limit_batch", None)
+    if callable(batch_method):
+        lateral_limit = np.asarray(batch_method(speed=speed, banking=banking), dtype=float)
+        if lateral_limit.shape != speed.shape:
+            msg = (
+                "lateral_accel_limit_batch must return an array with shape "
+                f"{speed.shape}, got {lateral_limit.shape}"
+            )
+            raise ConfigurationError(msg)
+        return lateral_limit
+
+    return np.array(
+        [
+            model.lateral_accel_limit(speed=float(speed[idx]), banking=float(banking[idx]))
+            for idx in range(speed.size)
+        ],
+        dtype=float,
+    )
+
+
+def _lateral_speed_limit_batch(
+    curvature: np.ndarray,
+    lateral_accel_limit: np.ndarray,
+    max_speed: float,
+) -> np.ndarray:
+    """Compute speed limit from lateral envelope constraints for all samples.
+
+    Args:
+        curvature: Curvature samples [1/m].
+        lateral_accel_limit: Lateral acceleration capability samples [m/s^2].
+        max_speed: Global hard speed cap [m/s].
+
+    Returns:
+        Lateral-envelope speed limits [m/s].
+    """
+    kappa_abs = np.abs(curvature)
+    safe_kappa = np.maximum(kappa_abs, SMALL_EPS)
+    safe_ay = np.maximum(lateral_accel_limit, 0.0)
+
+    lateral_limited_speed = np.sqrt(safe_ay / safe_kappa)
+    bounded_speed = np.minimum(lateral_limited_speed, max_speed)
+    return np.where(kappa_abs > SMALL_EPS, bounded_speed, max_speed)
+
+
 def solve_speed_profile(
     track: TrackData,
     model: VehicleModel,
@@ -87,72 +154,75 @@ def solve_speed_profile(
     n = track.arc_length.size
     ds = np.diff(track.arc_length)
 
-    v_lat = np.full(n, config.runtime.max_speed, dtype=float)
+    max_speed = config.runtime.max_speed
+    min_speed = config.numerics.min_speed
+    min_speed_squared = min_speed * min_speed
+    banking = track.banking
+    grade = track.grade
+    curvature = track.curvature
+    curvature_abs = np.abs(curvature)
+
+    v_lat = np.full(n, max_speed, dtype=float)
     lateral_envelope_iterations = 0
     for iteration_idx in range(config.numerics.lateral_envelope_max_iterations):
         previous_v_lat = np.copy(v_lat)
-        for idx in range(n):
-            ay_lim = model.lateral_accel_limit(
-                speed=v_lat[idx],
-                banking=float(track.banking[idx]),
-            )
-            v_lat[idx] = max(
-                config.numerics.min_speed,
-                lateral_speed_limit(
-                    float(track.curvature[idx]),
-                    ay_lim,
-                    config.runtime.max_speed,
-                ),
-            )
+
+        ay_limit = _lateral_accel_limit_batch(model=model, speed=v_lat, banking=banking)
+        v_lat = _lateral_speed_limit_batch(
+            curvature=curvature,
+            lateral_accel_limit=ay_limit,
+            max_speed=max_speed,
+        )
+        v_lat = np.clip(v_lat, min_speed, max_speed)
+
         lateral_envelope_iterations = iteration_idx + 1
         max_delta_speed = float(np.max(np.abs(v_lat - previous_v_lat)))
         if max_delta_speed <= config.numerics.lateral_envelope_convergence_tolerance:
             break
 
+    max_longitudinal_accel = model.max_longitudinal_accel
+    max_longitudinal_decel = model.max_longitudinal_decel
+
     v_forward = np.copy(v_lat)
-    v_forward[0] = min(v_forward[0], config.runtime.max_speed)
+    v_forward[0] = min(v_forward[0], max_speed)
     for idx in range(n - 1):
-        ay_req = v_forward[idx] * v_forward[idx] * abs(track.curvature[idx])
-        net_accel = model.max_longitudinal_accel(
-            speed=float(v_forward[idx]),
-            lateral_accel_required=float(ay_req),
-            grade=float(track.grade[idx]),
-            banking=float(track.banking[idx]),
+        speed_value = float(v_forward[idx])
+        ay_required = speed_value * speed_value * float(curvature_abs[idx])
+        net_accel = max_longitudinal_accel(
+            speed=speed_value,
+            lateral_accel_required=ay_required,
+            grade=float(grade[idx]),
+            banking=float(banking[idx]),
         )
 
-        next_speed_sq = v_forward[idx] ** 2 + 2.0 * net_accel * ds[idx]
-        v_candidate = float(np.sqrt(max(next_speed_sq, config.numerics.min_speed**2)))
-        v_forward[idx + 1] = min(
-            v_forward[idx + 1],
-            v_candidate,
-            v_lat[idx + 1],
-            config.runtime.max_speed,
-        )
+        next_speed_squared = speed_value * speed_value + 2.0 * net_accel * float(ds[idx])
+        v_candidate = float(np.sqrt(max(next_speed_squared, min_speed_squared)))
+        v_forward[idx + 1] = min(v_forward[idx + 1], v_candidate, v_lat[idx + 1], max_speed)
 
     v_profile = np.copy(v_forward)
     for idx in range(n - 2, -1, -1):
-        ay_req = v_profile[idx + 1] * v_profile[idx + 1] * abs(track.curvature[idx + 1])
-        available_decel = model.max_longitudinal_decel(
-            speed=float(v_profile[idx + 1]),
-            lateral_accel_required=float(ay_req),
-            grade=float(track.grade[idx + 1]),
-            banking=float(track.banking[idx + 1]),
+        speed_value = float(v_profile[idx + 1])
+        ay_required = speed_value * speed_value * float(curvature_abs[idx + 1])
+        available_decel = max_longitudinal_decel(
+            speed=speed_value,
+            lateral_accel_required=ay_required,
+            grade=float(grade[idx + 1]),
+            banking=float(banking[idx + 1]),
         )
 
-        entry_speed_sq = v_profile[idx + 1] ** 2 + 2.0 * available_decel * ds[idx]
-        v_entry = float(np.sqrt(max(entry_speed_sq, config.numerics.min_speed**2)))
-        v_profile[idx] = min(v_profile[idx], v_entry, v_lat[idx], config.runtime.max_speed)
+        entry_speed_squared = speed_value * speed_value + 2.0 * available_decel * float(ds[idx])
+        v_entry = float(np.sqrt(max(entry_speed_squared, min_speed_squared)))
+        v_profile[idx] = min(v_profile[idx], v_entry, v_lat[idx], max_speed)
 
     ax = np.zeros(n, dtype=float)
-    for idx in range(n - 1):
-        ax[idx] = (v_profile[idx + 1] ** 2 - v_profile[idx] ** 2) / (2.0 * ds[idx])
-    ax[-1] = ax[-2]
+    if n > 1:
+        ax[:-1] = (v_profile[1:] * v_profile[1:] - v_profile[:-1] * v_profile[:-1]) / (2.0 * ds)
+        ax[-1] = ax[-2]
 
-    ay = v_profile * v_profile * track.curvature
+    ay = v_profile * v_profile * curvature
 
-    lap_time = 0.0
-    for idx in range(n - 1):
-        lap_time += _segment_dt(float(ds[idx]), float(v_profile[idx]), float(v_profile[idx + 1]))
+    segment_speed_avg = np.maximum(0.5 * (v_profile[:-1] + v_profile[1:]), SMALL_EPS)
+    lap_time = float(np.sum(ds / segment_speed_avg))
 
     return SpeedProfileResult(
         speed=v_profile,

@@ -52,18 +52,6 @@ def __getattr__(name: str) -> Any:
         from pylapsim.simulation.model_api import VehicleModel
 
         return VehicleModel
-    if name == "RuntimeConfig":
-        from pylapsim.simulation.config import RuntimeConfig
-
-        return RuntimeConfig
-    if name == "NumericsConfig":
-        from pylapsim.simulation.config import NumericsConfig
-
-        return NumericsConfig
-    if name == "build_simulation_config":
-        from pylapsim.simulation.config import build_simulation_config
-
-        return build_simulation_config
     if name == "ModelDiagnostics":
         from pylapsim.simulation.model_api import ModelDiagnostics
 

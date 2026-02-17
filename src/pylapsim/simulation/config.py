@@ -12,6 +12,10 @@ DEFAULT_LATERAL_ENVELOPE_CONVERGENCE_TOLERANCE = 0.1
 DEFAULT_TRANSIENT_STEP = 0.01
 DEFAULT_MAX_SPEED = 115.0
 DEFAULT_ENABLE_TRANSIENT_REFINEMENT = False
+DEFAULT_COMPUTE_BACKEND = "numpy"
+DEFAULT_TORCH_DEVICE = "cpu"
+DEFAULT_ENABLE_TORCH_COMPILE = False
+VALID_COMPUTE_BACKENDS = ("numpy", "numba", "torch")
 
 
 @dataclass(frozen=True)
@@ -23,7 +27,7 @@ class NumericsConfig:
         lateral_envelope_max_iterations: Maximum fixed-point iterations for the
             lateral-speed envelope solver.
         lateral_envelope_convergence_tolerance: Early-stop threshold for the
-            lateral envelope fixed-point update (`max |v_k - v_{k-1}|`) [m/s].
+            lateral envelope fixed-point update (``max |v_k - v_{k-1}|``) [m/s].
         transient_step: Integration step for optional transient refinement [s].
     """
 
@@ -60,10 +64,18 @@ class RuntimeConfig:
     Args:
         max_speed: Hard speed cap used by the quasi-steady profile solver [m/s].
         enable_transient_refinement: Flag for optional second-pass transient solve.
+        compute_backend: Numerical backend identifier (``numpy``, ``numba``,
+            or ``torch``).
+        torch_device: Torch device identifier. ``numpy`` and ``numba`` are
+            CPU-only backends and therefore require ``torch_device='cpu'``.
+        torch_compile: Enable ``torch.compile`` for the ``torch`` backend.
     """
 
     max_speed: float
     enable_transient_refinement: bool = DEFAULT_ENABLE_TRANSIENT_REFINEMENT
+    compute_backend: str = DEFAULT_COMPUTE_BACKEND
+    torch_device: str = DEFAULT_TORCH_DEVICE
+    torch_compile: bool = DEFAULT_ENABLE_TORCH_COMPILE
 
     def validate(self, numerics: NumericsConfig) -> None:
         """Validate runtime controls against solver numerics.
@@ -73,10 +85,77 @@ class RuntimeConfig:
 
         Raises:
             pylapsim.utils.exceptions.ConfigurationError: If runtime controls
-                are inconsistent with solver numerics.
+                are inconsistent with solver numerics or backend requirements.
         """
         if self.max_speed <= numerics.min_speed:
             msg = "max_speed must be greater than numerics.min_speed"
+            raise ConfigurationError(msg)
+        if self.compute_backend not in VALID_COMPUTE_BACKENDS:
+            msg = (
+                "compute_backend must be one of "
+                f"{VALID_COMPUTE_BACKENDS}, got: {self.compute_backend!r}"
+            )
+            raise ConfigurationError(msg)
+        if not self.torch_device:
+            msg = "torch_device must be a non-empty string"
+            raise ConfigurationError(msg)
+        if not isinstance(self.torch_compile, bool):
+            msg = "torch_compile must be a boolean"
+            raise ConfigurationError(msg)
+
+        if self.compute_backend != "torch":
+            if self.torch_device != DEFAULT_TORCH_DEVICE:
+                msg = (
+                    "torch_device is only meaningful for compute_backend='torch'. "
+                    "Use torch_device='cpu' for numpy/numba backends."
+                )
+                raise ConfigurationError(msg)
+            if self.torch_compile:
+                msg = "torch_compile can only be enabled for compute_backend='torch'"
+                raise ConfigurationError(msg)
+
+        if self.compute_backend == "numba":
+            self._validate_numba_runtime()
+        if self.compute_backend == "torch":
+            self._validate_torch_runtime()
+
+    def _validate_numba_runtime(self) -> None:
+        """Validate availability of numba runtime.
+
+        Raises:
+            pylapsim.utils.exceptions.ConfigurationError: If numba is not
+                installed in the active environment.
+        """
+        try:
+            import numba  # type: ignore[import-untyped]  # noqa: F401
+        except ModuleNotFoundError as exc:
+            msg = (
+                "compute_backend='numba' requires Numba. "
+                "Install with `pip install -e '.[numba]'` or add `numba` to your environment."
+            )
+            raise ConfigurationError(msg) from exc
+
+    def _validate_torch_runtime(self) -> None:
+        """Validate availability of the requested torch runtime.
+
+        Raises:
+            pylapsim.utils.exceptions.ConfigurationError: If torch is not
+                installed or selected CUDA device is not available.
+        """
+        try:
+            import torch
+        except ModuleNotFoundError as exc:
+            msg = (
+                "compute_backend='torch' requires PyTorch. "
+                "Install with `pip install -e '.[torch]'` or add `torch` to your environment."
+            )
+            raise ConfigurationError(msg) from exc
+
+        if self.torch_device.startswith("cuda") and not torch.cuda.is_available():
+            msg = (
+                "torch_device requests CUDA but no CUDA device is available: "
+                f"{self.torch_device!r}"
+            )
             raise ConfigurationError(msg)
 
 
@@ -107,6 +186,9 @@ def build_simulation_config(
     max_speed: float = DEFAULT_MAX_SPEED,
     numerics: NumericsConfig | None = None,
     enable_transient_refinement: bool = DEFAULT_ENABLE_TRANSIENT_REFINEMENT,
+    compute_backend: str = DEFAULT_COMPUTE_BACKEND,
+    torch_device: str = DEFAULT_TORCH_DEVICE,
+    torch_compile: bool = DEFAULT_ENABLE_TORCH_COMPILE,
 ) -> SimulationConfig:
     """Build a validated simulation config with sensible numerical defaults.
 
@@ -114,6 +196,11 @@ def build_simulation_config(
         max_speed: Runtime speed cap for the quasi-steady profile solver [m/s].
         numerics: Optional numerical settings. Defaults to :class:`NumericsConfig`.
         enable_transient_refinement: Flag for optional transient post-processing.
+        compute_backend: Numerical backend identifier (``numpy``, ``numba``,
+            or ``torch``).
+        torch_device: Torch device identifier. ``numpy`` and ``numba`` are
+            CPU-only backends and therefore require ``torch_device='cpu'``.
+        torch_compile: Enable ``torch.compile`` for the ``torch`` backend.
 
     Returns:
         Fully validated simulation configuration.
@@ -126,6 +213,9 @@ def build_simulation_config(
         runtime=RuntimeConfig(
             max_speed=max_speed,
             enable_transient_refinement=enable_transient_refinement,
+            compute_backend=compute_backend,
+            torch_device=torch_device,
+            torch_compile=torch_compile,
         ),
         numerics=numerics or NumericsConfig(),
     )

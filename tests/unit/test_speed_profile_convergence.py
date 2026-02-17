@@ -2,15 +2,21 @@
 
 from __future__ import annotations
 
+import importlib.util
 import unittest
 from pathlib import Path
 
 from pylapsim.simulation.config import NumericsConfig, RuntimeConfig, SimulationConfig
+from pylapsim.simulation.numba_profile import solve_speed_profile_numba
 from pylapsim.simulation.profile import solve_speed_profile
+from pylapsim.simulation.torch_profile import solve_speed_profile_torch
 from pylapsim.tire.models import default_axle_tire_parameters
 from pylapsim.track.io import load_track_csv
+from pylapsim.utils.exceptions import ConfigurationError
 from pylapsim.vehicle import BicycleModel, BicycleNumerics, BicyclePhysics
 from tests.helpers import sample_vehicle_parameters
+
+NUMBA_AVAILABLE = importlib.util.find_spec("numba") is not None
 
 
 class SpeedProfileConvergenceTests(unittest.TestCase):
@@ -48,7 +54,7 @@ class SpeedProfileConvergenceTests(unittest.TestCase):
                 lateral_envelope_convergence_tolerance=1_000.0,
                 min_speed=8.0,
                 transient_step=0.01,
-            )
+            ),
         )
         result = solve_speed_profile(self.track, self.model, config)
         self.assertEqual(result.lateral_envelope_iterations, 1)
@@ -65,7 +71,7 @@ class SpeedProfileConvergenceTests(unittest.TestCase):
                 lateral_envelope_convergence_tolerance=0.01,
                 min_speed=8.0,
                 transient_step=0.01,
-            )
+            ),
         )
         result = solve_speed_profile(self.track, self.model, config)
         self.assertGreater(result.lateral_envelope_iterations, 1)
@@ -73,6 +79,46 @@ class SpeedProfileConvergenceTests(unittest.TestCase):
             result.lateral_envelope_iterations,
             config.numerics.lateral_envelope_max_iterations,
         )
+
+    def test_torch_profile_rejects_non_torch_backend(self) -> None:
+        """Reject torch-profile calls when backend is not set to torch."""
+        config = SimulationConfig(
+            runtime=RuntimeConfig(
+                max_speed=115.0,
+                enable_transient_refinement=False,
+                compute_backend="numpy",
+            ),
+            numerics=NumericsConfig(),
+        )
+        with self.assertRaises(ConfigurationError):
+            solve_speed_profile_torch(track=self.track, model=self.model, config=config)
+
+    def test_numba_profile_rejects_non_numba_backend(self) -> None:
+        """Reject numba-profile calls when backend is not set to numba."""
+        config = SimulationConfig(
+            runtime=RuntimeConfig(
+                max_speed=115.0,
+                enable_transient_refinement=False,
+                compute_backend="numpy",
+            ),
+            numerics=NumericsConfig(),
+        )
+        with self.assertRaises(ConfigurationError):
+            solve_speed_profile_numba(track=self.track, model=self.model, config=config)
+
+    @unittest.skipUnless(NUMBA_AVAILABLE, "Numba not installed")
+    def test_numba_profile_rejects_models_without_numba_api(self) -> None:
+        """Reject numba backend when model lacks numba parameter API."""
+        config = SimulationConfig(
+            runtime=RuntimeConfig(
+                max_speed=115.0,
+                enable_transient_refinement=False,
+                compute_backend="numba",
+            ),
+            numerics=NumericsConfig(),
+        )
+        with self.assertRaises(ConfigurationError):
+            solve_speed_profile_numba(track=self.track, model=self.model, config=config)
 
 
 if __name__ == "__main__":

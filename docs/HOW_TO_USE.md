@@ -189,6 +189,27 @@ config = SimulationConfig(
 )
 ```
 
+### Backend selection (numerical execution)
+
+```python
+config_numpy = build_simulation_config(compute_backend="numpy", max_speed=115.0)
+config_numba = build_simulation_config(compute_backend="numba", max_speed=115.0)
+config_torch = build_simulation_config(
+    compute_backend="torch",
+    torch_device="cpu",  # or "cuda:0"
+    torch_compile=False,
+    max_speed=115.0,
+)
+```
+
+Selection rule:
+
+- `numpy`: robust baseline and easiest debugging.
+- `numba`: fastest CPU sweeps (currently with `PointMassModel`).
+- `torch`: CPU/GPU execution and tensor-native workflows.
+
+For quantitative guidance, see [Compute Backends](BACKENDS.md).
+
 Critical distinction:
 
 - Physical parameters represent the car/track reality.

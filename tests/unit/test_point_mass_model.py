@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib.util
 import unittest
 
 import numpy as np
@@ -15,6 +16,8 @@ from pylapsim.vehicle import (
     calibrate_point_mass_friction_to_bicycle,
 )
 from tests.helpers import sample_vehicle_parameters
+
+TORCH_AVAILABLE = importlib.util.find_spec("torch") is not None
 
 
 def _build_point_mass_model() -> PointMassModel:
@@ -64,6 +67,22 @@ class PointMassModelTests(unittest.TestCase):
         high_speed = model.lateral_accel_limit(speed=80.0, banking=0.0)
         self.assertGreater(high_speed, low_speed)
 
+    def test_lateral_limit_batch_matches_scalar_api(self) -> None:
+        """Match vectorized lateral-limit output against scalar API evaluation."""
+        model = _build_point_mass_model()
+        speed = np.array([10.0, 30.0, 60.0], dtype=float)
+        banking = np.array([0.00, 0.05, -0.02], dtype=float)
+
+        batch = model.lateral_accel_limit_batch(speed=speed, banking=banking)
+        scalar = np.array(
+            [
+                model.lateral_accel_limit(speed=float(speed[idx]), banking=float(banking[idx]))
+                for idx in range(speed.size)
+            ],
+            dtype=float,
+        )
+        np.testing.assert_allclose(batch, scalar, rtol=1e-12, atol=1e-12)
+
     def test_uphill_reduces_available_acceleration(self) -> None:
         """Reduce available forward acceleration on positive grade."""
         model = _build_point_mass_model()
@@ -103,6 +122,74 @@ class PointMassModelTests(unittest.TestCase):
             model._friction_circle_scale(lateral_accel_required=5.0, lateral_accel_limit=0.0),
             0.0,
         )
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_torch_lateral_limit_matches_numpy_and_supports_gradients(self) -> None:
+        """Match torch lateral limits to NumPy and expose gradients wrt speed."""
+        import torch
+
+        model = _build_point_mass_model()
+        speed = torch.tensor([20.0, 45.0, 70.0], dtype=torch.float64, requires_grad=True)
+        banking = torch.tensor([0.02, 0.00, -0.01], dtype=torch.float64)
+
+        torch_output = model.lateral_accel_limit_torch(speed=speed, banking=banking)
+        numpy_output = model.lateral_accel_limit_batch(
+            speed=speed.detach().numpy(),
+            banking=banking.detach().numpy(),
+        )
+
+        np.testing.assert_allclose(
+            torch_output.detach().numpy(),
+            numpy_output,
+            rtol=1e-10,
+            atol=1e-10,
+        )
+
+        loss = torch.sum(torch_output)
+        loss.backward()
+        self.assertIsNotNone(speed.grad)
+        self.assertTrue(torch.all(torch.isfinite(speed.grad)))
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_torch_longitudinal_limits_match_numpy(self) -> None:
+        """Match torch longitudinal-limit outputs to scalar NumPy backend values."""
+        import torch
+
+        model = _build_point_mass_model()
+
+        speed = torch.tensor(45.0, dtype=torch.float64)
+        lateral_accel_required = torch.tensor(8.0, dtype=torch.float64)
+        grade = torch.tensor(0.01, dtype=torch.float64)
+        banking = torch.tensor(0.02, dtype=torch.float64)
+
+        torch_accel = model.max_longitudinal_accel_torch(
+            speed=speed,
+            lateral_accel_required=lateral_accel_required,
+            grade=grade,
+            banking=banking,
+        )
+        torch_decel = model.max_longitudinal_decel_torch(
+            speed=speed,
+            lateral_accel_required=lateral_accel_required,
+            grade=grade,
+            banking=banking,
+        )
+
+        numpy_accel = model.max_longitudinal_accel(
+            speed=45.0,
+            lateral_accel_required=8.0,
+            grade=0.01,
+            banking=0.02,
+        )
+        numpy_decel = model.max_longitudinal_decel(
+            speed=45.0,
+            lateral_accel_required=8.0,
+            grade=0.01,
+            banking=0.02,
+        )
+
+        self.assertAlmostEqual(float(torch_accel.item()), float(numpy_accel), places=10)
+        self.assertAlmostEqual(float(torch_decel.item()), float(numpy_decel), places=10)
 
     def test_build_point_mass_model_uses_default_physics(self) -> None:
         """Build a model with default physical settings when omitted."""

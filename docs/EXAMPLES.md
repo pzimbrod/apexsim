@@ -32,6 +32,8 @@ Reason:
   - "What is the low-complexity baseline on the same circuit?"
 - `examples/spa_model_comparison.py`
   - "What do I gain from additional model fidelity?"
+- `examples/backend_benchmarks.py`
+  - "Which compute backend should I use for my workload?"
 
 ## What the example suite covers well
 

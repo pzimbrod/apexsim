@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any, cast
 
 import numpy as np
 
 from pylapsim.simulation.config import SimulationConfig
 from pylapsim.simulation.model_api import VehicleModel
-from pylapsim.simulation.profile import solve_speed_profile
+from pylapsim.simulation.profile import SpeedProfileResult, solve_speed_profile
 from pylapsim.track.models import TrackData
+from pylapsim.utils.exceptions import ConfigurationError
 
 MIN_AVERAGE_SPEED_FOR_TIME_STEP = 1e-6
 
@@ -60,12 +62,12 @@ def _compute_energy(power: np.ndarray, speed: np.ndarray, arc_length: np.ndarray
     return float(np.sum(traction_power * dt))
 
 
-def simulate_lap(
+def _solve_profile(
     track: TrackData,
     model: VehicleModel,
     config: SimulationConfig,
-) -> LapResult:
-    """Run quasi-steady lap simulation against a vehicle-model API backend.
+) -> SpeedProfileResult:
+    """Dispatch speed-profile solve based on configured compute backend.
 
     Args:
         track: Track geometry and derived arc-length-domain quantities.
@@ -73,14 +75,77 @@ def simulate_lap(
         config: Solver configuration containing runtime and numerical controls.
 
     Returns:
-        Full lap simulation result including profile arrays and diagnostics.
+        Backend solver result with speed and acceleration traces.
+    """
+    if config.runtime.compute_backend == "torch":
+        from pylapsim.simulation.torch_profile import TorchSpeedModel, solve_speed_profile_torch
+
+        torch_model = cast(TorchSpeedModel, model)
+        return solve_speed_profile_torch(track=track, model=torch_model, config=config)
+
+    if config.runtime.compute_backend == "numba":
+        from pylapsim.simulation.numba_profile import NumbaSpeedModel, solve_speed_profile_numba
+
+        numba_model = cast(NumbaSpeedModel, model)
+        return solve_speed_profile_numba(track=track, model=numba_model, config=config)
+
+    return solve_speed_profile(track=track, model=model, config=config)
+
+
+def _compute_diagnostics(
+    track: TrackData,
+    model: VehicleModel,
+    profile: SpeedProfileResult,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Evaluate model diagnostics for all profile samples.
+
+    Args:
+        track: Track geometry used for the solved speed profile.
+        model: Vehicle-model backend implementing ``VehicleModel``.
+        profile: Solved profile containing speed and acceleration traces.
+
+    Returns:
+        Tuple ``(yaw_moment, front_axle_load, rear_axle_load, power)``.
 
     Raises:
-        pylapsim.utils.exceptions.TrackDataError: If track data is invalid.
-        pylapsim.utils.exceptions.ConfigurationError: If model or solver
-            configuration is invalid.
+        pylapsim.utils.exceptions.ConfigurationError: If a vectorized
+            diagnostics implementation returns shape-mismatched outputs.
     """
-    profile = solve_speed_profile(track=track, model=model, config=config)
+    expected_shape = profile.speed.shape
+    batch_method: Any = getattr(model, "diagnostics_batch", None)
+    if callable(batch_method):
+        diagnostics_batch = batch_method(
+            speed=profile.speed,
+            longitudinal_accel=profile.longitudinal_accel,
+            lateral_accel=profile.lateral_accel,
+            curvature=track.curvature,
+        )
+        if len(diagnostics_batch) != 4:
+            msg = (
+                "diagnostics_batch must return four arrays "
+                "(yaw_moment, front_axle_load, rear_axle_load, power)"
+            )
+            raise ConfigurationError(msg)
+
+        yaw_moment, front_axle_load, rear_axle_load, power = (
+            np.asarray(diagnostics_batch[0], dtype=float),
+            np.asarray(diagnostics_batch[1], dtype=float),
+            np.asarray(diagnostics_batch[2], dtype=float),
+            np.asarray(diagnostics_batch[3], dtype=float),
+        )
+        for signal_name, signal in (
+            ("yaw_moment", yaw_moment),
+            ("front_axle_load", front_axle_load),
+            ("rear_axle_load", rear_axle_load),
+            ("power", power),
+        ):
+            if signal.shape != expected_shape:
+                msg = (
+                    "diagnostics_batch returned mismatched shape for "
+                    f"{signal_name}: expected {expected_shape}, got {signal.shape}"
+                )
+                raise ConfigurationError(msg)
+        return yaw_moment, front_axle_load, rear_axle_load, power
 
     n = track.arc_length.size
     yaw_moment = np.zeros(n, dtype=float)
@@ -103,6 +168,37 @@ def simulate_lap(
         front_axle_load[idx] = diagnostics.front_axle_load
         rear_axle_load[idx] = diagnostics.rear_axle_load
         power[idx] = diagnostics.power
+
+    return yaw_moment, front_axle_load, rear_axle_load, power
+
+
+def simulate_lap(
+    track: TrackData,
+    model: VehicleModel,
+    config: SimulationConfig,
+) -> LapResult:
+    """Run quasi-steady lap simulation against a vehicle-model API backend.
+
+    Args:
+        track: Track geometry and derived arc-length-domain quantities.
+        model: Vehicle-model backend implementing ``VehicleModel``.
+        config: Solver configuration containing runtime and numerical controls.
+
+    Returns:
+        Full lap simulation result including profile arrays and diagnostics.
+
+    Raises:
+        pylapsim.utils.exceptions.TrackDataError: If track data is invalid.
+        pylapsim.utils.exceptions.ConfigurationError: If model or solver
+            configuration is invalid.
+    """
+    profile = _solve_profile(track=track, model=model, config=config)
+
+    yaw_moment, front_axle_load, rear_axle_load, power = _compute_diagnostics(
+        track=track,
+        model=model,
+        profile=profile,
+    )
 
     energy = _compute_energy(power, profile.speed, track.arc_length)
 

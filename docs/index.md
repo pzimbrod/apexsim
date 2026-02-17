@@ -12,6 +12,7 @@ interchangeable vehicle models.
 ## Quick Links
 
 - [How to Use](HOW_TO_USE.md)
+- [Compute Backends](BACKENDS.md)
 - [API Overview](API.md)
 - [Examples Overview](EXAMPLES.md)
 - [Synthetic Track Walkthrough](EXAMPLES_SYNTHETIC.md)
