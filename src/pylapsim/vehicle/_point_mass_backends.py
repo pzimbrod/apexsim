@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from pylapsim.utils.constants import GRAVITY, SMALL_EPS
 from pylapsim.utils.exceptions import ConfigurationError
@@ -49,6 +49,13 @@ class PointMassTorchBackendMixin:
 
     _cached_torch_module: Any | None = None
 
+    if TYPE_CHECKING:
+        vehicle: VehicleParameters
+        physics: object
+        envelope_physics: EnvelopePhysics
+        _drag_force_scale: float
+        _downforce_scale: float
+
     @classmethod
     def _torch_module(cls) -> Any:
         """Import torch lazily for optional tensor-backed execution.
@@ -73,7 +80,7 @@ class PointMassTorchBackendMixin:
         cls._cached_torch_module = torch
         return torch
 
-    def _normal_accel_limit_torch(self: PointMassBackendState, speed: Any) -> Any:
+    def _normal_accel_limit_torch(self, speed: Any) -> Any:
         """Compute normal-acceleration limits for torch tensor speed inputs.
 
         Args:
@@ -88,7 +95,7 @@ class PointMassTorchBackendMixin:
         downforce = self._downforce_scale * speed_squared
         return torch.clamp(GRAVITY + downforce / self.vehicle.mass, min=SMALL_EPS)
 
-    def _tire_accel_limit_torch(self: PointMassBackendState, speed: Any) -> Any:
+    def _tire_accel_limit_torch(self, speed: Any) -> Any:
         """Compute isotropic tire acceleration limits for torch tensors.
 
         Args:
@@ -97,7 +104,8 @@ class PointMassTorchBackendMixin:
         Returns:
             Isotropic tire acceleration-magnitude limit tensor [m/s^2].
         """
-        return self.physics.friction_coefficient * self._normal_accel_limit_torch(speed)
+        physics = cast(PointMassPhysicsProtocol, self.physics)
+        return physics.friction_coefficient * self._normal_accel_limit_torch(speed)
 
     @staticmethod
     def _friction_circle_scale_torch(
@@ -119,7 +127,7 @@ class PointMassTorchBackendMixin:
         return torch.sqrt(torch.clamp(1.0 - usage * usage, min=0.0, max=1.0))
 
     def lateral_accel_limit_torch(
-        self: PointMassBackendState,
+        self,
         speed: Any,
         banking: Any,
     ) -> Any:
@@ -138,7 +146,7 @@ class PointMassTorchBackendMixin:
         return torch.clamp(ay_tire + ay_banking, min=SMALL_EPS)
 
     def max_longitudinal_accel_torch(
-        self: PointMassBackendState,
+        self,
         speed: Any,
         lateral_accel_required: Any,
         grade: Any,
@@ -171,7 +179,7 @@ class PointMassTorchBackendMixin:
         return tire_accel - drag_accel - grade_accel
 
     def max_longitudinal_decel_torch(
-        self: PointMassBackendState,
+        self,
         speed: Any,
         lateral_accel_required: Any,
         grade: Any,

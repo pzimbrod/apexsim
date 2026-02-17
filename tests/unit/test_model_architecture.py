@@ -6,7 +6,9 @@ import unittest
 
 from pylapsim.simulation.model_api import VehicleModelBase
 from pylapsim.tire.models import default_axle_tire_parameters
+from pylapsim.vehicle._bicycle_physics import BicyclePhysicalMixin
 from pylapsim.vehicle._model_base import EnvelopeVehicleModel
+from pylapsim.vehicle._point_mass_physics import PointMassPhysicalMixin
 from pylapsim.vehicle.bicycle_model import BicycleModel, BicycleNumerics, BicyclePhysics
 from pylapsim.vehicle.point_mass_model import PointMassModel, PointMassPhysics
 from tests.helpers import sample_vehicle_parameters
@@ -40,6 +42,10 @@ class ModelArchitectureTests(unittest.TestCase):
         expected = EnvelopeVehicleModel._friction_circle_scale(5.0, 10.0)
         self.assertEqual(bicycle._friction_circle_scale(5.0, 10.0), expected)
         self.assertEqual(point_mass._friction_circle_scale(5.0, 10.0), expected)
+
+    def test_bicycle_physics_mixin_extends_point_mass_physics_mixin(self) -> None:
+        """Model bicycle physics as an extension of point-mass physical structure."""
+        self.assertTrue(issubclass(BicyclePhysicalMixin, PointMassPhysicalMixin))
 
 
 if __name__ == "__main__":

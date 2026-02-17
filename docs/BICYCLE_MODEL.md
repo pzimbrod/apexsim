@@ -1,7 +1,12 @@
 # Bicycle Model
 
 This document defines the implemented bicycle backend in
-`src/pylapsim/vehicle/bicycle_model.py`.
+`src/pylapsim/vehicle/bicycle_model.py` and
+`src/pylapsim/vehicle/_bicycle_physics.py`.
+
+The bicycle backend is implemented as a physical extension of the
+point-mass physical core (`PointMassPhysicalMixin`), with bicycle-specific
+lateral force and diagnostic equations layered on top.
 
 ## 1. Scope
 

@@ -105,6 +105,8 @@ class PointMassModel(
     - ``PointMassTorchBackendMixin`` for torch-specific solver adapter API.
     """
 
+    physics: PointMassPhysics
+
     def __init__(self, vehicle: VehicleParameters, physics: PointMassPhysics) -> None:
         """Initialize point-mass solver backend.
 

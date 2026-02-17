@@ -4,18 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import numpy as np
-
-from pylapsim.simulation.model_api import ModelDiagnostics
 from pylapsim.tire.models import AxleTireParameters
-from pylapsim.tire.pacejka import magic_formula_lateral
-from pylapsim.utils.constants import GRAVITY, SMALL_EPS
 from pylapsim.utils.exceptions import ConfigurationError
+from pylapsim.vehicle._bicycle_physics import BicyclePhysicalMixin
 from pylapsim.vehicle._model_base import EnvelopeVehicleModel
 from pylapsim.vehicle._physics_primitives import EnvelopePhysics
-from pylapsim.vehicle.aero import aero_forces
-from pylapsim.vehicle.bicycle_dynamics import BicycleDynamicsModel, ControlInput, VehicleState
-from pylapsim.vehicle.load_transfer import estimate_normal_loads
+from pylapsim.vehicle.bicycle_dynamics import BicycleDynamicsModel
 from pylapsim.vehicle.params import VehicleParameters
 
 DEFAULT_MIN_LATERAL_ACCEL_LIMIT = 0.5
@@ -131,7 +125,7 @@ class BicycleNumerics:
             raise ConfigurationError(msg)
 
 
-class BicycleModel(EnvelopeVehicleModel):
+class BicycleModel(BicyclePhysicalMixin, EnvelopeVehicleModel):
     """Vehicle-model API implementation for the bicycle dynamics backend."""
 
     def __init__(
@@ -153,7 +147,6 @@ class BicycleModel(EnvelopeVehicleModel):
             pylapsim.utils.exceptions.ConfigurationError: If any provided
                 parameter set is invalid.
         """
-        self.vehicle = vehicle
         self.tires = tires
         self.physics = physics
         self.numerics = numerics
@@ -172,227 +165,6 @@ class BicycleModel(EnvelopeVehicleModel):
         self.tires.validate()
         self._bicycle_lateral_physics.validate()
         self.numerics.validate()
-
-    def _axle_tire_loads(self, speed: float | np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        """Estimate front/rear per-tire normal loads for quasi-steady envelope use.
-
-        Args:
-            speed: Vehicle speed sample or vector [m/s].
-
-        Returns:
-            Tuple ``(front_tire_load, rear_tire_load)`` [N].
-        """
-        speed_array = np.asarray(speed, dtype=float)
-        speed_non_negative = np.maximum(speed_array, 0.0)
-        speed_squared = speed_non_negative * speed_non_negative
-
-        downforce_total = self._downforce_scale * speed_squared
-        front_downforce = downforce_total * self._front_downforce_share
-
-        weight = self.vehicle.mass * GRAVITY
-        total_vertical_load = weight + downforce_total
-        front_static_load = weight * self.vehicle.front_weight_fraction
-
-        min_axle_load = 2.0 * SMALL_EPS
-        front_axle_raw = front_static_load + front_downforce
-        front_axle_load = np.clip(
-            front_axle_raw,
-            min_axle_load,
-            total_vertical_load - min_axle_load,
-        )
-        rear_axle_load = total_vertical_load - front_axle_load
-
-        front_tire_load = np.maximum(front_axle_load * 0.5, SMALL_EPS)
-        rear_tire_load = np.maximum(rear_axle_load * 0.5, SMALL_EPS)
-        return np.asarray(front_tire_load, dtype=float), np.asarray(rear_tire_load, dtype=float)
-
-    def lateral_accel_limit(self, speed: float, banking: float) -> float:
-        """Estimate lateral acceleration capacity for the operating point.
-
-        Args:
-            speed: Vehicle speed [m/s].
-            banking: Track banking angle [rad].
-
-        Returns:
-            Quasi-steady lateral acceleration limit [m/s^2].
-        """
-        ay_banking = GRAVITY * float(np.sin(banking))
-        ay_estimate = self.numerics.min_lateral_accel_limit
-
-        front_tire_load, rear_tire_load = self._axle_tire_loads(speed)
-        fz_front_tire = float(front_tire_load)
-        fz_rear_tire = float(rear_tire_load)
-
-        for _ in range(self.numerics.lateral_limit_max_iterations):
-            fy_front = 2.0 * float(
-                magic_formula_lateral(
-                    self._bicycle_lateral_physics.peak_slip_angle,
-                    fz_front_tire,
-                    self.tires.front,
-                )
-            )
-            fy_rear = 2.0 * float(
-                magic_formula_lateral(
-                    self._bicycle_lateral_physics.peak_slip_angle,
-                    fz_rear_tire,
-                    self.tires.rear,
-                )
-            )
-            ay_tire = (fy_front + fy_rear) / self.vehicle.mass
-            ay_next = max(self.numerics.min_lateral_accel_limit, ay_tire + ay_banking)
-
-            if (
-                abs(ay_next - ay_estimate)
-                <= self.numerics.lateral_limit_convergence_tolerance
-            ):
-                ay_estimate = ay_next
-                break
-            ay_estimate = ay_next
-
-        return float(ay_estimate)
-
-    def lateral_accel_limit_batch(self, speed: np.ndarray, banking: np.ndarray) -> np.ndarray:
-        """Estimate lateral acceleration limits for vectorized operating points.
-
-        Args:
-            speed: Speed samples [m/s].
-            banking: Banking-angle samples [rad].
-
-        Returns:
-            Quasi-steady lateral acceleration limits [m/s^2].
-        """
-        speed_array, banking_array = np.broadcast_arrays(
-            np.asarray(speed, dtype=float),
-            np.asarray(banking, dtype=float),
-        )
-        ay_banking = GRAVITY * np.sin(banking_array)
-
-        fz_front_tire, fz_rear_tire = self._axle_tire_loads(speed_array)
-        ay_estimate = np.full_like(speed_array, self.numerics.min_lateral_accel_limit, dtype=float)
-
-        for _ in range(self.numerics.lateral_limit_max_iterations):
-            fy_front = 2.0 * np.asarray(
-                magic_formula_lateral(
-                    self._bicycle_lateral_physics.peak_slip_angle,
-                    fz_front_tire,
-                    self.tires.front,
-                ),
-                dtype=float,
-            )
-            fy_rear = 2.0 * np.asarray(
-                magic_formula_lateral(
-                    self._bicycle_lateral_physics.peak_slip_angle,
-                    fz_rear_tire,
-                    self.tires.rear,
-                ),
-                dtype=float,
-            )
-            ay_tire = (fy_front + fy_rear) / self.vehicle.mass
-            ay_next = np.maximum(self.numerics.min_lateral_accel_limit, ay_tire + ay_banking)
-
-            if (
-                float(np.max(np.abs(ay_next - ay_estimate)))
-                <= self.numerics.lateral_limit_convergence_tolerance
-            ):
-                ay_estimate = ay_next
-                break
-            ay_estimate = ay_next
-
-        return np.asarray(ay_estimate, dtype=float)
-
-    def max_longitudinal_accel(
-        self,
-        speed: float,
-        lateral_accel_required: float,
-        grade: float,
-        banking: float,
-    ) -> float:
-        """Compute net forward acceleration limit along path tangent.
-
-        Args:
-            speed: Vehicle speed [m/s].
-            lateral_accel_required: Required lateral acceleration magnitude [m/s^2].
-            grade: Track grade defined as ``dz/ds``.
-            banking: Track banking angle [rad].
-
-        Returns:
-            Net forward acceleration along path tangent [m/s^2].
-        """
-        ay_limit = self.lateral_accel_limit(speed, banking)
-        circle_scale = self._friction_circle_scale(lateral_accel_required, ay_limit)
-
-        tire_accel = self.envelope_physics.max_drive_accel * circle_scale
-        return self._net_forward_accel(tire_accel=tire_accel, speed=speed, grade=grade)
-
-    def max_longitudinal_decel(
-        self,
-        speed: float,
-        lateral_accel_required: float,
-        grade: float,
-        banking: float,
-    ) -> float:
-        """Compute available deceleration magnitude along path tangent.
-
-        Args:
-            speed: Vehicle speed [m/s].
-            lateral_accel_required: Required lateral acceleration magnitude [m/s^2].
-            grade: Track grade defined as ``dz/ds``.
-            banking: Track banking angle [rad].
-
-        Returns:
-            Non-negative deceleration magnitude along path tangent [m/s^2].
-        """
-        ay_limit = self.lateral_accel_limit(speed, banking)
-        circle_scale = self._friction_circle_scale(lateral_accel_required, ay_limit)
-
-        tire_brake = self.envelope_physics.max_brake_accel * circle_scale
-        return self._net_brake_decel(tire_brake=tire_brake, speed=speed, grade=grade)
-
-    def diagnostics(
-        self,
-        speed: float,
-        longitudinal_accel: float,
-        lateral_accel: float,
-        curvature: float,
-    ) -> ModelDiagnostics:
-        """Evaluate yaw moment, axle loads, and power for analysis outputs.
-
-        Args:
-            speed: Vehicle speed [m/s].
-            longitudinal_accel: Net longitudinal acceleration [m/s^2].
-            lateral_accel: Lateral acceleration [m/s^2].
-            curvature: Path curvature [1/m].
-
-        Returns:
-            Diagnostic values for plotting and KPI post-processing.
-        """
-        steer = float(np.arctan(self.vehicle.wheelbase * curvature))
-
-        state = VehicleState(
-            vx=speed,
-            vy=0.0,
-            yaw_rate=speed * curvature,
-        )
-        control = ControlInput(steer=steer, longitudinal_accel_cmd=longitudinal_accel)
-        force_balance = self._dynamics.force_balance(state, control)
-
-        loads = estimate_normal_loads(
-            self.vehicle,
-            speed=speed,
-            longitudinal_accel=longitudinal_accel,
-            lateral_accel=lateral_accel,
-        )
-
-        aero = aero_forces(self.vehicle, speed)
-        tractive_force = self.vehicle.mass * longitudinal_accel + aero.drag
-        power = tractive_force * speed
-
-        return ModelDiagnostics(
-            yaw_moment=force_balance.yaw_moment,
-            front_axle_load=loads.front_axle_load,
-            rear_axle_load=loads.rear_axle_load,
-            power=power,
-        )
 
 
 def build_bicycle_model(

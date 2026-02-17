@@ -119,6 +119,57 @@ class BicycleModelTests(unittest.TestCase):
 
         self.assertLess(uphill, on_flat)
 
+    def test_lateral_limit_batch_matches_scalar_api(self) -> None:
+        """Match vectorized lateral-limit output against scalar API evaluation."""
+        model = _build_bicycle_model()
+        speed = np.array([12.0, 37.0, 68.0], dtype=float)
+        banking = np.array([0.01, 0.03, -0.02], dtype=float)
+
+        batch = model.lateral_accel_limit_batch(speed=speed, banking=banking)
+        scalar = np.array(
+            [
+                model.lateral_accel_limit(speed=float(speed[idx]), banking=float(banking[idx]))
+                for idx in range(speed.size)
+            ],
+            dtype=float,
+        )
+        np.testing.assert_allclose(batch, scalar, rtol=1e-12, atol=1e-12)
+
+    def test_diagnostics_batch_matches_scalar_api(self) -> None:
+        """Match vectorized diagnostics output against scalar API evaluation."""
+        model = _build_bicycle_model()
+        speed = np.array([25.0, 44.0, 61.0], dtype=float)
+        longitudinal_accel = np.array([1.0, 0.2, -1.4], dtype=float)
+        lateral_accel = np.array([6.0, 9.0, 7.5], dtype=float)
+        curvature = np.array([0.01, 0.03, -0.02], dtype=float)
+
+        batch = model.diagnostics_batch(
+            speed=speed,
+            longitudinal_accel=longitudinal_accel,
+            lateral_accel=lateral_accel,
+            curvature=curvature,
+        )
+        scalar_yaw = np.zeros_like(speed)
+        scalar_front = np.zeros_like(speed)
+        scalar_rear = np.zeros_like(speed)
+        scalar_power = np.zeros_like(speed)
+        for idx in range(speed.size):
+            diagnostics = model.diagnostics(
+                speed=float(speed[idx]),
+                longitudinal_accel=float(longitudinal_accel[idx]),
+                lateral_accel=float(lateral_accel[idx]),
+                curvature=float(curvature[idx]),
+            )
+            scalar_yaw[idx] = diagnostics.yaw_moment
+            scalar_front[idx] = diagnostics.front_axle_load
+            scalar_rear[idx] = diagnostics.rear_axle_load
+            scalar_power[idx] = diagnostics.power
+
+        np.testing.assert_allclose(batch[0], scalar_yaw, rtol=1e-12, atol=1e-12)
+        np.testing.assert_allclose(batch[1], scalar_front, rtol=1e-12, atol=1e-12)
+        np.testing.assert_allclose(batch[2], scalar_rear, rtol=1e-12, atol=1e-12)
+        np.testing.assert_allclose(batch[3], scalar_power, rtol=1e-12, atol=1e-12)
+
     def test_friction_circle_returns_zero_when_limit_degenerates(self) -> None:
         """Return zero longitudinal capacity when lateral limit is degenerate."""
         model = _build_bicycle_model()
