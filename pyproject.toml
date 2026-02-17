@@ -24,6 +24,11 @@ dev = [
   "ruff>=0.9",
   "mypy>=1.13",
 ]
+docs = [
+  "mkdocs>=1.6",
+  "mkdocs-material>=9.5",
+  "mkdocstrings[python]>=0.27",
+]
 
 [tool.pytest.ini_options]
 addopts = "-q --cov=pylapsim --cov-report=term-missing --cov-fail-under=95"

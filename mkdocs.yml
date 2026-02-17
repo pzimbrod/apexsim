@@ -1,0 +1,46 @@
+site_name: PyLapSim
+site_description: Lap time simulation library with interchangeable vehicle models
+site_url: https://pzimbrod.github.io/pylapsim/
+repo_url: https://github.com/pzimbrod/pylapsim
+repo_name: pzimbrod/pylapsim
+
+theme:
+  name: material
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths:
+            - src
+          options:
+            docstring_style: google
+            show_source: false
+            separate_signature: true
+            show_signature_annotations: true
+            show_root_heading: true
+            show_root_full_path: false
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Guides:
+      - API Overview: API.md
+      - Solver: SOLVER.md
+      - Point-Mass Model: POINT_MASS_MODEL.md
+      - Assumptions: ASSUMPTIONS.md
+      - Development: DEVELOPMENT.md
+  - API Reference:
+      - Package: reference/pylapsim.md
+      - Simulation: reference/simulation.md
+      - Vehicle: reference/vehicle.md
+      - Tire: reference/tire.md
+      - Track: reference/track.md
+      - Analysis: reference/analysis.md
