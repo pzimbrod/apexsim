@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://pzimbrod.github.io/pylapsim/dev/DEVELOPMENT/">
+        <link rel="canonical" href="https://pzimbrod.github.io/pylapsim/dev/HOW_TO_USE/">
       
       
-        <link rel="prev" href="../ASSUMPTIONS/">
+        <link rel="prev" href="..">
       
       
-        <link rel="next" href="../EXAMPLES/">
+        <link rel="next" href="../API/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Development - PyLapSim</title>
+        <title>How to Use - PyLapSim</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#development" class="md-skip">
+        <a href="#how-to-use-pylapsim" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Development
+              How to Use
             
           </span>
         </div>
@@ -349,10 +349,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../HOW_TO_USE/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How to Use
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -368,6 +395,192 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-you-build-in-every-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What you build in every simulation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-imports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Imports
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-define-model-inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Define model inputs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 2: Define model inputs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-vehicle-parameters-physical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Vehicle parameters (physical)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-tire-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Tire parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-choose-a-vehicle-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Choose a vehicle model
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-load-or-generate-track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Load or generate track
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 3: Load or generate track">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-a-real-track-from-csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option A: Real track from CSV
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-b-synthetic-validation-tracks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option B: Synthetic validation tracks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-4-configure-simulation-numerics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Configure simulation numerics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-5-run-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Run simulation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-6-postprocess-and-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 6: Postprocess and export
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#physical-sanity-checklist-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Physical sanity checklist (recommended)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning path
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -461,37 +674,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Development
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../DEVELOPMENT/" class="md-nav__link">
         
   
   
@@ -507,92 +693,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#environment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Environment
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#test-commands" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Test Commands
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#docstring-policy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Docstring Policy
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#parameter-layering" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parameter Layering
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#vehicle-model-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Vehicle Model Architecture
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#refreshing-spa-data" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Refreshing Spa Data
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1102,10 +1202,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#environment" class="md-nav__link">
+  <a href="#what-you-build-in-every-simulation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Environment
+        What you build in every simulation
       
     </span>
   </a>
@@ -1113,10 +1213,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#test-commands" class="md-nav__link">
+  <a href="#step-1-imports" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Test Commands
+        Step 1: Imports
       
     </span>
   </a>
@@ -1124,10 +1224,99 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#docstring-policy" class="md-nav__link">
+  <a href="#step-2-define-model-inputs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Docstring Policy
+        Step 2: Define model inputs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 2: Define model inputs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-vehicle-parameters-physical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Vehicle parameters (physical)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-tire-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Tire parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-choose-a-vehicle-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Choose a vehicle model
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-load-or-generate-track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Load or generate track
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 3: Load or generate track">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-a-real-track-from-csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option A: Real track from CSV
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-b-synthetic-validation-tracks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option B: Synthetic validation tracks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-4-configure-simulation-numerics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Configure simulation numerics
       
     </span>
   </a>
@@ -1135,10 +1324,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#parameter-layering" class="md-nav__link">
+  <a href="#step-5-run-simulation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Parameter Layering
+        Step 5: Run simulation
       
     </span>
   </a>
@@ -1146,10 +1335,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#vehicle-model-architecture" class="md-nav__link">
+  <a href="#step-6-postprocess-and-export" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Vehicle Model Architecture
+        Step 6: Postprocess and export
       
     </span>
   </a>
@@ -1157,10 +1346,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#refreshing-spa-data" class="md-nav__link">
+  <a href="#physical-sanity-checklist-recommended" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Refreshing Spa Data
+        Physical sanity checklist (recommended)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning path
       
     </span>
   </a>
@@ -1187,93 +1387,152 @@
   
 
 
-<h1 id="development">Development<a class="headerlink" href="#development" title="Permanent link">&para;</a></h1>
-<h2 id="environment">Environment<a class="headerlink" href="#environment" title="Permanent link">&para;</a></h2>
-<p>A local virtual environment is expected at <code>.venv</code>.</p>
-<div class="highlight"><pre><span></span><code>python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>--system-site-packages<span class="w"> </span>.venv
-<span class="nb">source</span><span class="w"> </span>.venv/bin/activate
-pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;.[dev]&#39;</span>
-</code></pre></div>
-<h2 id="test-commands">Test Commands<a class="headerlink" href="#test-commands" title="Permanent link">&para;</a></h2>
-<p>Because this environment may run offline, tests can be executed via <code>unittest</code> directly:</p>
-<div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
-<span class="nv">PYTHONPATH</span><span class="o">=</span>src<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>discover<span class="w"> </span>-s<span class="w"> </span>tests<span class="w"> </span>-v
-</code></pre></div>
-<p>Coverage:</p>
-<div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
-<span class="nv">PYTHONPATH</span><span class="o">=</span>src<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>coverage<span class="w"> </span>run<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>discover<span class="w"> </span>-s<span class="w"> </span>tests
-python<span class="w"> </span>-m<span class="w"> </span>coverage<span class="w"> </span>report<span class="w"> </span>-m
-</code></pre></div>
-<p>Coverage policy:</p>
-<ul>
-<li>Keep overall coverage at or above <code>95%</code>.</li>
-</ul>
-<p>If <code>pytest</code> is available:</p>
-<div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
-<span class="nv">PYTHONPATH</span><span class="o">=</span>src<span class="w"> </span>pytest
-</code></pre></div>
-<h2 id="docstring-policy">Docstring Policy<a class="headerlink" href="#docstring-policy" title="Permanent link">&para;</a></h2>
-<p>This repository enforces Google-style docstrings through <code>ruff</code> (<code>D</code> rules with
-<code>pydocstyle</code> convention <code>google</code>) and an AST contract test.</p>
-<p>Rules:</p>
-<ul>
-<li>Public classes, functions, and interfaces must include full Google docstrings.</li>
-<li>Private/technical helpers must always include a summary line.</li>
-<li>If a callable has parameters other than <code>self</code>/<code>cls</code>, include an <code>Args:</code> section.</li>
-<li>If a callable returns a non-<code>None</code> value, include a <code>Returns:</code> section.</li>
-<li>If a callable intentionally raises domain/validation errors, include <code>Raises:</code>.</li>
-<li>Keep units explicit for physics-facing values (<code>m/s</code>, <code>m/s^2</code>, <code>1/m</code>, <code>rad</code>, <code>W</code>).</li>
-</ul>
-<p>Example:</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">lateral_speed_limit</span><span class="p">(</span><span class="n">curvature</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lateral_accel_limit</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">max_speed</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute speed limit from curvature and lateral acceleration capability.</span>
+<h1 id="how-to-use-pylapsim">How to Use PyLapSim<a class="headerlink" href="#how-to-use-pylapsim" title="Permanent link">&para;</a></h1>
+<p>This guide is a practical, engineer-oriented walkthrough of the typical workflow.
+It is designed for users with strong vehicle-dynamics background and limited
+programming experience.</p>
+<h2 id="what-you-build-in-every-simulation">What you build in every simulation<a class="headerlink" href="#what-you-build-in-every-simulation" title="Permanent link">&para;</a></h2>
+<p>Every PyLapSim run has the same structure:</p>
+<ol>
+<li>Import modules.</li>
+<li>Define vehicle and model parameters.</li>
+<li>Load or generate a track.</li>
+<li>Configure simulation numerics.</li>
+<li>Run the lap simulation.</li>
+<li>Postprocess KPIs and plots.</li>
+</ol>
+<p>If you remember this 6-step pattern, you can run all examples and extend them.</p>
+<h2 id="step-1-imports">Step 1: Imports<a class="headerlink" href="#step-1-imports" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        curvature: Signed path curvature [1/m].</span>
-<span class="sd">        lateral_accel_limit: Available lateral acceleration magnitude [m/s^2].</span>
-<span class="sd">        max_speed: Global hard speed cap [m/s].</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pylapsim.analysis</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_kpis</span><span class="p">,</span> <span class="n">export_standard_plots</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pylapsim.analysis.export</span><span class="w"> </span><span class="kn">import</span> <span class="n">export_kpi_json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pylapsim.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_simulation_config</span><span class="p">,</span> <span class="n">simulate_lap</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pylapsim.tire</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_axle_tire_parameters</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pylapsim.track</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_track_csv</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pylapsim.utils.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">STANDARD_AIR_DENSITY</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pylapsim.vehicle</span><span class="w"> </span><span class="kn">import</span> <span class="n">BicyclePhysics</span><span class="p">,</span> <span class="n">VehicleParameters</span><span class="p">,</span> <span class="n">build_bicycle_model</span>
+</code></pre></div>
+<p>Why these imports matter:</p>
+<ul>
+<li><code>track</code>: where geometry comes from.</li>
+<li><code>vehicle</code> and <code>tire</code>: physical model inputs.</li>
+<li><code>simulation</code>: solver configuration and execution.</li>
+<li><code>analysis</code>: engineering outputs (KPIs and plots).</li>
+</ul>
+<h2 id="step-2-define-model-inputs">Step 2: Define model inputs<a class="headerlink" href="#step-2-define-model-inputs" title="Permanent link">&para;</a></h2>
+<h3 id="21-vehicle-parameters-physical">2.1 Vehicle parameters (physical)<a class="headerlink" href="#21-vehicle-parameters-physical" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">vehicle</span> <span class="o">=</span> <span class="n">VehicleParameters</span><span class="p">(</span>
+    <span class="n">mass</span><span class="o">=</span><span class="mf">798.0</span><span class="p">,</span>
+    <span class="n">yaw_inertia</span><span class="o">=</span><span class="mf">1120.0</span><span class="p">,</span>
+    <span class="n">cg_height</span><span class="o">=</span><span class="mf">0.31</span><span class="p">,</span>
+    <span class="n">wheelbase</span><span class="o">=</span><span class="mf">3.60</span><span class="p">,</span>
+    <span class="n">front_track</span><span class="o">=</span><span class="mf">1.60</span><span class="p">,</span>
+    <span class="n">rear_track</span><span class="o">=</span><span class="mf">1.55</span><span class="p">,</span>
+    <span class="n">front_weight_fraction</span><span class="o">=</span><span class="mf">0.46</span><span class="p">,</span>
+    <span class="n">cop_position</span><span class="o">=</span><span class="mf">0.10</span><span class="p">,</span>
+    <span class="n">lift_coefficient</span><span class="o">=</span><span class="mf">3.20</span><span class="p">,</span>
+    <span class="n">drag_coefficient</span><span class="o">=</span><span class="mf">0.90</span><span class="p">,</span>
+    <span class="n">frontal_area</span><span class="o">=</span><span class="mf">1.50</span><span class="p">,</span>
+    <span class="n">roll_rate</span><span class="o">=</span><span class="mf">4200.0</span><span class="p">,</span>
+    <span class="n">front_spring_rate</span><span class="o">=</span><span class="mf">180000.0</span><span class="p">,</span>
+    <span class="n">rear_spring_rate</span><span class="o">=</span><span class="mf">165000.0</span><span class="p">,</span>
+    <span class="n">front_arb_distribution</span><span class="o">=</span><span class="mf">0.55</span><span class="p">,</span>
+    <span class="n">front_ride_height</span><span class="o">=</span><span class="mf">0.030</span><span class="p">,</span>
+    <span class="n">rear_ride_height</span><span class="o">=</span><span class="mf">0.050</span><span class="p">,</span>
+    <span class="n">air_density</span><span class="o">=</span><span class="n">STANDARD_AIR_DENSITY</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>These parameters represent the real system (car + aero + suspension).</p>
+<h3 id="22-tire-parameters">2.2 Tire parameters<a class="headerlink" href="#22-tire-parameters" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">tires</span> <span class="o">=</span> <span class="n">default_axle_tire_parameters</span><span class="p">()</span>
+</code></pre></div>
+<p>For first studies, start with defaults. Replace later with measured/identified tire data.</p>
+<h3 id="23-choose-a-vehicle-model">2.3 Choose a vehicle model<a class="headerlink" href="#23-choose-a-vehicle-model" title="Permanent link">&para;</a></h3>
+<p>Bicycle model (higher fidelity):</p>
+<div class="highlight"><pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">build_bicycle_model</span><span class="p">(</span>
+    <span class="n">vehicle</span><span class="o">=</span><span class="n">vehicle</span><span class="p">,</span>
+    <span class="n">tires</span><span class="o">=</span><span class="n">tires</span><span class="p">,</span>
+    <span class="n">physics</span><span class="o">=</span><span class="n">BicyclePhysics</span><span class="p">(),</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Point-mass model (faster, simpler):</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pylapsim.vehicle</span><span class="w"> </span><span class="kn">import</span> <span class="n">PointMassPhysics</span><span class="p">,</span> <span class="n">build_point_mass_model</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        Maximum feasible speed [m/s] under curvature and lateral limits.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">build_point_mass_model</span><span class="p">(</span>
+    <span class="n">vehicle</span><span class="o">=</span><span class="n">vehicle</span><span class="p">,</span>
+    <span class="n">physics</span><span class="o">=</span><span class="n">PointMassPhysics</span><span class="p">(),</span>
+<span class="p">)</span>
 </code></pre></div>
-<h2 id="parameter-layering">Parameter Layering<a class="headerlink" href="#parameter-layering" title="Permanent link">&para;</a></h2>
-<p>Keep parameter domains separate:</p>
-<ul>
-<li>Physical model inputs:</li>
-<li><code>VehicleParameters</code></li>
-<li><code>PacejkaParameters</code> / <code>AxleTireParameters</code></li>
-<li><code>BicyclePhysics</code></li>
-<li>Numerical/discretization controls:</li>
-<li><code>NumericsConfig</code></li>
-<li><code>BicycleNumerics</code></li>
-<li>Simulation runtime controls (non-physical scenario bounds):</li>
-<li><code>RuntimeConfig</code></li>
-</ul>
-<p>Avoid mixing fixed-point tolerances, iteration limits, and numerical floors into
-physical parameter dataclasses.</p>
-<p>Defaulting guidance:</p>
-<ul>
-<li>Numerical controls may include stable defaults to keep quick-start simulations
-  robust (<code>NumericsConfig</code>, <code>BicycleNumerics</code>).</li>
-<li>Physical parameter classes should stay explicit and scenario-specific.</li>
-</ul>
-<h2 id="vehicle-model-architecture">Vehicle Model Architecture<a class="headerlink" href="#vehicle-model-architecture" title="Permanent link">&para;</a></h2>
-<p>The solver contract is represented at two levels:</p>
-<ul>
-<li><code>VehicleModel</code> (Protocol) in <code>src/pylapsim/simulation/model_api.py</code>
-  keeps the simulation pipeline structurally open for external backends.</li>
-<li><code>VehicleModelBase</code> plus
-  <code>EnvelopeVehicleModel</code> in <code>src/pylapsim/vehicle/_model_base.py</code>
-  provides inheritance-based code organization for built-in backends.</li>
-</ul>
-<p>Built-in models (<code>BicycleModel</code>, <code>PointMassModel</code>) inherit the same base class
-to share validation layering, friction-circle scaling, and net
-drag/grade-corrected longitudinal limits.</p>
-<h2 id="refreshing-spa-data">Refreshing Spa Data<a class="headerlink" href="#refreshing-spa-data" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
-python<span class="w"> </span>scripts/import_spa_from_tumftm.py
+<h2 id="step-3-load-or-generate-track">Step 3: Load or generate track<a class="headerlink" href="#step-3-load-or-generate-track" title="Permanent link">&para;</a></h2>
+<h3 id="option-a-real-track-from-csv">Option A: Real track from CSV<a class="headerlink" href="#option-a-real-track-from-csv" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">project_root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">track</span> <span class="o">=</span> <span class="n">load_track_csv</span><span class="p">(</span><span class="n">project_root</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;spa_francorchamps.csv&quot;</span><span class="p">)</span>
 </code></pre></div>
+<p>Required CSV columns: <code>x</code>, <code>y</code>, <code>elevation</code>, <code>banking</code>.</p>
+<h3 id="option-b-synthetic-validation-tracks">Option B: Synthetic validation tracks<a class="headerlink" href="#option-b-synthetic-validation-tracks" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pylapsim.track</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_straight_track</span><span class="p">,</span> <span class="n">build_circular_track</span><span class="p">,</span> <span class="n">build_figure_eight_track</span>
+
+<span class="n">straight</span> <span class="o">=</span> <span class="n">build_straight_track</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">)</span>
+<span class="n">circle</span> <span class="o">=</span> <span class="n">build_circular_track</span><span class="p">(</span><span class="n">radius</span><span class="o">=</span><span class="mf">50.0</span><span class="p">)</span>
+<span class="n">figure_eight</span> <span class="o">=</span> <span class="n">build_figure_eight_track</span><span class="p">(</span><span class="n">lobe_radius</span><span class="o">=</span><span class="mf">80.0</span><span class="p">)</span>
+</code></pre></div>
+<p>Use synthetic tracks for quick physical sanity checks before running real tracks.</p>
+<h2 id="step-4-configure-simulation-numerics">Step 4: Configure simulation numerics<a class="headerlink" href="#step-4-configure-simulation-numerics" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span><span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">)</span>
+</code></pre></div>
+<p>Important distinction:</p>
+<ul>
+<li>Physical inputs: <code>VehicleParameters</code>, tire data, model physics classes.</li>
+<li>Numerical inputs: <code>SimulationConfig</code>, <code>NumericsConfig</code>, convergence tolerances,
+  iteration limits.</li>
+</ul>
+<p>If needed, create explicit numerics:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pylapsim.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">NumericsConfig</span><span class="p">,</span> <span class="n">RuntimeConfig</span><span class="p">,</span> <span class="n">SimulationConfig</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">SimulationConfig</span><span class="p">(</span>
+    <span class="n">runtime</span><span class="o">=</span><span class="n">RuntimeConfig</span><span class="p">(</span><span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">),</span>
+    <span class="n">numerics</span><span class="o">=</span><span class="n">NumericsConfig</span><span class="p">(</span>
+        <span class="n">min_speed</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span>
+        <span class="n">lateral_envelope_max_iterations</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+        <span class="n">lateral_envelope_convergence_tolerance</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">transient_step</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<h2 id="step-5-run-simulation">Step 5: Run simulation<a class="headerlink" href="#step-5-run-simulation" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">simulate_lap</span><span class="p">(</span><span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+</code></pre></div>
+<p><code>result</code> contains speed trace, accelerations, yaw moment, axle loads, power, energy,
+and lap time.</p>
+<h2 id="step-6-postprocess-and-export">Step 6: Postprocess and export<a class="headerlink" href="#step-6-postprocess-and-export" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">kpis</span> <span class="o">=</span> <span class="n">compute_kpis</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+<span class="n">output_dir</span> <span class="o">=</span> <span class="n">project_root</span> <span class="o">/</span> <span class="s2">&quot;examples&quot;</span> <span class="o">/</span> <span class="s2">&quot;output&quot;</span>
+<span class="n">export_standard_plots</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">)</span>
+<span class="n">export_kpi_json</span><span class="p">(</span><span class="n">kpis</span><span class="p">,</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;kpis.json&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Key KPI outputs:</p>
+<ul>
+<li>lap time</li>
+<li>average/max lateral acceleration</li>
+<li>average/max longitudinal acceleration</li>
+<li>integrated traction energy</li>
+</ul>
+<h2 id="physical-sanity-checklist-recommended">Physical sanity checklist (recommended)<a class="headerlink" href="#physical-sanity-checklist-recommended" title="Permanent link">&para;</a></h2>
+<p>Before trusting a result:</p>
+<ol>
+<li>Straight track: lateral acceleration should be near zero.</li>
+<li>Constant-radius circle: speed and longitudinal acceleration should be nearly steady in the interior.</li>
+<li>Figure-eight: lateral acceleration should change sign.</li>
+<li>Magnitudes should be realistic for your vehicle class.</li>
+</ol>
+<h2 id="learning-path">Learning path<a class="headerlink" href="#learning-path" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Run <a href="../EXAMPLES_SYNTHETIC/">Synthetic Track Examples</a>.</li>
+<li>Run <a href="../EXAMPLES_SPA/">Spa-Francorchamps Examples</a>.</li>
+<li>Compare models with <code>examples/spa_model_comparison.py</code>.</li>
+</ol>
 
 
 
