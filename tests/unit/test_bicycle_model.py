@@ -28,14 +28,14 @@ def _build_bicycle_model() -> BicycleModel:
         vehicle=sample_vehicle_parameters(),
         tires=default_axle_tire_parameters(),
         physics=BicyclePhysics(
-            max_drive_accel_mps2=8.0,
-            max_brake_accel_mps2=16.0,
-            peak_slip_angle_rad=0.12,
+            max_drive_accel=8.0,
+            max_brake_accel=16.0,
+            peak_slip_angle=0.12,
         ),
         numerics=BicycleNumerics(
-            min_lateral_accel_limit_mps2=0.5,
+            min_lateral_accel_limit=0.5,
             lateral_limit_max_iterations=12,
-            lateral_limit_convergence_tol_mps2=0.05,
+            lateral_limit_convergence_tolerance=0.05,
         ),
     )
 
@@ -47,42 +47,42 @@ class BicycleModelTests(unittest.TestCase):
         """Reject non-positive configured drive and brake limits."""
         with self.assertRaises(ConfigurationError):
             BicyclePhysics(
-                max_drive_accel_mps2=0.0,
-                max_brake_accel_mps2=16.0,
-                peak_slip_angle_rad=0.12,
+                max_drive_accel=0.0,
+                max_brake_accel=16.0,
+                peak_slip_angle=0.12,
             ).validate()
         with self.assertRaises(ConfigurationError):
             BicyclePhysics(
-                max_drive_accel_mps2=8.0,
-                max_brake_accel_mps2=0.0,
-                peak_slip_angle_rad=0.12,
+                max_drive_accel=8.0,
+                max_brake_accel=0.0,
+                peak_slip_angle=0.12,
             ).validate()
         with self.assertRaises(ConfigurationError):
             BicyclePhysics(
-                max_drive_accel_mps2=8.0,
-                max_brake_accel_mps2=16.0,
-                peak_slip_angle_rad=0.0,
+                max_drive_accel=8.0,
+                max_brake_accel=16.0,
+                peak_slip_angle=0.0,
             ).validate()
 
     def test_numerics_validation_rejects_invalid_values(self) -> None:
         """Reject invalid numerical settings for lateral limit iteration."""
         with self.assertRaises(ConfigurationError):
             BicycleNumerics(
-                min_lateral_accel_limit_mps2=0.0,
+                min_lateral_accel_limit=0.0,
                 lateral_limit_max_iterations=12,
-                lateral_limit_convergence_tol_mps2=0.05,
+                lateral_limit_convergence_tolerance=0.05,
             ).validate()
         with self.assertRaises(ConfigurationError):
             BicycleNumerics(
-                min_lateral_accel_limit_mps2=0.5,
+                min_lateral_accel_limit=0.5,
                 lateral_limit_max_iterations=0,
-                lateral_limit_convergence_tol_mps2=0.05,
+                lateral_limit_convergence_tolerance=0.05,
             ).validate()
         with self.assertRaises(ConfigurationError):
             BicycleNumerics(
-                min_lateral_accel_limit_mps2=0.5,
+                min_lateral_accel_limit=0.5,
                 lateral_limit_max_iterations=12,
-                lateral_limit_convergence_tol_mps2=0.0,
+                lateral_limit_convergence_tolerance=0.0,
             ).validate()
 
     def test_diagnostics_are_finite(self) -> None:
@@ -130,9 +130,9 @@ class BicycleModelTests(unittest.TestCase):
             vehicle=sample_vehicle_parameters(),
             tires=default_axle_tire_parameters(),
             physics=BicyclePhysics(
-                max_drive_accel_mps2=8.0,
-                max_brake_accel_mps2=16.0,
-                peak_slip_angle_rad=0.12,
+                max_drive_accel=8.0,
+                max_brake_accel=16.0,
+                peak_slip_angle=0.12,
             ),
         )
         self.assertEqual(model.numerics, BicycleNumerics())

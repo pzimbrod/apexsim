@@ -14,6 +14,16 @@ class PacejkaParameters:
     The lateral force model uses coefficients `B, C, D, E` in a Magic Formula style
     equation. `D` is treated as an effective friction coefficient at the current
     reference condition.
+
+    Args:
+        B: Pacejka stiffness factor (-).
+        C: Pacejka shape factor (-).
+        D: Peak friction-like factor at reference load (-).
+        E: Pacejka curvature factor (-).
+        fz_reference_n: Reference normal load used by load sensitivity (N).
+        load_sensitivity: Linear scaling of effective friction with load deviation
+            from reference (-/N).
+        min_mu_scale: Lower bound for load-scaled friction multiplier (-).
     """
 
     B: float
@@ -50,7 +60,12 @@ class PacejkaParameters:
 
 @dataclass(frozen=True)
 class AxleTireParameters:
-    """Separate tire coefficients for front and rear axle."""
+    """Separate tire coefficients for front and rear axle.
+
+    Args:
+        front: Front-axle Pacejka coefficients.
+        rear: Rear-axle Pacejka coefficients.
+    """
 
     front: PacejkaParameters
     rear: PacejkaParameters

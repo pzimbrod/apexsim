@@ -21,13 +21,13 @@
 - `lap_time_sim.simulation.RuntimeConfig`
 - `lap_time_sim.simulation.NumericsConfig` (sensible numerical defaults included)
 - `lap_time_sim.simulation.simulate_lap(track, model, config) -> LapSimulationResult`
-- `lap_time_sim.simulation.build_simulation_config(max_speed_mps=115.0, numerics=None, enable_transient_refinement=False)`
+- `lap_time_sim.simulation.build_simulation_config(max_speed=115.0, numerics=None, enable_transient_refinement=False)`
 
 Relevant `SimulationConfig` knobs:
-- `runtime.max_speed_mps`
-- `numerics.min_speed_mps`
+- `runtime.max_speed`
+- `numerics.min_speed`
 - `numerics.lateral_envelope_max_iterations`
-- `numerics.lateral_envelope_convergence_tol_mps`
+- `numerics.lateral_envelope_convergence_tolerance`
 
 Vehicle-model API required by the solver:
 - `validate()`

@@ -25,18 +25,18 @@ DEFAULT_LATERAL_LIMIT_CONVERGENCE_TOL_MPS2 = 0.05
 class BicyclePhysics:
     """Physical and model-level inputs for the bicycle solver model.
 
-    Attributes:
-        max_drive_accel_mps2: Maximum forward tire acceleration on flat road and
-            zero lateral demand, excluding drag and grade.
-        max_brake_accel_mps2: Maximum braking deceleration magnitude on flat road
-            and zero lateral demand, excluding drag and grade.
-        peak_slip_angle_rad: Quasi-steady peak slip angle used to evaluate tire
-            lateral force capability in the envelope iteration.
+    Args:
+        max_drive_accel: Maximum forward tire acceleration on flat road and zero
+            lateral demand, excluding drag and grade (m/s^2).
+        max_brake_accel: Maximum braking deceleration magnitude on flat road and
+            zero lateral demand, excluding drag and grade (m/s^2).
+        peak_slip_angle: Quasi-steady peak slip angle used to evaluate tire
+            lateral force capability in the envelope iteration (rad).
     """
 
-    max_drive_accel_mps2: float = 8.0
-    max_brake_accel_mps2: float = 16.0
-    peak_slip_angle_rad: float = 0.12
+    max_drive_accel: float = 8.0
+    max_brake_accel: float = 16.0
+    peak_slip_angle: float = 0.12
 
     def validate(self) -> None:
         """Validate physical adapter parameters.
@@ -45,14 +45,14 @@ class BicyclePhysics:
             lap_time_sim.utils.exceptions.ConfigurationError: If limits are not
                 strictly positive.
         """
-        if self.max_drive_accel_mps2 <= 0.0:
-            msg = "max_drive_accel_mps2 must be positive"
+        if self.max_drive_accel <= 0.0:
+            msg = "max_drive_accel must be positive"
             raise ConfigurationError(msg)
-        if self.max_brake_accel_mps2 <= 0.0:
-            msg = "max_brake_accel_mps2 must be positive"
+        if self.max_brake_accel <= 0.0:
+            msg = "max_brake_accel must be positive"
             raise ConfigurationError(msg)
-        if self.peak_slip_angle_rad <= 0.0:
-            msg = "peak_slip_angle_rad must be positive"
+        if self.peak_slip_angle <= 0.0:
+            msg = "peak_slip_angle must be positive"
             raise ConfigurationError(msg)
 
 
@@ -60,18 +60,18 @@ class BicyclePhysics:
 class BicycleNumerics:
     """Numerical controls for the bicycle solver model.
 
-    Attributes:
-        min_lateral_accel_limit_mps2: Lower bound for lateral-acceleration
-            iteration to avoid degenerate starts.
+    Args:
+        min_lateral_accel_limit: Lower bound for lateral-acceleration iteration
+            to avoid degenerate starts (m/s^2).
         lateral_limit_max_iterations: Maximum fixed-point iterations for lateral
             acceleration limit estimation.
-        lateral_limit_convergence_tol_mps2: Convergence threshold for lateral
-            acceleration fixed-point updates.
+        lateral_limit_convergence_tolerance: Convergence threshold for lateral
+            acceleration fixed-point updates (m/s^2).
     """
 
-    min_lateral_accel_limit_mps2: float = DEFAULT_MIN_LATERAL_ACCEL_LIMIT_MPS2
+    min_lateral_accel_limit: float = DEFAULT_MIN_LATERAL_ACCEL_LIMIT_MPS2
     lateral_limit_max_iterations: int = DEFAULT_LATERAL_LIMIT_MAX_ITERATIONS
-    lateral_limit_convergence_tol_mps2: float = DEFAULT_LATERAL_LIMIT_CONVERGENCE_TOL_MPS2
+    lateral_limit_convergence_tolerance: float = DEFAULT_LATERAL_LIMIT_CONVERGENCE_TOL_MPS2
 
     def validate(self) -> None:
         """Validate numerical settings for the adapter.
@@ -80,14 +80,14 @@ class BicycleNumerics:
             lap_time_sim.utils.exceptions.ConfigurationError: If numerical values
                 violate bounds needed for robust convergence.
         """
-        if self.min_lateral_accel_limit_mps2 <= 0.0:
-            msg = "min_lateral_accel_limit_mps2 must be positive"
+        if self.min_lateral_accel_limit <= 0.0:
+            msg = "min_lateral_accel_limit must be positive"
             raise ConfigurationError(msg)
         if self.lateral_limit_max_iterations < 1:
             msg = "lateral_limit_max_iterations must be at least 1"
             raise ConfigurationError(msg)
-        if self.lateral_limit_convergence_tol_mps2 <= 0.0:
-            msg = "lateral_limit_convergence_tol_mps2 must be positive"
+        if self.lateral_limit_convergence_tolerance <= 0.0:
+            msg = "lateral_limit_convergence_tolerance must be positive"
             raise ConfigurationError(msg)
 
 
@@ -143,7 +143,7 @@ class BicycleModel:
             Quasi-steady lateral acceleration limit in m/s^2.
         """
         ay_banking = GRAVITY_MPS2 * float(np.sin(banking_rad))
-        ay_estimate = self.numerics.min_lateral_accel_limit_mps2
+        ay_estimate = self.numerics.min_lateral_accel_limit
 
         for _ in range(self.numerics.lateral_limit_max_iterations):
             loads = estimate_normal_loads(
@@ -157,24 +157,24 @@ class BicycleModel:
 
             fy_front = 2.0 * float(
                 magic_formula_lateral(
-                    self.physics.peak_slip_angle_rad,
+                    self.physics.peak_slip_angle,
                     fz_front_tire,
                     self.tires.front,
                 )
             )
             fy_rear = 2.0 * float(
                 magic_formula_lateral(
-                    self.physics.peak_slip_angle_rad,
+                    self.physics.peak_slip_angle,
                     fz_rear_tire,
                     self.tires.rear,
                 )
             )
-            ay_tire = (fy_front + fy_rear) / self.vehicle.mass_kg
-            ay_next = max(self.numerics.min_lateral_accel_limit_mps2, ay_tire + ay_banking)
+            ay_tire = (fy_front + fy_rear) / self.vehicle.mass
+            ay_next = max(self.numerics.min_lateral_accel_limit, ay_tire + ay_banking)
 
             if (
                 abs(ay_next - ay_estimate)
-                <= self.numerics.lateral_limit_convergence_tol_mps2
+                <= self.numerics.lateral_limit_convergence_tolerance
             ):
                 ay_estimate = ay_next
                 break
@@ -218,8 +218,8 @@ class BicycleModel:
         ay_limit = self.lateral_accel_limit(speed_mps, banking_rad)
         circle_scale = self._friction_circle_scale(ay_required_mps2, ay_limit)
 
-        tire_accel = self.physics.max_drive_accel_mps2 * circle_scale
-        drag_accel = aero_forces(self.vehicle, speed_mps).drag_n / self.vehicle.mass_kg
+        tire_accel = self.physics.max_drive_accel * circle_scale
+        drag_accel = aero_forces(self.vehicle, speed_mps).drag_n / self.vehicle.mass
         grade_accel = GRAVITY_MPS2 * grade
         return float(tire_accel - drag_accel - grade_accel)
 
@@ -244,8 +244,8 @@ class BicycleModel:
         ay_limit = self.lateral_accel_limit(speed_mps, banking_rad)
         circle_scale = self._friction_circle_scale(ay_required_mps2, ay_limit)
 
-        tire_brake = self.physics.max_brake_accel_mps2 * circle_scale
-        drag_accel = aero_forces(self.vehicle, speed_mps).drag_n / self.vehicle.mass_kg
+        tire_brake = self.physics.max_brake_accel * circle_scale
+        drag_accel = aero_forces(self.vehicle, speed_mps).drag_n / self.vehicle.mass
         grade_accel = GRAVITY_MPS2 * grade
         return float(max(tire_brake + drag_accel + grade_accel, 0.0))
 
@@ -267,7 +267,7 @@ class BicycleModel:
         Returns:
             Diagnostic values for plotting and KPI post-processing.
         """
-        steer_rad = float(np.arctan(self.vehicle.wheelbase_m * curvature_1pm))
+        steer_rad = float(np.arctan(self.vehicle.wheelbase * curvature_1pm))
 
         state = VehicleState(
             vx_mps=speed_mps,
@@ -285,7 +285,7 @@ class BicycleModel:
         )
 
         aero = aero_forces(self.vehicle, speed_mps)
-        tractive_force_n = self.vehicle.mass_kg * ax_mps2 + aero.drag_n
+        tractive_force_n = self.vehicle.mass * ax_mps2 + aero.drag_n
         power_w = tractive_force_n * speed_mps
 
         return VehicleModelDiagnostics(

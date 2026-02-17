@@ -35,58 +35,58 @@ class SimulationHelpersTests(unittest.TestCase):
         """Raise configuration errors for invalid simulation settings."""
         with self.assertRaises(ConfigurationError):
             SimulationConfig(
-                runtime=RuntimeConfig(max_speed_mps=115.0, enable_transient_refinement=False),
+                runtime=RuntimeConfig(max_speed=115.0, enable_transient_refinement=False),
                 numerics=NumericsConfig(
-                    min_speed_mps=0.0,
+                    min_speed=0.0,
                     lateral_envelope_max_iterations=20,
-                    lateral_envelope_convergence_tol_mps=0.1,
-                    transient_dt_s=0.01,
+                    lateral_envelope_convergence_tolerance=0.1,
+                    transient_step=0.01,
                 ),
             ).validate()
 
     def test_build_simulation_config_uses_stable_default_numerics(self) -> None:
         """Build configuration with default numerics when omitted."""
-        config = build_simulation_config(max_speed_mps=115.0)
+        config = build_simulation_config(max_speed=115.0)
         self.assertEqual(config.numerics, NumericsConfig())
         self.assertFalse(config.runtime.enable_transient_refinement)
         with self.assertRaises(ConfigurationError):
             SimulationConfig(
-                runtime=RuntimeConfig(max_speed_mps=10.0, enable_transient_refinement=False),
+                runtime=RuntimeConfig(max_speed=10.0, enable_transient_refinement=False),
                 numerics=NumericsConfig(
-                    min_speed_mps=20.0,
+                    min_speed=20.0,
                     lateral_envelope_max_iterations=20,
-                    lateral_envelope_convergence_tol_mps=0.1,
-                    transient_dt_s=0.01,
+                    lateral_envelope_convergence_tolerance=0.1,
+                    transient_step=0.01,
                 ),
             ).validate()
         with self.assertRaises(ConfigurationError):
             SimulationConfig(
-                runtime=RuntimeConfig(max_speed_mps=115.0, enable_transient_refinement=False),
+                runtime=RuntimeConfig(max_speed=115.0, enable_transient_refinement=False),
                 numerics=NumericsConfig(
-                    min_speed_mps=8.0,
+                    min_speed=8.0,
                     lateral_envelope_max_iterations=20,
-                    lateral_envelope_convergence_tol_mps=0.1,
-                    transient_dt_s=0.0,
+                    lateral_envelope_convergence_tolerance=0.1,
+                    transient_step=0.0,
                 ),
             ).validate()
         with self.assertRaises(ConfigurationError):
             SimulationConfig(
-                runtime=RuntimeConfig(max_speed_mps=115.0, enable_transient_refinement=False),
+                runtime=RuntimeConfig(max_speed=115.0, enable_transient_refinement=False),
                 numerics=NumericsConfig(
-                    min_speed_mps=8.0,
+                    min_speed=8.0,
                     lateral_envelope_max_iterations=0,
-                    lateral_envelope_convergence_tol_mps=0.1,
-                    transient_dt_s=0.01,
+                    lateral_envelope_convergence_tolerance=0.1,
+                    transient_step=0.01,
                 ),
             ).validate()
         with self.assertRaises(ConfigurationError):
             SimulationConfig(
-                runtime=RuntimeConfig(max_speed_mps=115.0, enable_transient_refinement=False),
+                runtime=RuntimeConfig(max_speed=115.0, enable_transient_refinement=False),
                 numerics=NumericsConfig(
-                    min_speed_mps=8.0,
+                    min_speed=8.0,
                     lateral_envelope_max_iterations=20,
-                    lateral_envelope_convergence_tol_mps=0.0,
-                    transient_dt_s=0.01,
+                    lateral_envelope_convergence_tolerance=0.0,
+                    transient_step=0.01,
                 ),
             ).validate()
 

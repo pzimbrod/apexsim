@@ -18,7 +18,13 @@ MIN_SLIP_ANGLE_REFERENCE_SPEED_MPS = 0.5
 
 @dataclass(frozen=True)
 class VehicleState:
-    """Vehicle state for the bicycle model."""
+    """Vehicle state for the bicycle model.
+
+    Args:
+        vx_mps: Longitudinal velocity in body frame (m/s).
+        vy_mps: Lateral velocity in body frame (m/s).
+        yaw_rate_rps: Yaw rate (rad/s).
+    """
 
     vx_mps: float
     vy_mps: float
@@ -27,7 +33,12 @@ class VehicleState:
 
 @dataclass(frozen=True)
 class ControlInput:
-    """Control inputs for the bicycle model."""
+    """Control inputs for the bicycle model.
+
+    Args:
+        steer_rad: Front-wheel steering angle (rad).
+        longitudinal_accel_cmd_mps2: Commanded longitudinal acceleration (m/s^2).
+    """
 
     steer_rad: float
     longitudinal_accel_cmd_mps2: float
@@ -35,7 +46,15 @@ class ControlInput:
 
 @dataclass(frozen=True)
 class ForceBalance:
-    """Force-balance quantities used for analysis and integration."""
+    """Force-balance quantities used for analysis and integration.
+
+    Args:
+        alpha_front_rad: Front equivalent slip angle (rad).
+        alpha_rear_rad: Rear equivalent slip angle (rad).
+        fy_front_n: Front-axle lateral tire force (N).
+        fy_rear_n: Rear-axle lateral tire force (N).
+        yaw_moment_nm: Net yaw moment about center of gravity (N*m).
+    """
 
     alpha_front_rad: float
     alpha_rear_rad: float
@@ -74,8 +93,8 @@ class BicycleDynamicsModel:
             Tuple ``(alpha_front_rad, alpha_rear_rad)``.
         """
         u = max(abs(state.vx_mps), MIN_SLIP_ANGLE_REFERENCE_SPEED_MPS)
-        a = self.vehicle.cg_to_front_axle_m
-        b = self.vehicle.cg_to_rear_axle_m
+        a = self.vehicle.cg_to_front_axle
+        b = self.vehicle.cg_to_rear_axle
 
         alpha_front = steer_rad - np.arctan2(state.vy_mps + a * state.yaw_rate_rps, u)
         alpha_rear = -np.arctan2(state.vy_mps - b * state.yaw_rate_rps, u)
@@ -108,8 +127,8 @@ class BicycleDynamicsModel:
         )
 
         yaw_moment = (
-            self.vehicle.cg_to_front_axle_m * fy_front * np.cos(control.steer_rad)
-            - self.vehicle.cg_to_rear_axle_m * fy_rear
+            self.vehicle.cg_to_front_axle * fy_front * np.cos(control.steer_rad)
+            - self.vehicle.cg_to_rear_axle * fy_rear
         )
         return ForceBalance(
             alpha_front_rad=alpha_front,
@@ -132,7 +151,7 @@ class BicycleDynamicsModel:
         fb = self.force_balance(state, control)
         aero = aero_forces(self.vehicle, state.vx_mps)
 
-        mass = self.vehicle.mass_kg
+        mass = self.vehicle.mass
         fx_n = mass * control.longitudinal_accel_cmd_mps2 - aero.drag_n
 
         vx = state.vx_mps
@@ -141,7 +160,7 @@ class BicycleDynamicsModel:
 
         dvx = (fx_n - fb.fy_front_n * np.sin(control.steer_rad) + mass * vy * yaw) / mass
         dvy = (fb.fy_rear_n + fb.fy_front_n * np.cos(control.steer_rad) - mass * vx * yaw) / mass
-        dyaw = fb.yaw_moment_nm / self.vehicle.yaw_inertia_kgm2
+        dyaw = fb.yaw_moment_nm / self.vehicle.yaw_inertia
 
         return VehicleState(vx_mps=float(dvx), vy_mps=float(dvy), yaw_rate_rps=float(dyaw))
 

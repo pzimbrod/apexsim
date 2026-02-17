@@ -16,7 +16,20 @@ MIN_AVERAGE_SPEED_FOR_DT_MPS = 1e-6
 
 @dataclass(frozen=True)
 class LapSimulationResult:
-    """Simulation output arrays and integrated metrics."""
+    """Simulation output arrays and integrated metrics.
+
+    Args:
+        track: Track geometry used for the simulation.
+        speed_mps: Converged speed trace along arc length (m/s).
+        ax_mps2: Net longitudinal acceleration trace (m/s^2).
+        ay_mps2: Lateral acceleration trace (m/s^2).
+        yaw_moment_nm: Yaw moment trace from model diagnostics (N*m).
+        front_axle_load_n: Front-axle normal load trace (N).
+        rear_axle_load_n: Rear-axle normal load trace (N).
+        power_w: Tractive power trace (W).
+        energy_j: Integrated positive tractive energy (J).
+        lap_time_s: Integrated lap time (s).
+    """
 
     track: TrackData
     speed_mps: np.ndarray

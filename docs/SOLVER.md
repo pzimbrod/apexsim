@@ -141,7 +141,7 @@ Lateral envelope convergence in `solve_speed_profile(...)` is configurable via
 `SimulationConfig.numerics`:
 
 - `lateral_envelope_max_iterations`
-- `lateral_envelope_convergence_tol_mps`
+- `lateral_envelope_convergence_tolerance`
 
 Stop criterion:
 $$

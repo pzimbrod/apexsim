@@ -9,7 +9,14 @@ from lap_time_sim.vehicle.params import VehicleParameters
 
 @dataclass(frozen=True)
 class AeroForces:
-    """Aerodynamic loads at a given speed."""
+    """Aerodynamic loads at a given speed.
+
+    Args:
+        drag_n: Aerodynamic drag force opposing motion (N).
+        downforce_n: Total aerodynamic downforce (N).
+        front_downforce_n: Front-axle share of aerodynamic downforce (N).
+        rear_downforce_n: Rear-axle share of aerodynamic downforce (N).
+    """
 
     drag_n: float
     downforce_n: float
@@ -33,13 +40,13 @@ def aero_forces(vehicle: VehicleParameters, speed_mps: float) -> AeroForces:
     """
     vehicle.validate()
     speed_sq = max(speed_mps, 0.0) ** 2
-    q = 0.5 * vehicle.air_density_kgpm3 * speed_sq
+    q = 0.5 * vehicle.air_density * speed_sq
 
-    drag_n = q * vehicle.c_d * vehicle.frontal_area_m2
-    downforce_n = q * vehicle.c_l * vehicle.frontal_area_m2
+    drag_n = q * vehicle.drag_coefficient * vehicle.frontal_area
+    downforce_n = q * vehicle.lift_coefficient * vehicle.frontal_area
 
-    cop_from_rear = vehicle.cg_to_rear_axle_m + vehicle.cop_position_m
-    front_share = min(max(cop_from_rear / vehicle.wheelbase_m, 0.0), 1.0)
+    cop_from_rear = vehicle.cg_to_rear_axle + vehicle.cop_position
+    front_share = min(max(cop_from_rear / vehicle.wheelbase, 0.0), 1.0)
 
     front_downforce_n = downforce_n * front_share
     rear_downforce_n = downforce_n - front_downforce_n

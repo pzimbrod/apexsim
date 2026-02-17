@@ -15,7 +15,16 @@ MIN_WHEEL_NORMAL_LOAD_N = SMALL_EPS
 
 @dataclass(frozen=True)
 class NormalLoadState:
-    """Front/rear axle and wheel normal loads."""
+    """Front/rear axle and wheel normal loads.
+
+    Args:
+        front_axle_n: Total front-axle normal load (N).
+        rear_axle_n: Total rear-axle normal load (N).
+        front_left_n: Front-left wheel normal load (N).
+        front_right_n: Front-right wheel normal load (N).
+        rear_left_n: Rear-left wheel normal load (N).
+        rear_right_n: Rear-right wheel normal load (N).
+    """
 
     front_axle_n: float
     rear_axle_n: float
@@ -34,10 +43,10 @@ def _roll_stiffness_front_share(vehicle: VehicleParameters) -> float:
     Returns:
         Front axle share of roll stiffness as a bounded fraction.
     """
-    spring_share = vehicle.spring_rate_front_npm / (
-        vehicle.spring_rate_front_npm + vehicle.spring_rate_rear_npm
+    spring_share = vehicle.front_spring_rate / (
+        vehicle.front_spring_rate + vehicle.rear_spring_rate
     )
-    blended_share = 0.5 * (spring_share + vehicle.arb_distribution_front)
+    blended_share = 0.5 * (spring_share + vehicle.front_arb_distribution)
     return min(
         max(blended_share, ROLL_STIFFNESS_FRONT_SHARE_MIN),
         ROLL_STIFFNESS_FRONT_SHARE_MAX,
@@ -90,12 +99,12 @@ def estimate_normal_loads(
     vehicle.validate()
     aero = aero_forces(vehicle, speed_mps)
 
-    weight_n = vehicle.mass_kg * GRAVITY_MPS2
+    weight_n = vehicle.mass * GRAVITY_MPS2
     total_vertical_load_n = weight_n + aero.downforce_n
-    front_static_n = weight_n * vehicle.static_front_weight_fraction
+    front_static_n = weight_n * vehicle.front_weight_fraction
 
     longitudinal_transfer_n = (
-        vehicle.mass_kg * longitudinal_accel_mps2 * vehicle.h_cg_m / vehicle.wheelbase_m
+        vehicle.mass * longitudinal_accel_mps2 * vehicle.cg_height / vehicle.wheelbase
     )
 
     front_axle_raw_n = front_static_n + aero.front_downforce_n - longitudinal_transfer_n
@@ -106,11 +115,11 @@ def estimate_normal_loads(
     )
     rear_axle_n = total_vertical_load_n - front_axle_n
 
-    total_roll_moment_nm = vehicle.mass_kg * lateral_accel_mps2 * vehicle.h_cg_m
+    total_roll_moment_nm = vehicle.mass * lateral_accel_mps2 * vehicle.cg_height
     front_share = _roll_stiffness_front_share(vehicle)
 
-    front_transfer_n = front_share * total_roll_moment_nm / vehicle.track_front_m
-    rear_transfer_n = (1.0 - front_share) * total_roll_moment_nm / vehicle.track_rear_m
+    front_transfer_n = front_share * total_roll_moment_nm / vehicle.front_track
+    rear_transfer_n = (1.0 - front_share) * total_roll_moment_nm / vehicle.rear_track
 
     front_left_n, front_right_n = _split_axle_load(front_axle_n, front_transfer_n)
     rear_left_n, rear_right_n = _split_axle_load(rear_axle_n, rear_transfer_n)

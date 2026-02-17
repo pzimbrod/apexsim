@@ -33,7 +33,7 @@ class VehicleDynamicsTests(unittest.TestCase):
         )
         aero = aero_forces(vehicle, 60.0)
         total = loads.front_axle_n + loads.rear_axle_n
-        expected = vehicle.mass_kg * GRAVITY_MPS2 + aero.downforce_n
+        expected = vehicle.mass * GRAVITY_MPS2 + aero.downforce_n
         self.assertAlmostEqual(total, expected, delta=1e-6)
 
     def test_bicycle_derivatives_are_finite(self) -> None:

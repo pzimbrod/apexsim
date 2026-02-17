@@ -13,7 +13,18 @@ MIN_TRACK_POINT_COUNT = 4
 
 @dataclass(frozen=True)
 class TrackData:
-    """Processed track representation in arc-length domain."""
+    """Processed track representation in arc-length domain.
+
+    Args:
+        x_m: Global x-coordinate samples along the centerline (m).
+        y_m: Global y-coordinate samples along the centerline (m).
+        elevation_m: Elevation samples along the centerline (m).
+        banking_rad: Banking angle samples (rad).
+        s_m: Monotonic arc-length coordinate (m).
+        heading_rad: Centerline heading angle (rad).
+        curvature_1pm: Signed curvature along arc length (1/m).
+        grade: Longitudinal grade ``dz/ds`` (-).
+    """
 
     x_m: np.ndarray
     y_m: np.ndarray

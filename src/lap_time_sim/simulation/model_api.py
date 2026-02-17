@@ -8,7 +8,14 @@ from typing import Protocol
 
 @dataclass(frozen=True)
 class VehicleModelDiagnostics:
-    """Per-track-point diagnostics exposed by a vehicle model."""
+    """Per-track-point diagnostics exposed by a vehicle model.
+
+    Args:
+        yaw_moment_nm: Net yaw moment at the operating point (N*m).
+        front_axle_load_n: Front-axle normal load (N).
+        rear_axle_load_n: Rear-axle normal load (N).
+        power_w: Instantaneous tractive power (W).
+    """
 
     yaw_moment_nm: float
     front_axle_load_n: float

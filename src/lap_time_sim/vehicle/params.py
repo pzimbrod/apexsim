@@ -12,44 +12,65 @@ MAX_STATIC_FRONT_WEIGHT_FRACTION = 0.95
 
 @dataclass(frozen=True)
 class VehicleParameters:
-    """Vehicle and chassis parameters for lap-time simulation."""
+    """Vehicle and chassis parameters for lap-time simulation.
 
-    mass_kg: float
-    yaw_inertia_kgm2: float
-    h_cg_m: float
-    wheelbase_m: float
-    track_front_m: float
-    track_rear_m: float
-    static_front_weight_fraction: float
-    cop_position_m: float
-    c_l: float
-    c_d: float
-    frontal_area_m2: float
-    roll_rate_nm_per_deg: float
-    spring_rate_front_npm: float
-    spring_rate_rear_npm: float
-    arb_distribution_front: float
-    ride_height_front_m: float
-    ride_height_rear_m: float
-    air_density_kgpm3: float
+    Args:
+        mass: Vehicle mass in kg.
+        yaw_inertia: Yaw moment of inertia in kg*m^2.
+        cg_height: Center-of-gravity height above ground in m.
+        wheelbase: Wheelbase in m.
+        front_track: Front track width in m.
+        rear_track: Rear track width in m.
+        front_weight_fraction: Static front axle weight fraction in [0, 1].
+        cop_position: Center-of-pressure position relative to CoG in m.
+        lift_coefficient: Aerodynamic lift/downforce coefficient.
+        drag_coefficient: Aerodynamic drag coefficient.
+        frontal_area: Frontal reference area in m^2.
+        roll_rate: Roll rate in Nm/deg.
+        front_spring_rate: Front spring rate in N/m.
+        rear_spring_rate: Rear spring rate in N/m.
+        front_arb_distribution: Front anti-roll-bar distribution in [0, 1].
+        front_ride_height: Front ride height in m.
+        rear_ride_height: Rear ride height in m.
+        air_density: Air density in kg/m^3.
+    """
+
+    mass: float
+    yaw_inertia: float
+    cg_height: float
+    wheelbase: float
+    front_track: float
+    rear_track: float
+    front_weight_fraction: float
+    cop_position: float
+    lift_coefficient: float
+    drag_coefficient: float
+    frontal_area: float
+    roll_rate: float
+    front_spring_rate: float
+    rear_spring_rate: float
+    front_arb_distribution: float
+    front_ride_height: float
+    rear_ride_height: float
+    air_density: float
 
     @property
-    def cg_to_rear_axle_m(self) -> float:
+    def cg_to_rear_axle(self) -> float:
         """Distance from center of gravity to rear axle.
 
         Returns:
             Rear axle distance from center of gravity in meters.
         """
-        return self.static_front_weight_fraction * self.wheelbase_m
+        return self.front_weight_fraction * self.wheelbase
 
     @property
-    def cg_to_front_axle_m(self) -> float:
+    def cg_to_front_axle(self) -> float:
         """Distance from center of gravity to front axle.
 
         Returns:
             Front axle distance from center of gravity in meters.
         """
-        return self.wheelbase_m - self.cg_to_rear_axle_m
+        return self.wheelbase - self.cg_to_rear_axle
 
     def validate(self) -> None:
         """Validate configuration values before simulation.
@@ -58,34 +79,34 @@ class VehicleParameters:
             lap_time_sim.utils.exceptions.ConfigurationError: If any parameter
                 violates its defined bound.
         """
-        if self.mass_kg <= 0.0:
-            msg = "mass_kg must be positive"
+        if self.mass <= 0.0:
+            msg = "mass must be positive"
             raise ConfigurationError(msg)
-        if self.yaw_inertia_kgm2 <= 0.0:
-            msg = "yaw_inertia_kgm2 must be positive"
+        if self.yaw_inertia <= 0.0:
+            msg = "yaw_inertia must be positive"
             raise ConfigurationError(msg)
-        if self.wheelbase_m <= 0.0:
-            msg = "wheelbase_m must be positive"
+        if self.wheelbase <= 0.0:
+            msg = "wheelbase must be positive"
             raise ConfigurationError(msg)
-        if self.track_front_m <= 0.0 or self.track_rear_m <= 0.0:
+        if self.front_track <= 0.0 or self.rear_track <= 0.0:
             msg = "track widths must be positive"
             raise ConfigurationError(msg)
         if not (
             MIN_STATIC_FRONT_WEIGHT_FRACTION
-            < self.static_front_weight_fraction
+            < self.front_weight_fraction
             < MAX_STATIC_FRONT_WEIGHT_FRACTION
         ):
             msg = (
-                "static_front_weight_fraction must be between "
+                "front_weight_fraction must be between "
                 f"{MIN_STATIC_FRONT_WEIGHT_FRACTION} and {MAX_STATIC_FRONT_WEIGHT_FRACTION}"
             )
             raise ConfigurationError(msg)
-        if self.frontal_area_m2 <= 0.0:
-            msg = "frontal_area_m2 must be positive"
+        if self.frontal_area <= 0.0:
+            msg = "frontal_area must be positive"
             raise ConfigurationError(msg)
-        if not 0.0 <= self.arb_distribution_front <= 1.0:
-            msg = "arb_distribution_front must be between 0 and 1"
+        if not 0.0 <= self.front_arb_distribution <= 1.0:
+            msg = "front_arb_distribution must be between 0 and 1"
             raise ConfigurationError(msg)
-        if self.air_density_kgpm3 <= 0.0:
-            msg = "air_density_kgpm3 must be positive"
+        if self.air_density <= 0.0:
+            msg = "air_density must be positive"
             raise ConfigurationError(msg)

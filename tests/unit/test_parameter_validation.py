@@ -41,42 +41,42 @@ class ParameterValidationTests(unittest.TestCase):
     def test_vehicle_validation_rejects_invalid_values(self) -> None:
         """Raise configuration errors for invalid vehicle parameters."""
         base = dict(
-            mass_kg=700.0,
-            yaw_inertia_kgm2=1000.0,
-            h_cg_m=0.30,
-            wheelbase_m=3.5,
-            track_front_m=1.6,
-            track_rear_m=1.6,
-            static_front_weight_fraction=0.45,
-            cop_position_m=0.0,
-            c_l=3.0,
-            c_d=0.9,
-            frontal_area_m2=1.4,
-            roll_rate_nm_per_deg=4000.0,
-            spring_rate_front_npm=150000.0,
-            spring_rate_rear_npm=140000.0,
-            arb_distribution_front=0.5,
-            ride_height_front_m=0.03,
-            ride_height_rear_m=0.05,
-            air_density_kgpm3=1.225,
+            mass=700.0,
+            yaw_inertia=1000.0,
+            cg_height=0.30,
+            wheelbase=3.5,
+            front_track=1.6,
+            rear_track=1.6,
+            front_weight_fraction=0.45,
+            cop_position=0.0,
+            lift_coefficient=3.0,
+            drag_coefficient=0.9,
+            frontal_area=1.4,
+            roll_rate=4000.0,
+            front_spring_rate=150000.0,
+            rear_spring_rate=140000.0,
+            front_arb_distribution=0.5,
+            front_ride_height=0.03,
+            rear_ride_height=0.05,
+            air_density=1.225,
         )
 
         with self.assertRaises(ConfigurationError):
-            VehicleParameters(**{**base, "mass_kg": 0.0}).validate()
+            VehicleParameters(**{**base, "mass": 0.0}).validate()
         with self.assertRaises(ConfigurationError):
-            VehicleParameters(**{**base, "yaw_inertia_kgm2": 0.0}).validate()
+            VehicleParameters(**{**base, "yaw_inertia": 0.0}).validate()
         with self.assertRaises(ConfigurationError):
-            VehicleParameters(**{**base, "wheelbase_m": 0.0}).validate()
+            VehicleParameters(**{**base, "wheelbase": 0.0}).validate()
         with self.assertRaises(ConfigurationError):
-            VehicleParameters(**{**base, "track_front_m": 0.0}).validate()
+            VehicleParameters(**{**base, "front_track": 0.0}).validate()
         with self.assertRaises(ConfigurationError):
-            VehicleParameters(**{**base, "static_front_weight_fraction": 0.99}).validate()
+            VehicleParameters(**{**base, "front_weight_fraction": 0.99}).validate()
         with self.assertRaises(ConfigurationError):
-            VehicleParameters(**{**base, "frontal_area_m2": 0.0}).validate()
+            VehicleParameters(**{**base, "frontal_area": 0.0}).validate()
         with self.assertRaises(ConfigurationError):
-            VehicleParameters(**{**base, "arb_distribution_front": 1.5}).validate()
+            VehicleParameters(**{**base, "front_arb_distribution": 1.5}).validate()
         with self.assertRaises(ConfigurationError):
-            VehicleParameters(**{**base, "air_density_kgpm3": 0.0}).validate()
+            VehicleParameters(**{**base, "air_density": 0.0}).validate()
 
     def test_track_data_validation_rejects_inconsistent_arrays(self) -> None:
         """Raise track-data errors for mismatched array lengths."""

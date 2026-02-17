@@ -12,7 +12,16 @@ from lap_time_sim.utils.constants import GRAVITY_MPS2
 
 @dataclass(frozen=True)
 class KpiSummary:
-    """Summary metrics for a lap simulation."""
+    """Summary metrics for a lap simulation.
+
+    Args:
+        lap_time_s: Total lap time (s).
+        avg_lateral_accel_g: Mean absolute lateral acceleration (g).
+        max_lateral_accel_g: Peak absolute lateral acceleration (g).
+        avg_longitudinal_accel_g: Mean absolute longitudinal acceleration (g).
+        max_longitudinal_accel_g: Peak absolute longitudinal acceleration (g).
+        energy_kwh: Integrated positive traction energy (kWh).
+    """
 
     lap_time_s: float
     avg_lateral_accel_g: float

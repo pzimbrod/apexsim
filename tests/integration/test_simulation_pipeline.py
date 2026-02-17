@@ -25,14 +25,14 @@ class SimulationPipelineTests(unittest.TestCase):
             vehicle=sample_vehicle_parameters(),
             tires=default_axle_tire_parameters(),
             physics=BicyclePhysics(
-                max_drive_accel_mps2=8.0,
-                max_brake_accel_mps2=16.0,
-                peak_slip_angle_rad=0.12,
+                max_drive_accel=8.0,
+                max_brake_accel=16.0,
+                peak_slip_angle=0.12,
             ),
             numerics=BicycleNumerics(
-                min_lateral_accel_limit_mps2=0.5,
+                min_lateral_accel_limit=0.5,
                 lateral_limit_max_iterations=12,
-                lateral_limit_convergence_tol_mps2=0.05,
+                lateral_limit_convergence_tolerance=0.05,
             ),
         )
 
@@ -41,14 +41,14 @@ class SimulationPipelineTests(unittest.TestCase):
             model=model,
             config=SimulationConfig(
                 runtime=RuntimeConfig(
-                    max_speed_mps=115.0,
+                    max_speed=115.0,
                     enable_transient_refinement=False,
                 ),
                 numerics=NumericsConfig(
-                    min_speed_mps=8.0,
+                    min_speed=8.0,
                     lateral_envelope_max_iterations=20,
-                    lateral_envelope_convergence_tol_mps=0.1,
-                    transient_dt_s=0.01,
+                    lateral_envelope_convergence_tolerance=0.1,
+                    transient_step=0.01,
                 ),
             ),
         )
