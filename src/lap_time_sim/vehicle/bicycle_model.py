@@ -22,6 +22,58 @@ DEFAULT_LATERAL_LIMIT_CONVERGENCE_TOL_MPS2 = 0.05
 
 
 @dataclass(frozen=True)
+class _EnvelopePhysics:
+    """Shared longitudinal envelope limits used by lap-time solvers.
+
+    Args:
+        max_drive_accel: Maximum forward tire acceleration on flat road and zero
+            lateral demand, excluding drag and grade (m/s^2).
+        max_brake_accel: Maximum braking deceleration magnitude on flat road and
+            zero lateral demand, excluding drag and grade (m/s^2).
+    """
+
+    max_drive_accel: float
+    max_brake_accel: float
+
+    def validate(self) -> None:
+        """Validate shared longitudinal envelope limits.
+
+        Raises:
+            lap_time_sim.utils.exceptions.ConfigurationError: If limits are not
+                strictly positive.
+        """
+        if self.max_drive_accel <= 0.0:
+            msg = "max_drive_accel must be positive"
+            raise ConfigurationError(msg)
+        if self.max_brake_accel <= 0.0:
+            msg = "max_brake_accel must be positive"
+            raise ConfigurationError(msg)
+
+
+@dataclass(frozen=True)
+class _BicycleLateralPhysics:
+    """Bicycle-specific lateral-envelope approximation inputs.
+
+    Args:
+        peak_slip_angle: Quasi-steady peak slip angle used to evaluate tire
+            lateral force capability in the envelope iteration (rad).
+    """
+
+    peak_slip_angle: float
+
+    def validate(self) -> None:
+        """Validate bicycle-specific lateral approximation inputs.
+
+        Raises:
+            lap_time_sim.utils.exceptions.ConfigurationError: If values are not
+                strictly positive.
+        """
+        if self.peak_slip_angle <= 0.0:
+            msg = "peak_slip_angle must be positive"
+            raise ConfigurationError(msg)
+
+
+@dataclass(frozen=True)
 class BicyclePhysics:
     """Physical and model-level inputs for the bicycle solver model.
 
@@ -38,6 +90,28 @@ class BicyclePhysics:
     max_brake_accel: float = 16.0
     peak_slip_angle: float = 0.12
 
+    @property
+    def envelope(self) -> _EnvelopePhysics:
+        """Return shared longitudinal envelope limits.
+
+        Returns:
+            Internal shared envelope-limit representation used by multiple
+            solver model families.
+        """
+        return _EnvelopePhysics(
+            max_drive_accel=self.max_drive_accel,
+            max_brake_accel=self.max_brake_accel,
+        )
+
+    @property
+    def bicycle_lateral(self) -> _BicycleLateralPhysics:
+        """Return bicycle-specific lateral approximation inputs.
+
+        Returns:
+            Internal bicycle-specific lateral-envelope representation.
+        """
+        return _BicycleLateralPhysics(peak_slip_angle=self.peak_slip_angle)
+
     def validate(self) -> None:
         """Validate physical adapter parameters.
 
@@ -45,15 +119,8 @@ class BicyclePhysics:
             lap_time_sim.utils.exceptions.ConfigurationError: If limits are not
                 strictly positive.
         """
-        if self.max_drive_accel <= 0.0:
-            msg = "max_drive_accel must be positive"
-            raise ConfigurationError(msg)
-        if self.max_brake_accel <= 0.0:
-            msg = "max_brake_accel must be positive"
-            raise ConfigurationError(msg)
-        if self.peak_slip_angle <= 0.0:
-            msg = "peak_slip_angle must be positive"
-            raise ConfigurationError(msg)
+        self.envelope.validate()
+        self.bicycle_lateral.validate()
 
 
 @dataclass(frozen=True)
@@ -117,6 +184,8 @@ class BicycleModel:
         self.tires = tires
         self.physics = physics
         self.numerics = numerics
+        self._envelope_physics = physics.envelope
+        self._bicycle_lateral_physics = physics.bicycle_lateral
         self._dynamics = BicycleDynamicsModel(vehicle, tires)
         self.validate()
 
@@ -157,14 +226,14 @@ class BicycleModel:
 
             fy_front = 2.0 * float(
                 magic_formula_lateral(
-                    self.physics.peak_slip_angle,
+                    self._bicycle_lateral_physics.peak_slip_angle,
                     fz_front_tire,
                     self.tires.front,
                 )
             )
             fy_rear = 2.0 * float(
                 magic_formula_lateral(
-                    self.physics.peak_slip_angle,
+                    self._bicycle_lateral_physics.peak_slip_angle,
                     fz_rear_tire,
                     self.tires.rear,
                 )
@@ -218,7 +287,7 @@ class BicycleModel:
         ay_limit = self.lateral_accel_limit(speed_mps, banking_rad)
         circle_scale = self._friction_circle_scale(ay_required_mps2, ay_limit)
 
-        tire_accel = self.physics.max_drive_accel * circle_scale
+        tire_accel = self._envelope_physics.max_drive_accel * circle_scale
         drag_accel = aero_forces(self.vehicle, speed_mps).drag_n / self.vehicle.mass
         grade_accel = GRAVITY_MPS2 * grade
         return float(tire_accel - drag_accel - grade_accel)
@@ -244,7 +313,7 @@ class BicycleModel:
         ay_limit = self.lateral_accel_limit(speed_mps, banking_rad)
         circle_scale = self._friction_circle_scale(ay_required_mps2, ay_limit)
 
-        tire_brake = self.physics.max_brake_accel * circle_scale
+        tire_brake = self._envelope_physics.max_brake_accel * circle_scale
         drag_accel = aero_forces(self.vehicle, speed_mps).drag_n / self.vehicle.mass
         grade_accel = GRAVITY_MPS2 * grade
         return float(max(tire_brake + drag_accel + grade_accel, 0.0))
