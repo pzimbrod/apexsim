@@ -61,3 +61,9 @@ Solver math and derivation:
 - average and max lateral acceleration
 - average and max longitudinal acceleration
 - energy usage
+
+## Examples
+
+- `examples/spa_lap.py`: Bicycle model baseline example.
+- `examples/spa_lap_point_mass.py`: Point-mass model baseline example.
+- `examples/spa_model_comparison.py`: Bicycle vs point-mass comparison with KPI deltas.

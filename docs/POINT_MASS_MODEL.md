@@ -118,3 +118,10 @@ The backend reports:
   `PointMassModel.max_longitudinal_decel(...)`
 - diagnostics:
   `PointMassModel.diagnostics(...)`
+
+## 8. Example
+
+- Point-mass standalone usage:
+  `examples/spa_lap_point_mass.py`
+- Side-by-side comparison against bicycle model:
+  `examples/spa_model_comparison.py`

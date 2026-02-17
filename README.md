@@ -30,7 +30,14 @@ pip install -e '.[dev]'
 pytest
 python examples/spa_lap.py
 python examples/spa_lap_point_mass.py
+python examples/spa_model_comparison.py
 ```
+
+## Example Scripts
+
+- `examples/spa_lap.py`: Bicycle model end-to-end run with KPI/plot export.
+- `examples/spa_lap_point_mass.py`: Point-mass model end-to-end run with KPI/plot export.
+- `examples/spa_model_comparison.py`: Side-by-side bicycle vs point-mass comparison with KPI deltas and speed-trace overlay.
 
 ## Assumptions and Limitations
 
