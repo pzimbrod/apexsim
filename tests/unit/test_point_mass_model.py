@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 
@@ -15,6 +16,7 @@ from pylapsim.vehicle import (
     build_point_mass_model,
     calibrate_point_mass_friction_to_bicycle,
 )
+from pylapsim.vehicle.bicycle_model import BicycleModel
 from tests.helpers import sample_vehicle_parameters
 
 TORCH_AVAILABLE = importlib.util.find_spec("torch") is not None
@@ -220,6 +222,20 @@ class PointMassModelTests(unittest.TestCase):
                 tires=default_axle_tire_parameters(),
                 speed_samples=np.array([10.0, 0.0, 20.0], dtype=float),
             )
+
+    def test_calibration_uses_bicycle_batch_lateral_limit_path(self) -> None:
+        """Use vectorized bicycle lateral-limit API during calibration."""
+        with patch.object(
+            BicycleModel,
+            "lateral_accel_limit",
+            side_effect=AssertionError("scalar lateral_accel_limit should not be used"),
+        ):
+            calibration = calibrate_point_mass_friction_to_bicycle(
+                vehicle=sample_vehicle_parameters(),
+                tires=default_axle_tire_parameters(),
+                speed_samples=np.linspace(12.0, 80.0, 9, dtype=float),
+            )
+        self.assertGreater(calibration.friction_coefficient, 0.0)
 
 
 if __name__ == "__main__":

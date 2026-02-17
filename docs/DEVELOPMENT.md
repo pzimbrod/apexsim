@@ -105,6 +105,14 @@ Built-in models (`BicycleModel`, `PointMassModel`) inherit the same base class
 to share validation layering, friction-circle scaling, and net
 drag/grade-corrected longitudinal limits.
 
+For backend-enabled models, keep backend adapters out of the physics layer:
+
+- `PointMassModel` composes private mixins from
+  `src/pylapsim/vehicle/_point_mass_physics.py` and
+  `src/pylapsim/vehicle/_point_mass_backends.py`.
+- Physics equations stay backend-agnostic.
+- Backend-specific methods (`numba`, `torch`) stay isolated in adapter mixins.
+
 ## Refreshing Spa Data
 
 ```bash
