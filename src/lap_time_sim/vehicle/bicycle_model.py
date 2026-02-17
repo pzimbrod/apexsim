@@ -11,6 +11,7 @@ from lap_time_sim.tire.models import AxleTireParameters
 from lap_time_sim.tire.pacejka import magic_formula_lateral
 from lap_time_sim.utils.constants import GRAVITY, SMALL_EPS
 from lap_time_sim.utils.exceptions import ConfigurationError
+from lap_time_sim.vehicle._model_base import EnvelopeVehicleModel
 from lap_time_sim.vehicle._physics_primitives import EnvelopePhysics
 from lap_time_sim.vehicle.aero import aero_forces
 from lap_time_sim.vehicle.bicycle_dynamics import BicycleDynamicsModel, ControlInput, VehicleState
@@ -130,7 +131,7 @@ class BicycleNumerics:
             raise ConfigurationError(msg)
 
 
-class BicycleModel:
+class BicycleModel(EnvelopeVehicleModel):
     """Vehicle-model API implementation for the bicycle dynamics backend."""
 
     def __init__(
@@ -156,21 +157,20 @@ class BicycleModel:
         self.tires = tires
         self.physics = physics
         self.numerics = numerics
-        self._envelope_physics = physics.envelope
         self._bicycle_lateral_physics = physics.bicycle_lateral
         self._dynamics = BicycleDynamicsModel(vehicle, tires)
+        super().__init__(vehicle=vehicle, envelope_physics=physics.envelope)
         self.validate()
 
-    def validate(self) -> None:
-        """Validate model configuration and parameterization.
+    def _validate_backend(self) -> None:
+        """Validate bicycle-specific model configuration.
 
         Raises:
-            lap_time_sim.utils.exceptions.ConfigurationError: If vehicle, tire,
-                or adapter configuration values violate constraints.
+            lap_time_sim.utils.exceptions.ConfigurationError: If tire,
+                bicycle-physics, or numerical settings violate constraints.
         """
-        self.vehicle.validate()
         self.tires.validate()
-        self.physics.validate()
+        self._bicycle_lateral_physics.validate()
         self.numerics.validate()
 
     def lateral_accel_limit(self, speed: float, banking: float) -> float:
@@ -223,25 +223,6 @@ class BicycleModel:
 
         return float(ay_estimate)
 
-    def _friction_circle_scale(
-        self,
-        lateral_accel_required: float,
-        lateral_accel_limit: float,
-    ) -> float:
-        """Compute remaining longitudinal utilization from friction-circle usage.
-
-        Args:
-            lateral_accel_required: Required lateral acceleration magnitude [m/s^2].
-            lateral_accel_limit: Available lateral acceleration limit [m/s^2].
-
-        Returns:
-            Scalar in ``[0, 1]`` reducing longitudinal capability.
-        """
-        if lateral_accel_limit <= SMALL_EPS:
-            return 0.0
-        usage = min(abs(lateral_accel_required) / lateral_accel_limit, 1.0)
-        return float(np.sqrt(max(0.0, 1.0 - usage * usage)))
-
     def max_longitudinal_accel(
         self,
         speed: float,
@@ -263,10 +244,8 @@ class BicycleModel:
         ay_limit = self.lateral_accel_limit(speed, banking)
         circle_scale = self._friction_circle_scale(lateral_accel_required, ay_limit)
 
-        tire_accel = self._envelope_physics.max_drive_accel * circle_scale
-        drag_accel = aero_forces(self.vehicle, speed).drag / self.vehicle.mass
-        grade_accel = GRAVITY * grade
-        return float(tire_accel - drag_accel - grade_accel)
+        tire_accel = self.envelope_physics.max_drive_accel * circle_scale
+        return self._net_forward_accel(tire_accel=tire_accel, speed=speed, grade=grade)
 
     def max_longitudinal_decel(
         self,
@@ -289,10 +268,8 @@ class BicycleModel:
         ay_limit = self.lateral_accel_limit(speed, banking)
         circle_scale = self._friction_circle_scale(lateral_accel_required, ay_limit)
 
-        tire_brake = self._envelope_physics.max_brake_accel * circle_scale
-        drag_accel = aero_forces(self.vehicle, speed).drag / self.vehicle.mass
-        grade_accel = GRAVITY * grade
-        return float(max(tire_brake + drag_accel + grade_accel, 0.0))
+        tire_brake = self.envelope_physics.max_brake_accel * circle_scale
+        return self._net_brake_decel(tire_brake=tire_brake, speed=speed, grade=grade)
 
     def diagnostics(
         self,

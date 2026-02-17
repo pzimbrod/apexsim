@@ -12,11 +12,16 @@ from lap_time_sim.simulation.config import (
 )
 
 if TYPE_CHECKING:
-    from lap_time_sim.simulation.model_api import LapTimeVehicleModel, VehicleModelDiagnostics
+    from lap_time_sim.simulation.model_api import (
+        AbstractLapTimeVehicleModel,
+        LapTimeVehicleModel,
+        VehicleModelDiagnostics,
+    )
     from lap_time_sim.simulation.runner import LapSimulationResult
 
 __all__ = [
     "LapSimulationResult",
+    "AbstractLapTimeVehicleModel",
     "LapTimeVehicleModel",
     "NumericsConfig",
     "RuntimeConfig",
@@ -39,6 +44,10 @@ def __getattr__(name: str) -> Any:
     Raises:
         AttributeError: If ``name`` is not part of the public export surface.
     """
+    if name == "AbstractLapTimeVehicleModel":
+        from lap_time_sim.simulation.model_api import AbstractLapTimeVehicleModel
+
+        return AbstractLapTimeVehicleModel
     if name == "LapTimeVehicleModel":
         from lap_time_sim.simulation.model_api import LapTimeVehicleModel
 

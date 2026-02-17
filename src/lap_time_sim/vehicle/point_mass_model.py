@@ -10,6 +10,7 @@ import numpy as np
 from lap_time_sim.simulation.model_api import VehicleModelDiagnostics
 from lap_time_sim.utils.constants import GRAVITY, SMALL_EPS
 from lap_time_sim.utils.exceptions import ConfigurationError
+from lap_time_sim.vehicle._model_base import EnvelopeVehicleModel
 from lap_time_sim.vehicle._physics_primitives import EnvelopePhysics
 from lap_time_sim.vehicle.aero import aero_forces
 from lap_time_sim.vehicle.params import VehicleParameters
@@ -86,7 +87,7 @@ class PointMassCalibrationResult:
     mu_samples: np.ndarray
 
 
-class PointMassModel:
+class PointMassModel(EnvelopeVehicleModel):
     """Vehicle-model API implementation for a point-mass backend."""
 
     def __init__(self, vehicle: VehicleParameters, physics: PointMassPhysics) -> None:
@@ -102,17 +103,16 @@ class PointMassModel:
         """
         self.vehicle = vehicle
         self.physics = physics
-        self._envelope_physics = physics.envelope
+        super().__init__(vehicle=vehicle, envelope_physics=physics.envelope)
         self.validate()
 
-    def validate(self) -> None:
-        """Validate model configuration and parameterization.
+    def _validate_backend(self) -> None:
+        """Validate point-mass-specific model configuration.
 
         Raises:
-            lap_time_sim.utils.exceptions.ConfigurationError: If vehicle or
-                model parameters violate constraints.
+            lap_time_sim.utils.exceptions.ConfigurationError: If point-mass
+                physical parameters violate constraints.
         """
-        self.vehicle.validate()
         self.physics.validate()
 
     def _normal_accel_limit(self, speed: float) -> float:
@@ -138,25 +138,6 @@ class PointMassModel:
             Tire acceleration magnitude limit from isotropic friction [m/s^2].
         """
         return self.physics.friction_coefficient * self._normal_accel_limit(speed)
-
-    def _friction_circle_scale(
-        self,
-        lateral_accel_required: float,
-        lateral_accel_limit: float,
-    ) -> float:
-        """Compute remaining longitudinal utilization from friction-circle usage.
-
-        Args:
-            lateral_accel_required: Required lateral acceleration magnitude [m/s^2].
-            lateral_accel_limit: Available lateral acceleration limit [m/s^2].
-
-        Returns:
-            Scalar in ``[0, 1]`` reducing longitudinal capability.
-        """
-        if lateral_accel_limit <= SMALL_EPS:
-            return 0.0
-        usage = min(abs(lateral_accel_required) / lateral_accel_limit, 1.0)
-        return float(np.sqrt(max(0.0, 1.0 - usage * usage)))
 
     def lateral_accel_limit(self, speed: float, banking: float) -> float:
         """Estimate lateral acceleration capacity for the operating point.
@@ -192,12 +173,10 @@ class PointMassModel:
         """
         ay_limit = self.lateral_accel_limit(speed, banking)
         circle_scale = self._friction_circle_scale(lateral_accel_required, ay_limit)
-        tire_limit = min(self._tire_accel_limit(speed), self._envelope_physics.max_drive_accel)
+        tire_limit = min(self._tire_accel_limit(speed), self.envelope_physics.max_drive_accel)
         tire_accel = tire_limit * circle_scale
 
-        drag_accel = aero_forces(self.vehicle, speed).drag / self.vehicle.mass
-        grade_accel = GRAVITY * grade
-        return float(tire_accel - drag_accel - grade_accel)
+        return self._net_forward_accel(tire_accel=tire_accel, speed=speed, grade=grade)
 
     def max_longitudinal_decel(
         self,
@@ -219,12 +198,10 @@ class PointMassModel:
         """
         ay_limit = self.lateral_accel_limit(speed, banking)
         circle_scale = self._friction_circle_scale(lateral_accel_required, ay_limit)
-        tire_limit = min(self._tire_accel_limit(speed), self._envelope_physics.max_brake_accel)
+        tire_limit = min(self._tire_accel_limit(speed), self.envelope_physics.max_brake_accel)
         tire_brake = tire_limit * circle_scale
 
-        drag_accel = aero_forces(self.vehicle, speed).drag / self.vehicle.mass
-        grade_accel = GRAVITY * grade
-        return float(max(tire_brake + drag_accel + grade_accel, 0.0))
+        return self._net_brake_decel(tire_brake=tire_brake, speed=speed, grade=grade)
 
     def diagnostics(
         self,

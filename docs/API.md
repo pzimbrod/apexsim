@@ -24,6 +24,7 @@
 - `lap_time_sim.simulation.SimulationConfig`
 - `lap_time_sim.simulation.RuntimeConfig`
 - `lap_time_sim.simulation.NumericsConfig` (sensible numerical defaults included)
+- `lap_time_sim.simulation.AbstractLapTimeVehicleModel` (optional OOP base class)
 - `lap_time_sim.simulation.simulate_lap(track, model, config) -> LapSimulationResult`
 - `lap_time_sim.simulation.build_simulation_config(max_speed=115.0, numerics=None, enable_transient_refinement=False)`
 

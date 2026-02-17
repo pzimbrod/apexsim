@@ -91,6 +91,20 @@ Defaulting guidance:
   robust (`NumericsConfig`, `BicycleNumerics`).
 - Physical parameter classes should stay explicit and scenario-specific.
 
+## Vehicle Model Architecture
+
+The solver contract is represented at two levels:
+
+- `LapTimeVehicleModel` (Protocol) in `src/lap_time_sim/simulation/model_api.py`
+  keeps the simulation pipeline structurally open for external backends.
+- `AbstractLapTimeVehicleModel` plus
+  `EnvelopeVehicleModel` in `src/lap_time_sim/vehicle/_model_base.py`
+  provides inheritance-based code organization for built-in backends.
+
+Built-in models (`BicycleModel`, `PointMassModel`) inherit the same base class
+to share validation layering, friction-circle scaling, and net
+drag/grade-corrected longitudinal limits.
+
 ## Refreshing Spa Data
 
 ```bash

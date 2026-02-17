@@ -13,6 +13,7 @@ class PackageExportTests(unittest.TestCase):
 
     def test_simulation_lazy_exports_resolve(self) -> None:
         """Resolve simulation exports that are provided lazily."""
+        self.assertIsNotNone(simulation_pkg.AbstractLapTimeVehicleModel)
         self.assertIsNotNone(simulation_pkg.LapTimeVehicleModel)
         self.assertIsNotNone(simulation_pkg.VehicleModelDiagnostics)
         self.assertIsNotNone(simulation_pkg.LapSimulationResult)
