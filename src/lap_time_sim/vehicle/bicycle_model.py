@@ -9,7 +9,7 @@ import numpy as np
 from lap_time_sim.simulation.model_api import VehicleModelDiagnostics
 from lap_time_sim.tire.models import AxleTireParameters
 from lap_time_sim.tire.pacejka import magic_formula_lateral
-from lap_time_sim.utils.constants import GRAVITY_MPS2, SMALL_EPS
+from lap_time_sim.utils.constants import GRAVITY, SMALL_EPS
 from lap_time_sim.utils.exceptions import ConfigurationError
 from lap_time_sim.vehicle._physics_primitives import EnvelopePhysics
 from lap_time_sim.vehicle.aero import aero_forces
@@ -17,9 +17,9 @@ from lap_time_sim.vehicle.bicycle_dynamics import BicycleDynamicsModel, ControlI
 from lap_time_sim.vehicle.load_transfer import estimate_normal_loads
 from lap_time_sim.vehicle.params import VehicleParameters
 
-DEFAULT_MIN_LATERAL_ACCEL_LIMIT_MPS2 = 0.5
+DEFAULT_MIN_LATERAL_ACCEL_LIMIT = 0.5
 DEFAULT_LATERAL_LIMIT_MAX_ITERATIONS = 12
-DEFAULT_LATERAL_LIMIT_CONVERGENCE_TOL_MPS2 = 0.05
+DEFAULT_LATERAL_LIMIT_CONVERGENCE_TOLERANCE = 0.05
 
 
 @dataclass(frozen=True)
@@ -28,7 +28,7 @@ class _BicycleLateralPhysics:
 
     Args:
         peak_slip_angle: Quasi-steady peak slip angle used to evaluate tire
-            lateral force capability in the envelope iteration (rad).
+            lateral force capability in the envelope iteration [rad].
     """
 
     peak_slip_angle: float
@@ -51,11 +51,11 @@ class BicyclePhysics:
 
     Args:
         max_drive_accel: Maximum forward tire acceleration on flat road and zero
-            lateral demand, excluding drag and grade (m/s^2).
+            lateral demand, excluding drag and grade [m/s^2].
         max_brake_accel: Maximum braking deceleration magnitude on flat road and
-            zero lateral demand, excluding drag and grade (m/s^2).
+            zero lateral demand, excluding drag and grade [m/s^2].
         peak_slip_angle: Quasi-steady peak slip angle used to evaluate tire
-            lateral force capability in the envelope iteration (rad).
+            lateral force capability in the envelope iteration [rad].
     """
 
     max_drive_accel: float = 8.0
@@ -101,16 +101,16 @@ class BicycleNumerics:
 
     Args:
         min_lateral_accel_limit: Lower bound for lateral-acceleration iteration
-            to avoid degenerate starts (m/s^2).
+            to avoid degenerate starts [m/s^2].
         lateral_limit_max_iterations: Maximum fixed-point iterations for lateral
             acceleration limit estimation.
         lateral_limit_convergence_tolerance: Convergence threshold for lateral
-            acceleration fixed-point updates (m/s^2).
+            acceleration fixed-point updates [m/s^2].
     """
 
-    min_lateral_accel_limit: float = DEFAULT_MIN_LATERAL_ACCEL_LIMIT_MPS2
+    min_lateral_accel_limit: float = DEFAULT_MIN_LATERAL_ACCEL_LIMIT
     lateral_limit_max_iterations: int = DEFAULT_LATERAL_LIMIT_MAX_ITERATIONS
-    lateral_limit_convergence_tolerance: float = DEFAULT_LATERAL_LIMIT_CONVERGENCE_TOL_MPS2
+    lateral_limit_convergence_tolerance: float = DEFAULT_LATERAL_LIMIT_CONVERGENCE_TOLERANCE
 
     def validate(self) -> None:
         """Validate numerical settings for the adapter.
@@ -173,28 +173,28 @@ class BicycleModel:
         self.physics.validate()
         self.numerics.validate()
 
-    def lateral_accel_limit(self, speed_mps: float, banking_rad: float) -> float:
+    def lateral_accel_limit(self, speed: float, banking: float) -> float:
         """Estimate lateral acceleration capacity for the operating point.
 
         Args:
-            speed_mps: Vehicle speed in m/s.
-            banking_rad: Track banking angle in rad.
+            speed: Vehicle speed [m/s].
+            banking: Track banking angle [rad].
 
         Returns:
-            Quasi-steady lateral acceleration limit in m/s^2.
+            Quasi-steady lateral acceleration limit [m/s^2].
         """
-        ay_banking = GRAVITY_MPS2 * float(np.sin(banking_rad))
+        ay_banking = GRAVITY * float(np.sin(banking))
         ay_estimate = self.numerics.min_lateral_accel_limit
 
         for _ in range(self.numerics.lateral_limit_max_iterations):
             loads = estimate_normal_loads(
                 self.vehicle,
-                speed_mps=speed_mps,
-                longitudinal_accel_mps2=0.0,
-                lateral_accel_mps2=ay_estimate,
+                speed=speed,
+                longitudinal_accel=0.0,
+                lateral_accel=ay_estimate,
             )
-            fz_front_tire = max(loads.front_axle_n / 2.0, SMALL_EPS)
-            fz_rear_tire = max(loads.rear_axle_n / 2.0, SMALL_EPS)
+            fz_front_tire = max(loads.front_axle_load / 2.0, SMALL_EPS)
+            fz_rear_tire = max(loads.rear_axle_load / 2.0, SMALL_EPS)
 
             fy_front = 2.0 * float(
                 magic_formula_lateral(
@@ -223,117 +223,121 @@ class BicycleModel:
 
         return float(ay_estimate)
 
-    def _friction_circle_scale(self, ay_required_mps2: float, ay_limit_mps2: float) -> float:
+    def _friction_circle_scale(
+        self,
+        lateral_accel_required: float,
+        lateral_accel_limit: float,
+    ) -> float:
         """Compute remaining longitudinal utilization from friction-circle usage.
 
         Args:
-            ay_required_mps2: Required lateral acceleration magnitude in m/s^2.
-            ay_limit_mps2: Available lateral acceleration limit in m/s^2.
+            lateral_accel_required: Required lateral acceleration magnitude [m/s^2].
+            lateral_accel_limit: Available lateral acceleration limit [m/s^2].
 
         Returns:
             Scalar in ``[0, 1]`` reducing longitudinal capability.
         """
-        if ay_limit_mps2 <= SMALL_EPS:
+        if lateral_accel_limit <= SMALL_EPS:
             return 0.0
-        usage = min(abs(ay_required_mps2) / ay_limit_mps2, 1.0)
+        usage = min(abs(lateral_accel_required) / lateral_accel_limit, 1.0)
         return float(np.sqrt(max(0.0, 1.0 - usage * usage)))
 
     def max_longitudinal_accel(
         self,
-        speed_mps: float,
-        ay_required_mps2: float,
+        speed: float,
+        lateral_accel_required: float,
         grade: float,
-        banking_rad: float,
+        banking: float,
     ) -> float:
         """Compute net forward acceleration limit along path tangent.
 
         Args:
-            speed_mps: Vehicle speed in m/s.
-            ay_required_mps2: Required lateral acceleration magnitude in m/s^2.
+            speed: Vehicle speed [m/s].
+            lateral_accel_required: Required lateral acceleration magnitude [m/s^2].
             grade: Track grade defined as ``dz/ds``.
-            banking_rad: Track banking angle in rad.
+            banking: Track banking angle [rad].
 
         Returns:
-            Net forward acceleration along path tangent in m/s^2.
+            Net forward acceleration along path tangent [m/s^2].
         """
-        ay_limit = self.lateral_accel_limit(speed_mps, banking_rad)
-        circle_scale = self._friction_circle_scale(ay_required_mps2, ay_limit)
+        ay_limit = self.lateral_accel_limit(speed, banking)
+        circle_scale = self._friction_circle_scale(lateral_accel_required, ay_limit)
 
         tire_accel = self._envelope_physics.max_drive_accel * circle_scale
-        drag_accel = aero_forces(self.vehicle, speed_mps).drag_n / self.vehicle.mass
-        grade_accel = GRAVITY_MPS2 * grade
+        drag_accel = aero_forces(self.vehicle, speed).drag / self.vehicle.mass
+        grade_accel = GRAVITY * grade
         return float(tire_accel - drag_accel - grade_accel)
 
     def max_longitudinal_decel(
         self,
-        speed_mps: float,
-        ay_required_mps2: float,
+        speed: float,
+        lateral_accel_required: float,
         grade: float,
-        banking_rad: float,
+        banking: float,
     ) -> float:
         """Compute available deceleration magnitude along path tangent.
 
         Args:
-            speed_mps: Vehicle speed in m/s.
-            ay_required_mps2: Required lateral acceleration magnitude in m/s^2.
+            speed: Vehicle speed [m/s].
+            lateral_accel_required: Required lateral acceleration magnitude [m/s^2].
             grade: Track grade defined as ``dz/ds``.
-            banking_rad: Track banking angle in rad.
+            banking: Track banking angle [rad].
 
         Returns:
-            Non-negative deceleration magnitude along path tangent in m/s^2.
+            Non-negative deceleration magnitude along path tangent [m/s^2].
         """
-        ay_limit = self.lateral_accel_limit(speed_mps, banking_rad)
-        circle_scale = self._friction_circle_scale(ay_required_mps2, ay_limit)
+        ay_limit = self.lateral_accel_limit(speed, banking)
+        circle_scale = self._friction_circle_scale(lateral_accel_required, ay_limit)
 
         tire_brake = self._envelope_physics.max_brake_accel * circle_scale
-        drag_accel = aero_forces(self.vehicle, speed_mps).drag_n / self.vehicle.mass
-        grade_accel = GRAVITY_MPS2 * grade
+        drag_accel = aero_forces(self.vehicle, speed).drag / self.vehicle.mass
+        grade_accel = GRAVITY * grade
         return float(max(tire_brake + drag_accel + grade_accel, 0.0))
 
     def diagnostics(
         self,
-        speed_mps: float,
-        ax_mps2: float,
-        ay_mps2: float,
-        curvature_1pm: float,
+        speed: float,
+        longitudinal_accel: float,
+        lateral_accel: float,
+        curvature: float,
     ) -> VehicleModelDiagnostics:
         """Evaluate yaw moment, axle loads, and power for analysis outputs.
 
         Args:
-            speed_mps: Vehicle speed in m/s.
-            ax_mps2: Net longitudinal acceleration in m/s^2.
-            ay_mps2: Lateral acceleration in m/s^2.
-            curvature_1pm: Path curvature in 1/m.
+            speed: Vehicle speed [m/s].
+            longitudinal_accel: Net longitudinal acceleration [m/s^2].
+            lateral_accel: Lateral acceleration [m/s^2].
+            curvature: Path curvature [1/m].
 
         Returns:
             Diagnostic values for plotting and KPI post-processing.
         """
-        steer_rad = float(np.arctan(self.vehicle.wheelbase * curvature_1pm))
+        steer = float(np.arctan(self.vehicle.wheelbase * curvature))
 
         state = VehicleState(
-            vx_mps=speed_mps,
-            vy_mps=0.0,
-            yaw_rate_rps=speed_mps * curvature_1pm,
+            vx=speed,
+            vy=0.0,
+            yaw_rate=speed * curvature,
         )
-        control = ControlInput(steer_rad=steer_rad, longitudinal_accel_cmd_mps2=ax_mps2)
+        control = ControlInput(steer=steer, longitudinal_accel_cmd=longitudinal_accel)
         force_balance = self._dynamics.force_balance(state, control)
 
         loads = estimate_normal_loads(
             self.vehicle,
-            speed_mps=speed_mps,
-            longitudinal_accel_mps2=ax_mps2,
-            lateral_accel_mps2=ay_mps2,
+            speed=speed,
+            longitudinal_accel=longitudinal_accel,
+            lateral_accel=lateral_accel,
         )
 
-        aero = aero_forces(self.vehicle, speed_mps)
-        tractive_force_n = self.vehicle.mass * ax_mps2 + aero.drag_n
-        power_w = tractive_force_n * speed_mps
+        aero = aero_forces(self.vehicle, speed)
+        tractive_force = self.vehicle.mass * longitudinal_accel + aero.drag
+        power = tractive_force * speed
 
         return VehicleModelDiagnostics(
-            yaw_moment_nm=force_balance.yaw_moment_nm,
-            front_axle_load_n=loads.front_axle_n,
-            rear_axle_load_n=loads.rear_axle_n,
-            power_w=power_w,
+            yaw_moment=force_balance.yaw_moment,
+            front_axle_load=loads.front_axle_load,
+            rear_axle_load=loads.rear_axle_load,
+            power=power,
         )
 
 

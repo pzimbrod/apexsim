@@ -30,11 +30,11 @@ class PointMassPipelineTests(unittest.TestCase):
         result = simulate_lap(track=track, model=model, config=build_simulation_config())
         kpis = compute_kpis(result)
 
-        self.assertGreater(kpis.lap_time_s, 70.0)
-        self.assertLess(kpis.lap_time_s, 260.0)
+        self.assertGreater(kpis.lap_time, 70.0)
+        self.assertLess(kpis.lap_time, 260.0)
         self.assertGreater(kpis.max_lateral_accel_g, 1.2)
         self.assertLess(kpis.max_lateral_accel_g, 8.0)
-        self.assertGreater(len(result.speed_mps), 100)
+        self.assertGreater(len(result.speed), 100)
 
 
 if __name__ == "__main__":

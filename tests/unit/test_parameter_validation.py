@@ -20,7 +20,7 @@ class ParameterValidationTests(unittest.TestCase):
         C=1.2,
         D=1.5,
         E=0.9,
-        fz_reference_n=3000.0,
+        reference_load=3000.0,
         load_sensitivity=-0.08,
         min_mu_scale=0.4,
     )
@@ -34,7 +34,7 @@ class ParameterValidationTests(unittest.TestCase):
         with self.assertRaises(ConfigurationError):
             PacejkaParameters(**{**self._BASE_TIRE_ARGS, "D": 0.0}).validate()
         with self.assertRaises(ConfigurationError):
-            PacejkaParameters(**{**self._BASE_TIRE_ARGS, "fz_reference_n": 0.0}).validate()
+            PacejkaParameters(**{**self._BASE_TIRE_ARGS, "reference_load": 0.0}).validate()
         with self.assertRaises(ConfigurationError):
             PacejkaParameters(**{**self._BASE_TIRE_ARGS, "min_mu_scale": 0.0}).validate()
 
@@ -82,13 +82,13 @@ class ParameterValidationTests(unittest.TestCase):
         """Raise track-data errors for mismatched array lengths."""
         with self.assertRaises(TrackDataError):
             TrackData(
-                x_m=np.array([0.0, 1.0, 2.0, 3.0]),
-                y_m=np.array([0.0, 0.0, 0.0, 0.0]),
-                elevation_m=np.array([0.0, 0.0, 0.0]),
-                banking_rad=np.array([0.0, 0.0, 0.0, 0.0]),
-                s_m=np.array([0.0, 1.0, 2.0, 3.0]),
-                heading_rad=np.array([0.0, 0.0, 0.0, 0.0]),
-                curvature_1pm=np.array([0.0, 0.0, 0.0, 0.0]),
+                x=np.array([0.0, 1.0, 2.0, 3.0]),
+                y=np.array([0.0, 0.0, 0.0, 0.0]),
+                elevation=np.array([0.0, 0.0, 0.0]),
+                banking=np.array([0.0, 0.0, 0.0, 0.0]),
+                arc_length=np.array([0.0, 1.0, 2.0, 3.0]),
+                heading=np.array([0.0, 0.0, 0.0, 0.0]),
+                curvature=np.array([0.0, 0.0, 0.0, 0.0]),
                 grade=np.array([0.0, 0.0, 0.0, 0.0]),
             ).validate()
 
@@ -96,13 +96,13 @@ class ParameterValidationTests(unittest.TestCase):
         """Raise track-data errors for fewer than four points."""
         with self.assertRaises(TrackDataError):
             TrackData(
-                x_m=np.array([0.0, 1.0, 2.0]),
-                y_m=np.array([0.0, 0.0, 0.0]),
-                elevation_m=np.array([0.0, 0.0, 0.0]),
-                banking_rad=np.array([0.0, 0.0, 0.0]),
-                s_m=np.array([0.0, 1.0, 2.0]),
-                heading_rad=np.array([0.0, 0.0, 0.0]),
-                curvature_1pm=np.array([0.0, 0.0, 0.0]),
+                x=np.array([0.0, 1.0, 2.0]),
+                y=np.array([0.0, 0.0, 0.0]),
+                elevation=np.array([0.0, 0.0, 0.0]),
+                banking=np.array([0.0, 0.0, 0.0]),
+                arc_length=np.array([0.0, 1.0, 2.0]),
+                heading=np.array([0.0, 0.0, 0.0]),
+                curvature=np.array([0.0, 0.0, 0.0]),
                 grade=np.array([0.0, 0.0, 0.0]),
             ).validate()
 
@@ -110,13 +110,13 @@ class ParameterValidationTests(unittest.TestCase):
         """Raise track-data errors for non-finite arc-length entries."""
         with self.assertRaises(TrackDataError):
             TrackData(
-                x_m=np.array([0.0, 1.0, 2.0, 3.0]),
-                y_m=np.array([0.0, 0.0, 0.0, 0.0]),
-                elevation_m=np.array([0.0, 0.0, 0.0, 0.0]),
-                banking_rad=np.array([0.0, 0.0, 0.0, 0.0]),
-                s_m=np.array([0.0, np.inf, 2.0, 3.0]),
-                heading_rad=np.array([0.0, 0.0, 0.0, 0.0]),
-                curvature_1pm=np.array([0.0, 0.0, 0.0, 0.0]),
+                x=np.array([0.0, 1.0, 2.0, 3.0]),
+                y=np.array([0.0, 0.0, 0.0, 0.0]),
+                elevation=np.array([0.0, 0.0, 0.0, 0.0]),
+                banking=np.array([0.0, 0.0, 0.0, 0.0]),
+                arc_length=np.array([0.0, np.inf, 2.0, 3.0]),
+                heading=np.array([0.0, 0.0, 0.0, 0.0]),
+                curvature=np.array([0.0, 0.0, 0.0, 0.0]),
                 grade=np.array([0.0, 0.0, 0.0, 0.0]),
             ).validate()
 
@@ -124,13 +124,13 @@ class ParameterValidationTests(unittest.TestCase):
         """Raise track-data errors for non-monotonic arc-length arrays."""
         with self.assertRaises(TrackDataError):
             TrackData(
-                x_m=np.array([0.0, 1.0, 2.0, 3.0]),
-                y_m=np.array([0.0, 0.0, 0.0, 0.0]),
-                elevation_m=np.array([0.0, 0.0, 0.0, 0.0]),
-                banking_rad=np.array([0.0, 0.0, 0.0, 0.0]),
-                s_m=np.array([0.0, 1.0, 1.0, 3.0]),
-                heading_rad=np.array([0.0, 0.0, 0.0, 0.0]),
-                curvature_1pm=np.array([0.0, 0.0, 0.0, 0.0]),
+                x=np.array([0.0, 1.0, 2.0, 3.0]),
+                y=np.array([0.0, 0.0, 0.0, 0.0]),
+                elevation=np.array([0.0, 0.0, 0.0, 0.0]),
+                banking=np.array([0.0, 0.0, 0.0, 0.0]),
+                arc_length=np.array([0.0, 1.0, 1.0, 3.0]),
+                heading=np.array([0.0, 0.0, 0.0, 0.0]),
+                curvature=np.array([0.0, 0.0, 0.0, 0.0]),
                 grade=np.array([0.0, 0.0, 0.0, 0.0]),
             ).validate()
 

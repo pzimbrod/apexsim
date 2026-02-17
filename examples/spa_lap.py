@@ -11,7 +11,7 @@ from lap_time_sim.simulation import build_simulation_config, simulate_lap
 from lap_time_sim.tire import default_axle_tire_parameters
 from lap_time_sim.track import load_track_csv
 from lap_time_sim.utils import configure_logging
-from lap_time_sim.utils.constants import AIR_DENSITY_KGPM3
+from lap_time_sim.utils.constants import STANDARD_AIR_DENSITY
 from lap_time_sim.vehicle import BicyclePhysics, VehicleParameters, build_bicycle_model
 
 
@@ -39,7 +39,7 @@ def _example_vehicle_parameters() -> VehicleParameters:
         front_arb_distribution=0.55,
         front_ride_height=0.030,
         rear_ride_height=0.050,
-        air_density=AIR_DENSITY_KGPM3,
+        air_density=STANDARD_AIR_DENSITY,
     )
 
 
@@ -67,7 +67,7 @@ def main() -> None:
     export_standard_plots(result, output_dir)
     export_kpi_json(kpis, output_dir / "kpis.json")
 
-    logger.info("Lap time: %.2f s", kpis.lap_time_s)
+    logger.info("Lap time: %.2f s", kpis.lap_time)
     logger.info(
         "Avg lateral accel: %.2f g | Max lateral accel: %.2f g",
         kpis.avg_lateral_accel_g,
@@ -78,7 +78,7 @@ def main() -> None:
         kpis.avg_longitudinal_accel_g,
         kpis.max_longitudinal_accel_g,
     )
-    logger.info("Energy use: %.2f kWh", kpis.energy_kwh)
+    logger.info("Energy use: %.2f kWh", kpis.energy)
 
 
 if __name__ == "__main__":

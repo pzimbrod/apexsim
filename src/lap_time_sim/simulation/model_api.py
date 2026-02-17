@@ -11,16 +11,16 @@ class VehicleModelDiagnostics:
     """Per-track-point diagnostics exposed by a vehicle model.
 
     Args:
-        yaw_moment_nm: Net yaw moment at the operating point (N*m).
-        front_axle_load_n: Front-axle normal load (N).
-        rear_axle_load_n: Rear-axle normal load (N).
-        power_w: Instantaneous tractive power (W).
+        yaw_moment: Net yaw moment at the operating point [N*m].
+        front_axle_load: Front-axle normal load [N].
+        rear_axle_load: Rear-axle normal load [N].
+        power: Instantaneous tractive power [W].
     """
 
-    yaw_moment_nm: float
-    front_axle_load_n: float
-    rear_axle_load_n: float
-    power_w: float
+    yaw_moment: float
+    front_axle_load: float
+    rear_axle_load: float
+    power: float
 
 
 class LapTimeVehicleModel(Protocol):
@@ -39,72 +39,72 @@ class LapTimeVehicleModel(Protocol):
         """
         ...
 
-    def lateral_accel_limit(self, speed_mps: float, banking_rad: float) -> float:
+    def lateral_accel_limit(self, speed: float, banking: float) -> float:
         """Return lateral acceleration capability at the given operating point.
 
         Args:
-            speed_mps: Vehicle speed at the queried operating point in m/s.
-            banking_rad: Track banking angle at the queried point in rad.
+            speed: Vehicle speed at the queried operating point [m/s].
+            banking: Track banking angle at the queried point [rad].
 
         Returns:
-            Maximum quasi-steady lateral acceleration magnitude in m/s^2.
+            Maximum quasi-steady lateral acceleration magnitude [m/s^2].
         """
         ...
 
     def max_longitudinal_accel(
         self,
-        speed_mps: float,
-        ay_required_mps2: float,
+        speed: float,
+        lateral_accel_required: float,
         grade: float,
-        banking_rad: float,
+        banking: float,
     ) -> float:
         """Return net forward acceleration limit along the path tangent.
 
         Args:
-            speed_mps: Vehicle speed in m/s.
-            ay_required_mps2: Required lateral acceleration magnitude in m/s^2.
+            speed: Vehicle speed [m/s].
+            lateral_accel_required: Required lateral acceleration magnitude [m/s^2].
             grade: Track grade defined as ``dz/ds``.
-            banking_rad: Track banking angle in rad.
+            banking: Track banking angle [rad].
 
         Returns:
-            Maximum net acceleration along the path tangent in m/s^2.
+            Maximum net acceleration along the path tangent [m/s^2].
         """
         ...
 
     def max_longitudinal_decel(
         self,
-        speed_mps: float,
-        ay_required_mps2: float,
+        speed: float,
+        lateral_accel_required: float,
         grade: float,
-        banking_rad: float,
+        banking: float,
     ) -> float:
         """Return available deceleration magnitude along the path tangent.
 
         Args:
-            speed_mps: Vehicle speed in m/s.
-            ay_required_mps2: Required lateral acceleration magnitude in m/s^2.
+            speed: Vehicle speed [m/s].
+            lateral_accel_required: Required lateral acceleration magnitude [m/s^2].
             grade: Track grade defined as ``dz/ds``.
-            banking_rad: Track banking angle in rad.
+            banking: Track banking angle [rad].
 
         Returns:
-            Maximum non-negative deceleration magnitude along path tangent in m/s^2.
+            Maximum non-negative deceleration magnitude along path tangent [m/s^2].
         """
         ...
 
     def diagnostics(
         self,
-        speed_mps: float,
-        ax_mps2: float,
-        ay_mps2: float,
-        curvature_1pm: float,
+        speed: float,
+        longitudinal_accel: float,
+        lateral_accel: float,
+        curvature: float,
     ) -> VehicleModelDiagnostics:
         """Return diagnostic quantities used by analysis and plotting.
 
         Args:
-            speed_mps: Vehicle speed in m/s.
-            ax_mps2: Net longitudinal acceleration along path tangent in m/s^2.
-            ay_mps2: Lateral acceleration in m/s^2.
-            curvature_1pm: Signed track curvature at the sample point in 1/m.
+            speed: Vehicle speed [m/s].
+            longitudinal_accel: Net longitudinal acceleration along path tangent [m/s^2].
+            lateral_accel: Lateral acceleration [m/s^2].
+            curvature: Signed track curvature at the sample point [1/m].
 
         Returns:
             Diagnostic signals for post-processing and visualization.

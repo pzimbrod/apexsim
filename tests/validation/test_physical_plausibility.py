@@ -59,7 +59,7 @@ class PhysicalValidationTests(unittest.TestCase):
         self.assertLess(kpis.max_lateral_accel_g, 8.5)
         self.assertLess(kpis.max_longitudinal_accel_g, 5.0)
         self.assertGreater(kpis.avg_lateral_accel_g, 0.6)
-        self.assertTrue(np.isfinite(result.lap_time_s))
+        self.assertTrue(np.isfinite(result.lap_time))
 
 
 if __name__ == "__main__":

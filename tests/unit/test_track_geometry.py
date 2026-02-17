@@ -29,9 +29,9 @@ class TrackGeometryTests(unittest.TestCase):
         banking = np.zeros_like(x)
 
         track = build_track_data(x, y, elevation, banking)
-        curvature = track.curvature_1pm[10:-10]
+        curvature = track.curvature[10:-10]
         self.assertAlmostEqual(float(np.mean(curvature)), 1.0 / radius, delta=2e-3)
-        self.assertGreater(track.length_m, 700.0)
+        self.assertGreater(track.length, 700.0)
 
     def test_loader_rejects_missing_columns(self) -> None:
         """Reject CSV inputs missing required track columns."""

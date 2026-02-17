@@ -43,13 +43,13 @@ class ModelComparisonTests(unittest.TestCase):
         bicycle_result = simulate_lap(track=track, model=bicycle_model, config=config)
         point_mass_result = simulate_lap(track=track, model=point_mass_model, config=config)
 
-        self.assertTrue(np.isfinite(bicycle_result.lap_time_s))
-        self.assertTrue(np.isfinite(point_mass_result.lap_time_s))
-        self.assertGreater(bicycle_result.lap_time_s, 60.0)
-        self.assertGreater(point_mass_result.lap_time_s, 60.0)
-        self.assertEqual(len(bicycle_result.speed_mps), len(point_mass_result.speed_mps))
-        self.assertTrue(np.max(np.abs(point_mass_result.yaw_moment_nm)) == 0.0)
-        self.assertGreater(np.max(np.abs(bicycle_result.yaw_moment_nm)), 1e-9)
+        self.assertTrue(np.isfinite(bicycle_result.lap_time))
+        self.assertTrue(np.isfinite(point_mass_result.lap_time))
+        self.assertGreater(bicycle_result.lap_time, 60.0)
+        self.assertGreater(point_mass_result.lap_time, 60.0)
+        self.assertEqual(len(bicycle_result.speed), len(point_mass_result.speed))
+        self.assertTrue(np.max(np.abs(point_mass_result.yaw_moment)) == 0.0)
+        self.assertGreater(np.max(np.abs(bicycle_result.yaw_moment)), 1e-9)
 
     def test_calibrated_point_mass_matches_bicycle_more_closely(self) -> None:
         """Reduce bicycle-vs-point-mass speed and lap-time deltas via calibration."""
@@ -77,7 +77,7 @@ class ModelComparisonTests(unittest.TestCase):
             vehicle=vehicle,
             tires=tires,
             bicycle_physics=bicycle_physics,
-            speed_samples=bicycle_result.speed_mps,
+            speed_samples=bicycle_result.speed,
         )
         point_mass_calibrated = build_point_mass_model(
             vehicle=vehicle,
@@ -89,16 +89,16 @@ class ModelComparisonTests(unittest.TestCase):
         )
         calibrated_result = simulate_lap(track=track, model=point_mass_calibrated, config=config)
 
-        lap_delta_default = abs(bicycle_result.lap_time_s - default_result.lap_time_s)
-        lap_delta_calibrated = abs(bicycle_result.lap_time_s - calibrated_result.lap_time_s)
+        lap_delta_default = abs(bicycle_result.lap_time - default_result.lap_time)
+        lap_delta_calibrated = abs(bicycle_result.lap_time - calibrated_result.lap_time)
         self.assertLess(lap_delta_calibrated, lap_delta_default)
 
-        segment_mask = (track.s_m >= 6075.0) & (track.s_m <= 6280.0)
+        segment_mask = (track.arc_length >= 6075.0) & (track.arc_length <= 6280.0)
         default_speed_delta = np.abs(
-            bicycle_result.speed_mps[segment_mask] - default_result.speed_mps[segment_mask]
+            bicycle_result.speed[segment_mask] - default_result.speed[segment_mask]
         )
         calibrated_speed_delta = np.abs(
-            bicycle_result.speed_mps[segment_mask] - calibrated_result.speed_mps[segment_mask]
+            bicycle_result.speed[segment_mask] - calibrated_result.speed[segment_mask]
         )
         self.assertLess(float(np.mean(calibrated_speed_delta)), float(np.mean(default_speed_delta)))
 

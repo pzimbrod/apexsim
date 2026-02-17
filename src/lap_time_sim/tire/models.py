@@ -20,7 +20,7 @@ class PacejkaParameters:
         C: Pacejka shape factor (-).
         D: Peak friction-like factor at reference load (-).
         E: Pacejka curvature factor (-).
-        fz_reference_n: Reference normal load used by load sensitivity (N).
+        reference_load: Reference normal load used by load sensitivity [N].
         load_sensitivity: Linear scaling of effective friction with load deviation
             from reference (-/N).
         min_mu_scale: Lower bound for load-scaled friction multiplier (-).
@@ -30,7 +30,7 @@ class PacejkaParameters:
     C: float
     D: float
     E: float
-    fz_reference_n: float
+    reference_load: float
     load_sensitivity: float
     min_mu_scale: float
 
@@ -50,7 +50,7 @@ class PacejkaParameters:
         if self.D <= 0.0:
             msg = "Pacejka D must be positive"
             raise ConfigurationError(msg)
-        if self.fz_reference_n <= 0.0:
+        if self.reference_load <= 0.0:
             msg = "Reference normal load must be positive"
             raise ConfigurationError(msg)
         if self.min_mu_scale <= 0.0:
@@ -93,7 +93,7 @@ def default_axle_tire_parameters() -> AxleTireParameters:
             C=1.35,
             D=1.85,
             E=0.97,
-            fz_reference_n=3500.0,
+            reference_load=3500.0,
             load_sensitivity=-0.08,
             min_mu_scale=0.4,
         ),
@@ -102,7 +102,7 @@ def default_axle_tire_parameters() -> AxleTireParameters:
             C=1.33,
             D=1.95,
             E=0.95,
-            fz_reference_n=4200.0,
+            reference_load=4200.0,
             load_sensitivity=-0.08,
             min_mu_scale=0.4,
         ),

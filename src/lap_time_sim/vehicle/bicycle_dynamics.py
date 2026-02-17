@@ -13,7 +13,7 @@ from lap_time_sim.vehicle.aero import aero_forces
 from lap_time_sim.vehicle.load_transfer import estimate_normal_loads
 from lap_time_sim.vehicle.params import VehicleParameters
 
-MIN_SLIP_ANGLE_REFERENCE_SPEED_MPS = 0.5
+MIN_SLIP_ANGLE_REFERENCE_SPEED = 0.5
 
 
 @dataclass(frozen=True)
@@ -21,14 +21,14 @@ class VehicleState:
     """Vehicle state for the bicycle model.
 
     Args:
-        vx_mps: Longitudinal velocity in body frame (m/s).
-        vy_mps: Lateral velocity in body frame (m/s).
-        yaw_rate_rps: Yaw rate (rad/s).
+        vx: Longitudinal velocity in body frame [m/s].
+        vy: Lateral velocity in body frame [m/s].
+        yaw_rate: Yaw rate [rad/s].
     """
 
-    vx_mps: float
-    vy_mps: float
-    yaw_rate_rps: float
+    vx: float
+    vy: float
+    yaw_rate: float
 
 
 @dataclass(frozen=True)
@@ -36,12 +36,12 @@ class ControlInput:
     """Control inputs for the bicycle model.
 
     Args:
-        steer_rad: Front-wheel steering angle (rad).
-        longitudinal_accel_cmd_mps2: Commanded longitudinal acceleration (m/s^2).
+        steer: Front-wheel steering angle [rad].
+        longitudinal_accel_cmd: Commanded longitudinal acceleration [m/s^2].
     """
 
-    steer_rad: float
-    longitudinal_accel_cmd_mps2: float
+    steer: float
+    longitudinal_accel_cmd: float
 
 
 @dataclass(frozen=True)
@@ -49,18 +49,18 @@ class ForceBalance:
     """Force-balance quantities used for analysis and integration.
 
     Args:
-        alpha_front_rad: Front equivalent slip angle (rad).
-        alpha_rear_rad: Rear equivalent slip angle (rad).
-        fy_front_n: Front-axle lateral tire force (N).
-        fy_rear_n: Rear-axle lateral tire force (N).
-        yaw_moment_nm: Net yaw moment about center of gravity (N*m).
+        front_slip_angle: Front equivalent slip angle [rad].
+        rear_slip_angle: Rear equivalent slip angle [rad].
+        front_lateral_force: Front-axle lateral tire force [N].
+        rear_lateral_force: Rear-axle lateral tire force [N].
+        yaw_moment: Net yaw moment about center of gravity [N*m].
     """
 
-    alpha_front_rad: float
-    alpha_rear_rad: float
-    fy_front_n: float
-    fy_rear_n: float
-    yaw_moment_nm: float
+    front_slip_angle: float
+    rear_slip_angle: float
+    front_lateral_force: float
+    rear_lateral_force: float
+    yaw_moment: float
 
 
 class BicycleDynamicsModel:
@@ -82,22 +82,22 @@ class BicycleDynamicsModel:
         self.vehicle.validate()
         self.tires.validate()
 
-    def slip_angles(self, state: VehicleState, steer_rad: float) -> tuple[float, float]:
+    def slip_angles(self, state: VehicleState, steer: float) -> tuple[float, float]:
         """Compute front and rear axle slip angles.
 
         Args:
             state: Vehicle state ``(vx, vy, yaw_rate)``.
-            steer_rad: Front-wheel steering angle in rad.
+            steer: Front-wheel steering angle [rad].
 
         Returns:
-            Tuple ``(alpha_front_rad, alpha_rear_rad)``.
+            Tuple ``(front_slip_angle, rear_slip_angle)``.
         """
-        u = max(abs(state.vx_mps), MIN_SLIP_ANGLE_REFERENCE_SPEED_MPS)
+        u = max(abs(state.vx), MIN_SLIP_ANGLE_REFERENCE_SPEED)
         a = self.vehicle.cg_to_front_axle
         b = self.vehicle.cg_to_rear_axle
 
-        alpha_front = steer_rad - np.arctan2(state.vy_mps + a * state.yaw_rate_rps, u)
-        alpha_rear = -np.arctan2(state.vy_mps - b * state.yaw_rate_rps, u)
+        alpha_front = steer - np.arctan2(state.vy + a * state.yaw_rate, u)
+        alpha_rear = -np.arctan2(state.vy - b * state.yaw_rate, u)
         return float(alpha_front), float(alpha_rear)
 
     def force_balance(self, state: VehicleState, control: ControlInput) -> ForceBalance:
@@ -110,32 +110,32 @@ class BicycleDynamicsModel:
         Returns:
             Force-balance terms including slip angles, tire forces, and yaw moment.
         """
-        alpha_front, alpha_rear = self.slip_angles(state, control.steer_rad)
+        alpha_front, alpha_rear = self.slip_angles(state, control.steer)
         loads = estimate_normal_loads(
             self.vehicle,
-            speed_mps=state.vx_mps,
-            longitudinal_accel_mps2=control.longitudinal_accel_cmd_mps2,
-            lateral_accel_mps2=0.0,
+            speed=state.vx,
+            longitudinal_accel=control.longitudinal_accel_cmd,
+            lateral_accel=0.0,
         )
 
         fy_front, fy_rear = axle_lateral_forces(
-            front_slip_rad=alpha_front,
-            rear_slip_rad=alpha_rear,
-            front_axle_load_n=loads.front_axle_n,
-            rear_axle_load_n=loads.rear_axle_n,
+            front_slip_angle=alpha_front,
+            rear_slip_angle=alpha_rear,
+            front_axle_load=loads.front_axle_load,
+            rear_axle_load=loads.rear_axle_load,
             axle_params=self.tires,
         )
 
         yaw_moment = (
-            self.vehicle.cg_to_front_axle * fy_front * np.cos(control.steer_rad)
+            self.vehicle.cg_to_front_axle * fy_front * np.cos(control.steer)
             - self.vehicle.cg_to_rear_axle * fy_rear
         )
         return ForceBalance(
-            alpha_front_rad=alpha_front,
-            alpha_rear_rad=alpha_rear,
-            fy_front_n=fy_front,
-            fy_rear_n=fy_rear,
-            yaw_moment_nm=float(yaw_moment),
+            front_slip_angle=alpha_front,
+            rear_slip_angle=alpha_rear,
+            front_lateral_force=fy_front,
+            rear_lateral_force=fy_rear,
+            yaw_moment=float(yaw_moment),
         )
 
     def derivatives(self, state: VehicleState, control: ControlInput) -> VehicleState:
@@ -149,20 +149,28 @@ class BicycleDynamicsModel:
             Time derivatives ``(dvx/dt, dvy/dt, dr/dt)`` in SI units.
         """
         fb = self.force_balance(state, control)
-        aero = aero_forces(self.vehicle, state.vx_mps)
+        aero = aero_forces(self.vehicle, state.vx)
 
         mass = self.vehicle.mass
-        fx_n = mass * control.longitudinal_accel_cmd_mps2 - aero.drag_n
+        longitudinal_force = mass * control.longitudinal_accel_cmd - aero.drag
 
-        vx = state.vx_mps
-        vy = state.vy_mps
-        yaw = state.yaw_rate_rps
+        vx = state.vx
+        vy = state.vy
+        yaw = state.yaw_rate
 
-        dvx = (fx_n - fb.fy_front_n * np.sin(control.steer_rad) + mass * vy * yaw) / mass
-        dvy = (fb.fy_rear_n + fb.fy_front_n * np.cos(control.steer_rad) - mass * vx * yaw) / mass
-        dyaw = fb.yaw_moment_nm / self.vehicle.yaw_inertia
+        dvx = (
+            longitudinal_force
+            - fb.front_lateral_force * np.sin(control.steer)
+            + mass * vy * yaw
+        ) / mass
+        dvy = (
+            fb.rear_lateral_force
+            + fb.front_lateral_force * np.cos(control.steer)
+            - mass * vx * yaw
+        ) / mass
+        dyaw = fb.yaw_moment / self.vehicle.yaw_inertia
 
-        return VehicleState(vx_mps=float(dvx), vy_mps=float(dvy), yaw_rate_rps=float(dyaw))
+        return VehicleState(vx=float(dvx), vy=float(dvy), yaw_rate=float(dyaw))
 
     @staticmethod
     def to_array(state: VehicleState) -> np.ndarray:
@@ -172,9 +180,9 @@ class BicycleDynamicsModel:
             state: Vehicle state dataclass.
 
         Returns:
-            State vector ``[vx_mps, vy_mps, yaw_rate_rps]``.
+            State vector ``[vx, vy, yaw_rate]``.
         """
-        return np.array([state.vx_mps, state.vy_mps, state.yaw_rate_rps], dtype=float)
+        return np.array([state.vx, state.vy, state.yaw_rate], dtype=float)
 
     @staticmethod
     def from_array(values: np.ndarray) -> VehicleState:
@@ -187,19 +195,19 @@ class BicycleDynamicsModel:
             Parsed vehicle state dataclass.
         """
         return VehicleState(
-            vx_mps=float(values[0]),
-            vy_mps=float(values[1]),
-            yaw_rate_rps=float(values[2]),
+            vx=float(values[0]),
+            vy=float(values[1]),
+            yaw_rate=float(values[2]),
         )
 
     @staticmethod
-    def sanitize_speed(speed_mps: float) -> float:
+    def sanitize_speed(speed: float) -> float:
         """Apply a numerical lower bound to speed.
 
         Args:
-            speed_mps: Raw speed in m/s.
+            speed: Raw speed [m/s].
 
         Returns:
             Speed clamped to a positive lower bound for numerical stability.
         """
-        return max(speed_mps, SMALL_EPS)
+        return max(speed, SMALL_EPS)

@@ -16,33 +16,33 @@ class TrackData:
     """Processed track representation in arc-length domain.
 
     Args:
-        x_m: Global x-coordinate samples along the centerline (m).
-        y_m: Global y-coordinate samples along the centerline (m).
-        elevation_m: Elevation samples along the centerline (m).
-        banking_rad: Banking angle samples (rad).
-        s_m: Monotonic arc-length coordinate (m).
-        heading_rad: Centerline heading angle (rad).
-        curvature_1pm: Signed curvature along arc length (1/m).
+        x: Global x-coordinate samples along the centerline [m].
+        y: Global y-coordinate samples along the centerline [m].
+        elevation: Elevation samples along the centerline [m].
+        banking: Banking angle samples [rad].
+        arc_length: Monotonic arc-length coordinate [m].
+        heading: Centerline heading angle [rad].
+        curvature: Signed curvature along arc length [1/m].
         grade: Longitudinal grade ``dz/ds`` (-).
     """
 
-    x_m: np.ndarray
-    y_m: np.ndarray
-    elevation_m: np.ndarray
-    banking_rad: np.ndarray
-    s_m: np.ndarray
-    heading_rad: np.ndarray
-    curvature_1pm: np.ndarray
+    x: np.ndarray
+    y: np.ndarray
+    elevation: np.ndarray
+    banking: np.ndarray
+    arc_length: np.ndarray
+    heading: np.ndarray
+    curvature: np.ndarray
     grade: np.ndarray
 
     @property
-    def length_m(self) -> float:
-        """Track length in meters.
+    def length(self) -> float:
+        """Track length [m].
 
         Returns:
-            Final arc-length value of the discretized track in meters.
+            Final arc-length value of the discretized track [m].
         """
-        return float(self.s_m[-1])
+        return float(self.arc_length[-1])
 
     def validate(self) -> None:
         """Validate consistency of all track arrays.
@@ -52,13 +52,13 @@ class TrackData:
                 length monotonicity, or numeric validity checks fail.
         """
         arrays = [
-            self.x_m,
-            self.y_m,
-            self.elevation_m,
-            self.banking_rad,
-            self.s_m,
-            self.heading_rad,
-            self.curvature_1pm,
+            self.x,
+            self.y,
+            self.elevation,
+            self.banking,
+            self.arc_length,
+            self.heading,
+            self.curvature,
             self.grade,
         ]
         size = arrays[0].size
@@ -68,9 +68,9 @@ class TrackData:
         if any(arr.size != size for arr in arrays):
             msg = "All track arrays must have equal length"
             raise TrackDataError(msg)
-        if np.any(~np.isfinite(self.s_m)):
+        if np.any(~np.isfinite(self.arc_length)):
             msg = "Arc-length array contains non-finite values"
             raise TrackDataError(msg)
-        if not np.all(np.diff(self.s_m) > 0.0):
+        if not np.all(np.diff(self.arc_length) > 0.0):
             msg = "Arc length must be strictly increasing"
             raise TrackDataError(msg)

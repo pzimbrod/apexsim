@@ -13,9 +13,9 @@ class EnvelopePhysics:
 
     Args:
         max_drive_accel: Maximum forward tire acceleration on flat road and zero
-            lateral demand, excluding drag and grade (m/s^2).
+            lateral demand, excluding drag and grade [m/s^2].
         max_brake_accel: Maximum braking deceleration magnitude on flat road and
-            zero lateral demand, excluding drag and grade (m/s^2).
+            zero lateral demand, excluding drag and grade [m/s^2].
     """
 
     max_drive_accel: float

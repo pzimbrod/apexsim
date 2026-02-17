@@ -60,24 +60,24 @@ class PointMassModelTests(unittest.TestCase):
     def test_lateral_limit_increases_with_speed_due_to_downforce(self) -> None:
         """Increase lateral limit with speed when aerodynamic downforce is positive."""
         model = _build_point_mass_model()
-        low_speed = model.lateral_accel_limit(speed_mps=20.0, banking_rad=0.0)
-        high_speed = model.lateral_accel_limit(speed_mps=80.0, banking_rad=0.0)
+        low_speed = model.lateral_accel_limit(speed=20.0, banking=0.0)
+        high_speed = model.lateral_accel_limit(speed=80.0, banking=0.0)
         self.assertGreater(high_speed, low_speed)
 
     def test_uphill_reduces_available_acceleration(self) -> None:
         """Reduce available forward acceleration on positive grade."""
         model = _build_point_mass_model()
         on_flat = model.max_longitudinal_accel(
-            speed_mps=50.0,
-            ay_required_mps2=0.0,
+            speed=50.0,
+            lateral_accel_required=0.0,
             grade=0.0,
-            banking_rad=0.0,
+            banking=0.0,
         )
         uphill = model.max_longitudinal_accel(
-            speed_mps=50.0,
-            ay_required_mps2=0.0,
+            speed=50.0,
+            lateral_accel_required=0.0,
             grade=0.05,
-            banking_rad=0.0,
+            banking=0.0,
         )
         self.assertLess(uphill, on_flat)
 
@@ -85,21 +85,24 @@ class PointMassModelTests(unittest.TestCase):
         """Return finite diagnostic signals and zero yaw moment by model definition."""
         model = _build_point_mass_model()
         diagnostics = model.diagnostics(
-            speed_mps=45.0,
-            ax_mps2=1.2,
-            ay_mps2=10.0,
-            curvature_1pm=0.03,
+            speed=45.0,
+            longitudinal_accel=1.2,
+            lateral_accel=10.0,
+            curvature=0.03,
         )
 
-        self.assertEqual(diagnostics.yaw_moment_nm, 0.0)
-        self.assertTrue(np.isfinite(diagnostics.front_axle_load_n))
-        self.assertTrue(np.isfinite(diagnostics.rear_axle_load_n))
-        self.assertTrue(np.isfinite(diagnostics.power_w))
+        self.assertEqual(diagnostics.yaw_moment, 0.0)
+        self.assertTrue(np.isfinite(diagnostics.front_axle_load))
+        self.assertTrue(np.isfinite(diagnostics.rear_axle_load))
+        self.assertTrue(np.isfinite(diagnostics.power))
 
     def test_friction_circle_returns_zero_when_limit_degenerates(self) -> None:
         """Return zero longitudinal capacity when lateral limit is degenerate."""
         model = _build_point_mass_model()
-        self.assertEqual(model._friction_circle_scale(ay_required_mps2=5.0, ay_limit_mps2=0.0), 0.0)
+        self.assertEqual(
+            model._friction_circle_scale(lateral_accel_required=5.0, lateral_accel_limit=0.0),
+            0.0,
+        )
 
     def test_build_point_mass_model_uses_default_physics(self) -> None:
         """Build a model with default physical settings when omitted."""

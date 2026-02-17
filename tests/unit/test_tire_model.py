@@ -19,7 +19,7 @@ class TireModelTests(unittest.TestCase):
         C=1.3,
         D=1.8,
         E=0.97,
-        fz_reference_n=3000.0,
+        reference_load=3000.0,
         load_sensitivity=-0.08,
         min_mu_scale=0.4,
     )
@@ -76,7 +76,7 @@ class TireModelTests(unittest.TestCase):
             C=tires.rear.C,
             D=tires.rear.D,
             E=tires.rear.E,
-            fz_reference_n=tires.rear.fz_reference_n,
+            reference_load=tires.rear.reference_load,
             load_sensitivity=tires.rear.load_sensitivity,
             min_mu_scale=tires.rear.min_mu_scale,
         )

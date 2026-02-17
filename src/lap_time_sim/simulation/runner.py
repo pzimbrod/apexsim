@@ -11,7 +11,7 @@ from lap_time_sim.simulation.model_api import LapTimeVehicleModel
 from lap_time_sim.simulation.profile import solve_speed_profile
 from lap_time_sim.track.models import TrackData
 
-MIN_AVERAGE_SPEED_FOR_DT_MPS = 1e-6
+MIN_AVERAGE_SPEED_FOR_TIME_STEP = 1e-6
 
 
 @dataclass(frozen=True)
@@ -20,43 +20,43 @@ class LapSimulationResult:
 
     Args:
         track: Track geometry used for the simulation.
-        speed_mps: Converged speed trace along arc length (m/s).
-        ax_mps2: Net longitudinal acceleration trace (m/s^2).
-        ay_mps2: Lateral acceleration trace (m/s^2).
-        yaw_moment_nm: Yaw moment trace from model diagnostics (N*m).
-        front_axle_load_n: Front-axle normal load trace (N).
-        rear_axle_load_n: Rear-axle normal load trace (N).
-        power_w: Tractive power trace (W).
-        energy_j: Integrated positive tractive energy (J).
-        lap_time_s: Integrated lap time (s).
+        speed: Converged speed trace along arc length [m/s].
+        longitudinal_accel: Net longitudinal acceleration trace [m/s^2].
+        lateral_accel: Lateral acceleration trace [m/s^2].
+        yaw_moment: Yaw moment trace from model diagnostics [N*m].
+        front_axle_load: Front-axle normal load trace [N].
+        rear_axle_load: Rear-axle normal load trace [N].
+        power: Tractive power trace [W].
+        energy: Integrated positive tractive energy [J].
+        lap_time: Integrated lap time [s].
     """
 
     track: TrackData
-    speed_mps: np.ndarray
-    ax_mps2: np.ndarray
-    ay_mps2: np.ndarray
-    yaw_moment_nm: np.ndarray
-    front_axle_load_n: np.ndarray
-    rear_axle_load_n: np.ndarray
-    power_w: np.ndarray
-    energy_j: float
-    lap_time_s: float
+    speed: np.ndarray
+    longitudinal_accel: np.ndarray
+    lateral_accel: np.ndarray
+    yaw_moment: np.ndarray
+    front_axle_load: np.ndarray
+    rear_axle_load: np.ndarray
+    power: np.ndarray
+    energy: float
+    lap_time: float
 
 
-def _compute_energy(power_w: np.ndarray, speed_mps: np.ndarray, s_m: np.ndarray) -> float:
+def _compute_energy(power: np.ndarray, speed: np.ndarray, arc_length: np.ndarray) -> float:
     """Integrate positive tractive power along the lap.
 
     Args:
-        power_w: Instantaneous tractive power trace in Watt.
-        speed_mps: Speed trace in m/s.
-        s_m: Cumulative arc-length samples in meters.
+        power: Instantaneous tractive power trace [W].
+        speed: Speed trace [m/s].
+        arc_length: Cumulative arc-length samples [m].
 
     Returns:
-        Integrated positive traction energy in Joule.
+        Integrated positive traction energy [J].
     """
-    ds = np.diff(s_m)
-    dt = ds / np.maximum(0.5 * (speed_mps[:-1] + speed_mps[1:]), MIN_AVERAGE_SPEED_FOR_DT_MPS)
-    traction_power = np.maximum(power_w[:-1], 0.0)
+    ds = np.diff(arc_length)
+    dt = ds / np.maximum(0.5 * (speed[:-1] + speed[1:]), MIN_AVERAGE_SPEED_FOR_TIME_STEP)
+    traction_power = np.maximum(power[:-1], 0.0)
     return float(np.sum(traction_power * dt))
 
 
@@ -82,39 +82,39 @@ def simulate_lap(
     """
     profile = solve_speed_profile(track=track, model=model, config=config)
 
-    n = track.s_m.size
-    yaw_moment_nm = np.zeros(n, dtype=float)
-    front_axle_load_n = np.zeros(n, dtype=float)
-    rear_axle_load_n = np.zeros(n, dtype=float)
-    power_w = np.zeros(n, dtype=float)
+    n = track.arc_length.size
+    yaw_moment = np.zeros(n, dtype=float)
+    front_axle_load = np.zeros(n, dtype=float)
+    rear_axle_load = np.zeros(n, dtype=float)
+    power = np.zeros(n, dtype=float)
 
     for idx in range(n):
-        speed = float(profile.speed_mps[idx])
-        ax = float(profile.ax_mps2[idx])
-        ay = float(profile.ay_mps2[idx])
-        kappa = float(track.curvature_1pm[idx])
+        speed = float(profile.speed[idx])
+        ax = float(profile.longitudinal_accel[idx])
+        ay = float(profile.lateral_accel[idx])
+        kappa = float(track.curvature[idx])
         diagnostics = model.diagnostics(
-            speed_mps=speed,
-            ax_mps2=ax,
-            ay_mps2=ay,
-            curvature_1pm=kappa,
+            speed=speed,
+            longitudinal_accel=ax,
+            lateral_accel=ay,
+            curvature=kappa,
         )
-        yaw_moment_nm[idx] = diagnostics.yaw_moment_nm
-        front_axle_load_n[idx] = diagnostics.front_axle_load_n
-        rear_axle_load_n[idx] = diagnostics.rear_axle_load_n
-        power_w[idx] = diagnostics.power_w
+        yaw_moment[idx] = diagnostics.yaw_moment
+        front_axle_load[idx] = diagnostics.front_axle_load
+        rear_axle_load[idx] = diagnostics.rear_axle_load
+        power[idx] = diagnostics.power
 
-    energy_j = _compute_energy(power_w, profile.speed_mps, track.s_m)
+    energy = _compute_energy(power, profile.speed, track.arc_length)
 
     return LapSimulationResult(
         track=track,
-        speed_mps=profile.speed_mps,
-        ax_mps2=profile.ax_mps2,
-        ay_mps2=profile.ay_mps2,
-        yaw_moment_nm=yaw_moment_nm,
-        front_axle_load_n=front_axle_load_n,
-        rear_axle_load_n=rear_axle_load_n,
-        power_w=power_w,
-        energy_j=energy_j,
-        lap_time_s=profile.lap_time_s,
+        speed=profile.speed,
+        longitudinal_accel=profile.longitudinal_accel,
+        lateral_accel=profile.lateral_accel,
+        yaw_moment=yaw_moment,
+        front_axle_load=front_axle_load,
+        rear_axle_load=rear_axle_load,
+        power=power,
+        energy=energy,
+        lap_time=profile.lap_time,
     )

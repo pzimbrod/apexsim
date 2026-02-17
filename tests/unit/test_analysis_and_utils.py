@@ -81,7 +81,7 @@ class AnalysisAndUtilsTests(unittest.TestCase):
                 self.assertTrue((out_dir / name).exists(), msg=f"missing {name}")
 
             data = json.loads((out_dir / "kpis.json").read_text(encoding="utf-8"))
-            self.assertIn("lap_time_s", data)
+            self.assertIn("lap_time", data)
             self.assertIn("max_lateral_accel_g", data)
 
     def test_logging_helper_runs(self) -> None:

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from lap_time_sim.utils.constants import AIR_DENSITY_KGPM3
+from lap_time_sim.utils.constants import STANDARD_AIR_DENSITY
 from lap_time_sim.vehicle.params import VehicleParameters
 
 
@@ -30,5 +30,5 @@ def sample_vehicle_parameters() -> VehicleParameters:
         front_arb_distribution=0.55,
         front_ride_height=0.030,
         rear_ride_height=0.050,
-        air_density=AIR_DENSITY_KGPM3,
+        air_density=STANDARD_AIR_DENSITY,
     )

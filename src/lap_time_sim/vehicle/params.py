@@ -15,24 +15,24 @@ class VehicleParameters:
     """Vehicle and chassis parameters for lap-time simulation.
 
     Args:
-        mass: Vehicle mass in kg.
-        yaw_inertia: Yaw moment of inertia in kg*m^2.
-        cg_height: Center-of-gravity height above ground in m.
-        wheelbase: Wheelbase in m.
-        front_track: Front track width in m.
-        rear_track: Rear track width in m.
+        mass: Vehicle mass [kg].
+        yaw_inertia: Yaw moment of inertia [kg*m^2].
+        cg_height: Center-of-gravity height above ground [m].
+        wheelbase: Wheelbase [m].
+        front_track: Front track width [m].
+        rear_track: Rear track width [m].
         front_weight_fraction: Static front axle weight fraction in [0, 1].
-        cop_position: Center-of-pressure position relative to CoG in m.
+        cop_position: Center-of-pressure position relative to CoG [m].
         lift_coefficient: Aerodynamic lift/downforce coefficient.
         drag_coefficient: Aerodynamic drag coefficient.
-        frontal_area: Frontal reference area in m^2.
-        roll_rate: Roll rate in Nm/deg.
-        front_spring_rate: Front spring rate in N/m.
-        rear_spring_rate: Rear spring rate in N/m.
+        frontal_area: Frontal reference area [m^2].
+        roll_rate: Roll rate [N*m/deg].
+        front_spring_rate: Front spring rate [N/m].
+        rear_spring_rate: Rear spring rate [N/m].
         front_arb_distribution: Front anti-roll-bar distribution in [0, 1].
-        front_ride_height: Front ride height in m.
-        rear_ride_height: Rear ride height in m.
-        air_density: Air density in kg/m^3.
+        front_ride_height: Front ride height [m].
+        rear_ride_height: Rear ride height [m].
+        air_density: Air density [kg/m^3].
     """
 
     mass: float
@@ -59,7 +59,7 @@ class VehicleParameters:
         """Distance from center of gravity to rear axle.
 
         Returns:
-            Rear axle distance from center of gravity in meters.
+            Rear axle distance from center of gravity [m].
         """
         return self.front_weight_fraction * self.wheelbase
 
@@ -68,7 +68,7 @@ class VehicleParameters:
         """Distance from center of gravity to front axle.
 
         Returns:
-            Front axle distance from center of gravity in meters.
+            Front axle distance from center of gravity [m].
         """
         return self.wheelbase - self.cg_to_rear_axle
 

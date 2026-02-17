@@ -186,7 +186,7 @@ The same solver routine can be used with different backends implementing
 - Lateral limit fixed-point update:
   - `src/lap_time_sim/vehicle/bicycle_model.py` (`lateral_accel_limit`)
 - Lateral envelope fixed-point convergence in speed domain:
-  - `src/lap_time_sim/simulation/profile.py` (`for iteration_idx ...`, `max_delta_mps ...`)
+  - `src/lap_time_sim/simulation/profile.py` (`for iteration_idx ...`, `max_delta_speed ...`)
 - Vehicle-model API contract consumed by the solver:
   - `src/lap_time_sim/simulation/model_api.py` (`LapTimeVehicleModel`)
   - `src/lap_time_sim/simulation/profile.py` (`solve_speed_profile`, calls on `model`)

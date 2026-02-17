@@ -17,7 +17,7 @@ from lap_time_sim.simulation.runner import LapSimulationResult
 from lap_time_sim.tire import default_axle_tire_parameters
 from lap_time_sim.track import load_track_csv
 from lap_time_sim.utils import configure_logging
-from lap_time_sim.utils.constants import AIR_DENSITY_KGPM3
+from lap_time_sim.utils.constants import STANDARD_AIR_DENSITY
 from lap_time_sim.vehicle import (
     BicyclePhysics,
     PointMassPhysics,
@@ -52,7 +52,7 @@ def _example_vehicle_parameters() -> VehicleParameters:
         front_arb_distribution=0.55,
         front_ride_height=0.030,
         rear_ride_height=0.050,
-        air_density=AIR_DENSITY_KGPM3,
+        air_density=STANDARD_AIR_DENSITY,
     )
 
 
@@ -70,14 +70,14 @@ def _export_speed_comparison_plot(
     """
     fig, ax = plt.subplots(figsize=(10, 4.5), constrained_layout=True)
     ax.plot(
-        bicycle_result.track.s_m,
-        bicycle_result.speed_mps,
+        bicycle_result.track.arc_length,
+        bicycle_result.speed,
         lw=2.0,
         label="Bicycle model",
     )
     ax.plot(
-        point_mass_result.track.s_m,
-        point_mass_result.speed_mps,
+        point_mass_result.track.arc_length,
+        point_mass_result.speed,
         lw=2.0,
         label="Point-mass model (calibrated)",
     )
@@ -103,18 +103,18 @@ def _kpi_delta_dict(
     Returns:
         Dictionary with absolute and relative delta metrics.
     """
-    speed_delta = bicycle_result.speed_mps - point_mass_result.speed_mps
-    mean_point_speed = max(float(np.mean(point_mass_result.speed_mps)), 1e-9)
+    speed_delta = bicycle_result.speed - point_mass_result.speed
+    mean_point_speed = max(float(np.mean(point_mass_result.speed)), 1e-9)
     return {
-        "lap_time_delta_s": bicycle_result.lap_time_s - point_mass_result.lap_time_s,
+        "lap_time_delta": bicycle_result.lap_time - point_mass_result.lap_time,
         "lap_time_delta_pct_of_point_mass": (
-            (bicycle_result.lap_time_s - point_mass_result.lap_time_s)
-            / point_mass_result.lap_time_s
+            (bicycle_result.lap_time - point_mass_result.lap_time)
+            / point_mass_result.lap_time
             * 100.0
         ),
-        "mean_speed_delta_mps": float(np.mean(speed_delta)),
-        "mean_abs_speed_delta_mps": float(np.mean(np.abs(speed_delta))),
-        "max_abs_speed_delta_mps": float(np.max(np.abs(speed_delta))),
+        "mean_speed_delta": float(np.mean(speed_delta)),
+        "mean_abs_speed_delta": float(np.mean(np.abs(speed_delta))),
+        "max_abs_speed_delta": float(np.max(np.abs(speed_delta))),
         "mean_speed_delta_pct_of_point_mass": float(
             np.mean(speed_delta) / mean_point_speed * 100.0
         ),
@@ -146,7 +146,7 @@ def main() -> None:
         vehicle=vehicle,
         tires=tires,
         bicycle_physics=bicycle_physics,
-        speed_samples=bicycle_result.speed_mps,
+        speed_samples=bicycle_result.speed,
     )
     point_mass_model = build_point_mass_model(
         vehicle=vehicle,
@@ -190,15 +190,15 @@ def main() -> None:
         encoding="utf-8",
     )
 
-    logger.info("Bicycle lap time: %.2f s", bicycle_kpis.lap_time_s)
+    logger.info("Bicycle lap time: %.2f s", bicycle_kpis.lap_time)
     logger.info(
         "Point-mass (calibrated) lap time: %.2f s | fitted mu: %.3f",
-        point_mass_kpis.lap_time_s,
+        point_mass_kpis.lap_time,
         calibration.friction_coefficient,
     )
     logger.info(
         "Delta (bicycle - point-mass): %.2f s (%.2f %%)",
-        delta["lap_time_delta_s"],
+        delta["lap_time_delta"],
         delta["lap_time_delta_pct_of_point_mass"],
     )
     logger.info("Comparison artifacts written to %s", output_dir)

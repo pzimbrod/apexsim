@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from lap_time_sim.utils.constants import GRAVITY_MPS2, SMALL_EPS
+from lap_time_sim.utils.constants import GRAVITY, SMALL_EPS
 from lap_time_sim.vehicle.aero import aero_forces
 from lap_time_sim.vehicle.params import VehicleParameters
 
 ROLL_STIFFNESS_FRONT_SHARE_MIN = 0.05
 ROLL_STIFFNESS_FRONT_SHARE_MAX = 0.95
-MIN_WHEEL_NORMAL_LOAD_N = SMALL_EPS
+MIN_WHEEL_NORMAL_LOAD = SMALL_EPS
 
 
 @dataclass(frozen=True)
@@ -18,20 +18,20 @@ class NormalLoadState:
     """Front/rear axle and wheel normal loads.
 
     Args:
-        front_axle_n: Total front-axle normal load (N).
-        rear_axle_n: Total rear-axle normal load (N).
-        front_left_n: Front-left wheel normal load (N).
-        front_right_n: Front-right wheel normal load (N).
-        rear_left_n: Rear-left wheel normal load (N).
-        rear_right_n: Rear-right wheel normal load (N).
+        front_axle_load: Total front-axle normal load [N].
+        rear_axle_load: Total rear-axle normal load [N].
+        front_left_load: Front-left wheel normal load [N].
+        front_right_load: Front-right wheel normal load [N].
+        rear_left_load: Rear-left wheel normal load [N].
+        rear_right_load: Rear-right wheel normal load [N].
     """
 
-    front_axle_n: float
-    rear_axle_n: float
-    front_left_n: float
-    front_right_n: float
-    rear_left_n: float
-    rear_right_n: float
+    front_axle_load: float
+    rear_axle_load: float
+    front_left_load: float
+    front_right_load: float
+    rear_left_load: float
+    rear_right_load: float
 
 
 def _roll_stiffness_front_share(vehicle: VehicleParameters) -> float:
@@ -53,22 +53,22 @@ def _roll_stiffness_front_share(vehicle: VehicleParameters) -> float:
     )
 
 
-def _split_axle_load(axle_load_n: float, lateral_transfer_n: float) -> tuple[float, float]:
+def _split_axle_load(axle_load: float, lateral_transfer: float) -> tuple[float, float]:
     """Split axle load into left/right wheel loads while preserving total load.
 
     The transfer term is saturated so neither wheel load becomes negative.
 
     Args:
-        axle_load_n: Total normal load on an axle in Newton.
-        lateral_transfer_n: Signed lateral load transfer on that axle in Newton.
+        axle_load: Total normal load on an axle [N].
+        lateral_transfer: Signed lateral load transfer on that axle [N].
 
     Returns:
-        Tuple ``(left_load_n, right_load_n)`` preserving axle total load.
+        Tuple ``(left_load, right_load)`` preserving axle total load.
     """
-    min_axle_load = 2.0 * MIN_WHEEL_NORMAL_LOAD_N
-    bounded_axle_load = max(axle_load_n, min_axle_load)
+    min_axle_load = 2.0 * MIN_WHEEL_NORMAL_LOAD
+    bounded_axle_load = max(axle_load, min_axle_load)
     max_transfer = max(bounded_axle_load - min_axle_load, 0.0)
-    bounded_transfer = min(max(lateral_transfer_n, -max_transfer), max_transfer)
+    bounded_transfer = min(max(lateral_transfer, -max_transfer), max_transfer)
 
     left_load = 0.5 * (bounded_axle_load - bounded_transfer)
     right_load = bounded_axle_load - left_load
@@ -77,58 +77,58 @@ def _split_axle_load(axle_load_n: float, lateral_transfer_n: float) -> tuple[flo
 
 def estimate_normal_loads(
     vehicle: VehicleParameters,
-    speed_mps: float,
-    longitudinal_accel_mps2: float,
-    lateral_accel_mps2: float,
+    speed: float,
+    longitudinal_accel: float,
+    lateral_accel: float,
 ) -> NormalLoadState:
     """Estimate normal load distribution with aero and basic load transfer.
 
     Args:
         vehicle: Vehicle parameter set.
-        speed_mps: Vehicle speed in m/s.
-        longitudinal_accel_mps2: Net longitudinal acceleration in m/s^2.
-        lateral_accel_mps2: Lateral acceleration in m/s^2.
+        speed: Vehicle speed [m/s].
+        longitudinal_accel: Net longitudinal acceleration [m/s^2].
+        lateral_accel: Lateral acceleration [m/s^2].
 
     Returns:
-        Axle and wheel normal loads in Newton.
+        Axle and wheel normal loads [N].
 
     Raises:
         lap_time_sim.utils.exceptions.ConfigurationError: If vehicle parameters
             are invalid.
     """
     vehicle.validate()
-    aero = aero_forces(vehicle, speed_mps)
+    aero = aero_forces(vehicle, speed)
 
-    weight_n = vehicle.mass * GRAVITY_MPS2
-    total_vertical_load_n = weight_n + aero.downforce_n
-    front_static_n = weight_n * vehicle.front_weight_fraction
+    weight = vehicle.mass * GRAVITY
+    total_vertical_load = weight + aero.downforce
+    front_static_load = weight * vehicle.front_weight_fraction
 
-    longitudinal_transfer_n = (
-        vehicle.mass * longitudinal_accel_mps2 * vehicle.cg_height / vehicle.wheelbase
+    longitudinal_transfer = (
+        vehicle.mass * longitudinal_accel * vehicle.cg_height / vehicle.wheelbase
     )
 
-    front_axle_raw_n = front_static_n + aero.front_downforce_n - longitudinal_transfer_n
-    min_axle_load = 2.0 * MIN_WHEEL_NORMAL_LOAD_N
-    front_axle_n = min(
-        max(front_axle_raw_n, min_axle_load),
-        total_vertical_load_n - min_axle_load,
+    front_axle_raw = front_static_load + aero.front_downforce - longitudinal_transfer
+    min_axle_load = 2.0 * MIN_WHEEL_NORMAL_LOAD
+    front_axle_load = min(
+        max(front_axle_raw, min_axle_load),
+        total_vertical_load - min_axle_load,
     )
-    rear_axle_n = total_vertical_load_n - front_axle_n
+    rear_axle_load = total_vertical_load - front_axle_load
 
-    total_roll_moment_nm = vehicle.mass * lateral_accel_mps2 * vehicle.cg_height
+    total_roll_moment = vehicle.mass * lateral_accel * vehicle.cg_height
     front_share = _roll_stiffness_front_share(vehicle)
 
-    front_transfer_n = front_share * total_roll_moment_nm / vehicle.front_track
-    rear_transfer_n = (1.0 - front_share) * total_roll_moment_nm / vehicle.rear_track
+    front_transfer = front_share * total_roll_moment / vehicle.front_track
+    rear_transfer = (1.0 - front_share) * total_roll_moment / vehicle.rear_track
 
-    front_left_n, front_right_n = _split_axle_load(front_axle_n, front_transfer_n)
-    rear_left_n, rear_right_n = _split_axle_load(rear_axle_n, rear_transfer_n)
+    front_left_load, front_right_load = _split_axle_load(front_axle_load, front_transfer)
+    rear_left_load, rear_right_load = _split_axle_load(rear_axle_load, rear_transfer)
 
     return NormalLoadState(
-        front_axle_n=front_axle_n,
-        rear_axle_n=rear_axle_n,
-        front_left_n=front_left_n,
-        front_right_n=front_right_n,
-        rear_left_n=rear_left_n,
-        rear_right_n=rear_right_n,
+        front_axle_load=front_axle_load,
+        rear_axle_load=rear_axle_load,
+        front_left_load=front_left_load,
+        front_right_load=front_right_load,
+        rear_left_load=rear_left_load,
+        rear_right_load=rear_right_load,
     )

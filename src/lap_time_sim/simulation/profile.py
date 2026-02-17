@@ -21,34 +21,34 @@ class SpeedProfileResult:
     required to converge the lateral speed envelope.
 
     Args:
-        speed_mps: Converged speed trace along track arc length (m/s).
-        ax_mps2: Net longitudinal acceleration trace (m/s^2).
-        ay_mps2: Lateral acceleration trace (m/s^2).
+        speed: Converged speed trace along track arc length [m/s].
+        longitudinal_accel: Net longitudinal acceleration trace [m/s^2].
+        lateral_accel: Lateral acceleration trace [m/s^2].
         lateral_envelope_iterations: Number of fixed-point iterations used for
             lateral envelope convergence.
-        lap_time_s: Integrated lap time over one track traversal (s).
+        lap_time: Integrated lap time over one track traversal [s].
     """
 
-    speed_mps: np.ndarray
-    ax_mps2: np.ndarray
-    ay_mps2: np.ndarray
+    speed: np.ndarray
+    longitudinal_accel: np.ndarray
+    lateral_accel: np.ndarray
     lateral_envelope_iterations: int
-    lap_time_s: float
+    lap_time: float
 
 
-def _segment_dt(ds_m: float, v0_mps: float, v1_mps: float) -> float:
+def _segment_dt(segment_length: float, start_speed: float, end_speed: float) -> float:
     """Compute segment travel time from adjacent speed samples.
 
     Args:
-        ds_m: Segment length in meters.
-        v0_mps: Segment entry speed in m/s.
-        v1_mps: Segment exit speed in m/s.
+        segment_length: Segment length [m].
+        start_speed: Segment entry speed [m/s].
+        end_speed: Segment exit speed [m/s].
 
     Returns:
-        Segment traversal time in seconds using trapezoidal average speed.
+        Segment traversal time [s] using trapezoidal average speed.
     """
-    v_avg = max(0.5 * (v0_mps + v1_mps), SMALL_EPS)
-    return ds_m / v_avg
+    v_avg = max(0.5 * (start_speed + end_speed), SMALL_EPS)
+    return segment_length / v_avg
 
 
 def solve_speed_profile(
@@ -59,7 +59,7 @@ def solve_speed_profile(
     """Solve lap speed profile with lateral and longitudinal constraints.
 
     The algorithm is a quasi-steady forward/backward solver in arc-length domain:
-    1. Solve a fixed-point lateral speed envelope `v_lat(s)` via the model API.
+    1. Solve a fixed-point lateral speed envelope `v_lat[s]` via the model API.
     2. Forward pass enforces acceleration feasibility.
     3. Backward pass enforces braking feasibility.
     4. Integrate segment times to obtain lap time.
@@ -84,8 +84,8 @@ def solve_speed_profile(
     model.validate()
     config.validate()
 
-    n = track.s_m.size
-    ds = np.diff(track.s_m)
+    n = track.arc_length.size
+    ds = np.diff(track.arc_length)
 
     v_lat = np.full(n, config.runtime.max_speed, dtype=float)
     lateral_envelope_iterations = 0
@@ -93,31 +93,31 @@ def solve_speed_profile(
         previous_v_lat = np.copy(v_lat)
         for idx in range(n):
             ay_lim = model.lateral_accel_limit(
-                speed_mps=v_lat[idx],
-                banking_rad=float(track.banking_rad[idx]),
+                speed=v_lat[idx],
+                banking=float(track.banking[idx]),
             )
             v_lat[idx] = max(
                 config.numerics.min_speed,
                 lateral_speed_limit(
-                    float(track.curvature_1pm[idx]),
+                    float(track.curvature[idx]),
                     ay_lim,
                     config.runtime.max_speed,
                 ),
             )
         lateral_envelope_iterations = iteration_idx + 1
-        max_delta_mps = float(np.max(np.abs(v_lat - previous_v_lat)))
-        if max_delta_mps <= config.numerics.lateral_envelope_convergence_tolerance:
+        max_delta_speed = float(np.max(np.abs(v_lat - previous_v_lat)))
+        if max_delta_speed <= config.numerics.lateral_envelope_convergence_tolerance:
             break
 
     v_forward = np.copy(v_lat)
     v_forward[0] = min(v_forward[0], config.runtime.max_speed)
     for idx in range(n - 1):
-        ay_req = v_forward[idx] * v_forward[idx] * abs(track.curvature_1pm[idx])
+        ay_req = v_forward[idx] * v_forward[idx] * abs(track.curvature[idx])
         net_accel = model.max_longitudinal_accel(
-            speed_mps=float(v_forward[idx]),
-            ay_required_mps2=float(ay_req),
+            speed=float(v_forward[idx]),
+            lateral_accel_required=float(ay_req),
             grade=float(track.grade[idx]),
-            banking_rad=float(track.banking_rad[idx]),
+            banking=float(track.banking[idx]),
         )
 
         next_speed_sq = v_forward[idx] ** 2 + 2.0 * net_accel * ds[idx]
@@ -131,12 +131,12 @@ def solve_speed_profile(
 
     v_profile = np.copy(v_forward)
     for idx in range(n - 2, -1, -1):
-        ay_req = v_profile[idx + 1] * v_profile[idx + 1] * abs(track.curvature_1pm[idx + 1])
+        ay_req = v_profile[idx + 1] * v_profile[idx + 1] * abs(track.curvature[idx + 1])
         available_decel = model.max_longitudinal_decel(
-            speed_mps=float(v_profile[idx + 1]),
-            ay_required_mps2=float(ay_req),
+            speed=float(v_profile[idx + 1]),
+            lateral_accel_required=float(ay_req),
             grade=float(track.grade[idx + 1]),
-            banking_rad=float(track.banking_rad[idx + 1]),
+            banking=float(track.banking[idx + 1]),
         )
 
         entry_speed_sq = v_profile[idx + 1] ** 2 + 2.0 * available_decel * ds[idx]
@@ -148,16 +148,16 @@ def solve_speed_profile(
         ax[idx] = (v_profile[idx + 1] ** 2 - v_profile[idx] ** 2) / (2.0 * ds[idx])
     ax[-1] = ax[-2]
 
-    ay = v_profile * v_profile * track.curvature_1pm
+    ay = v_profile * v_profile * track.curvature
 
     lap_time = 0.0
     for idx in range(n - 1):
         lap_time += _segment_dt(float(ds[idx]), float(v_profile[idx]), float(v_profile[idx + 1]))
 
     return SpeedProfileResult(
-        speed_mps=v_profile,
-        ax_mps2=ax,
-        ay_mps2=ay,
+        speed=v_profile,
+        longitudinal_accel=ax,
+        lateral_accel=ay,
         lateral_envelope_iterations=lateral_envelope_iterations,
-        lap_time_s=lap_time,
+        lap_time=lap_time,
     )

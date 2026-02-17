@@ -89,32 +89,32 @@ class BicycleModelTests(unittest.TestCase):
         """Return finite diagnostic signals for a representative operating point."""
         model = _build_bicycle_model()
         diagnostics = model.diagnostics(
-            speed_mps=45.0,
-            ax_mps2=1.2,
-            ay_mps2=12.0,
-            curvature_1pm=0.03,
+            speed=45.0,
+            longitudinal_accel=1.2,
+            lateral_accel=12.0,
+            curvature=0.03,
         )
 
-        self.assertTrue(np.isfinite(diagnostics.yaw_moment_nm))
-        self.assertTrue(np.isfinite(diagnostics.front_axle_load_n))
-        self.assertTrue(np.isfinite(diagnostics.rear_axle_load_n))
-        self.assertTrue(np.isfinite(diagnostics.power_w))
+        self.assertTrue(np.isfinite(diagnostics.yaw_moment))
+        self.assertTrue(np.isfinite(diagnostics.front_axle_load))
+        self.assertTrue(np.isfinite(diagnostics.rear_axle_load))
+        self.assertTrue(np.isfinite(diagnostics.power))
 
     def test_uphill_reduces_available_acceleration(self) -> None:
         """Reduce available forward acceleration on positive grade."""
         model = _build_bicycle_model()
         ay_required = 0.0
         on_flat = model.max_longitudinal_accel(
-            speed_mps=50.0,
-            ay_required_mps2=ay_required,
+            speed=50.0,
+            lateral_accel_required=ay_required,
             grade=0.0,
-            banking_rad=0.0,
+            banking=0.0,
         )
         uphill = model.max_longitudinal_accel(
-            speed_mps=50.0,
-            ay_required_mps2=ay_required,
+            speed=50.0,
+            lateral_accel_required=ay_required,
             grade=0.05,
-            banking_rad=0.0,
+            banking=0.0,
         )
 
         self.assertLess(uphill, on_flat)
@@ -122,7 +122,10 @@ class BicycleModelTests(unittest.TestCase):
     def test_friction_circle_returns_zero_when_limit_degenerates(self) -> None:
         """Return zero longitudinal capacity when lateral limit is degenerate."""
         model = _build_bicycle_model()
-        self.assertEqual(model._friction_circle_scale(ay_required_mps2=5.0, ay_limit_mps2=0.0), 0.0)
+        self.assertEqual(
+            model._friction_circle_scale(lateral_accel_required=5.0, lateral_accel_limit=0.0),
+            0.0,
+        )
 
     def test_build_bicycle_model_uses_default_numerics(self) -> None:
         """Build a model with default numerical controls when omitted."""

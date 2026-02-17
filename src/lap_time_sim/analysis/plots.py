@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
 from lap_time_sim.simulation.runner import LapSimulationResult
-from lap_time_sim.utils.constants import GRAVITY_MPS2
+from lap_time_sim.utils.constants import GRAVITY
 
 matplotlib.use("Agg")
 
@@ -30,11 +30,11 @@ def plot_speed_trace(result: LapSimulationResult, out_base: Path) -> None:
     """Plot speed over arc length.
 
     Args:
-        result: Simulation result containing `speed_mps` and track arc length `s_m`.
+        result: Simulation result containing `speed` and track arc length `arc_length`.
         out_base: Output path without suffix.
     """
     fig, ax = plt.subplots(figsize=(9, 4))
-    ax.plot(result.track.s_m, result.speed_mps, lw=2.0)
+    ax.plot(result.track.arc_length, result.speed, lw=2.0)
     ax.set_xlabel("s [m]")
     ax.set_ylabel("Speed [m/s]")
     ax.set_title("Speed Trace")
@@ -51,7 +51,7 @@ def plot_yaw_moment_vs_lateral_acc(result: LapSimulationResult, out_base: Path) 
         out_base: Output path without suffix.
     """
     fig, ax = plt.subplots(figsize=(6, 5))
-    ax.scatter(result.ay_mps2 / GRAVITY_MPS2, result.yaw_moment_nm, s=9, alpha=0.7)
+    ax.scatter(result.lateral_accel / GRAVITY, result.yaw_moment, s=9, alpha=0.7)
     ax.set_xlabel("Lateral accel [g]")
     ax.set_ylabel("Yaw moment [Nm]")
     ax.set_title("Yaw Moment vs Lateral Acceleration")
@@ -64,11 +64,11 @@ def plot_gg_diagram(result: LapSimulationResult, out_base: Path) -> None:
     """Plot longitudinal versus lateral acceleration in g-units.
 
     Args:
-        result: Simulation result containing `ax_mps2` and `ay_mps2`.
+        result: Simulation result containing `longitudinal_accel` and `lateral_accel`.
         out_base: Output path without suffix.
     """
     fig, ax = plt.subplots(figsize=(6, 6))
-    ax.scatter(result.ax_mps2 / GRAVITY_MPS2, result.ay_mps2 / GRAVITY_MPS2, s=9, alpha=0.7)
+    ax.scatter(result.longitudinal_accel / GRAVITY, result.lateral_accel / GRAVITY, s=9, alpha=0.7)
     ax.set_xlabel("Longitudinal accel [g]")
     ax.set_ylabel("Lateral accel [g]")
     ax.set_title("G-G Diagram")
@@ -85,8 +85,8 @@ def plot_tire_load_distribution(result: LapSimulationResult, out_base: Path) -> 
         out_base: Output path without suffix.
     """
     fig, ax = plt.subplots(figsize=(9, 4))
-    ax.plot(result.track.s_m, result.front_axle_load_n, label="Front axle")
-    ax.plot(result.track.s_m, result.rear_axle_load_n, label="Rear axle")
+    ax.plot(result.track.arc_length, result.front_axle_load, label="Front axle")
+    ax.plot(result.track.arc_length, result.rear_axle_load, label="Rear axle")
     ax.set_xlabel("s [m]")
     ax.set_ylabel("Normal load [N]")
     ax.set_title("Axle Load Distribution")
@@ -100,11 +100,11 @@ def plot_power_trace(result: LapSimulationResult, out_base: Path) -> None:
     """Plot tractive power over arc length.
 
     Args:
-        result: Simulation result containing `power_w` and track distance.
+        result: Simulation result containing `power` and track distance.
         out_base: Output path without suffix.
     """
     fig, ax = plt.subplots(figsize=(9, 4))
-    ax.plot(result.track.s_m, result.power_w / 1000.0, lw=2.0)
+    ax.plot(result.track.arc_length, result.power / 1000.0, lw=2.0)
     ax.set_xlabel("s [m]")
     ax.set_ylabel("Power [kW]")
     ax.set_title("Power Trace")

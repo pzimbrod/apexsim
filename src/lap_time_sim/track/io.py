@@ -59,8 +59,8 @@ def load_track_csv(path: str | Path) -> TrackData:
         raise TrackDataError(msg)
 
     return build_track_data(
-        x_m=np.asarray(x_vals, dtype=float),
-        y_m=np.asarray(y_vals, dtype=float),
-        elevation_m=np.asarray(elevation_vals, dtype=float),
-        banking_rad=np.asarray(banking_vals, dtype=float),
+        x=np.asarray(x_vals, dtype=float),
+        y=np.asarray(y_vals, dtype=float),
+        elevation=np.asarray(elevation_vals, dtype=float),
+        banking=np.asarray(banking_vals, dtype=float),
     )

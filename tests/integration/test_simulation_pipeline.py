@@ -54,11 +54,11 @@ class SimulationPipelineTests(unittest.TestCase):
         )
         kpis = compute_kpis(result)
 
-        self.assertGreater(kpis.lap_time_s, 70.0)
-        self.assertLess(kpis.lap_time_s, 220.0)
+        self.assertGreater(kpis.lap_time, 70.0)
+        self.assertLess(kpis.lap_time, 220.0)
         self.assertGreater(kpis.max_lateral_accel_g, 1.5)
         self.assertLess(kpis.max_lateral_accel_g, 8.0)
-        self.assertGreater(len(result.speed_mps), 100)
+        self.assertGreater(len(result.speed), 100)
 
 
 if __name__ == "__main__":

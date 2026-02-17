@@ -6,11 +6,11 @@ from dataclasses import dataclass
 
 from lap_time_sim.utils.exceptions import ConfigurationError
 
-DEFAULT_MIN_SPEED_MPS = 8.0
+DEFAULT_MIN_SPEED = 8.0
 DEFAULT_LATERAL_ENVELOPE_MAX_ITERATIONS = 20
-DEFAULT_LATERAL_ENVELOPE_CONVERGENCE_TOL_MPS = 0.1
-DEFAULT_TRANSIENT_DT_S = 0.01
-DEFAULT_MAX_SPEED_MPS = 115.0
+DEFAULT_LATERAL_ENVELOPE_CONVERGENCE_TOLERANCE = 0.1
+DEFAULT_TRANSIENT_STEP = 0.01
+DEFAULT_MAX_SPEED = 115.0
 DEFAULT_ENABLE_TRANSIENT_REFINEMENT = False
 
 
@@ -27,10 +27,10 @@ class NumericsConfig:
         transient_step: Integration step for optional transient refinement [s].
     """
 
-    min_speed: float = DEFAULT_MIN_SPEED_MPS
+    min_speed: float = DEFAULT_MIN_SPEED
     lateral_envelope_max_iterations: int = DEFAULT_LATERAL_ENVELOPE_MAX_ITERATIONS
-    lateral_envelope_convergence_tolerance: float = DEFAULT_LATERAL_ENVELOPE_CONVERGENCE_TOL_MPS
-    transient_step: float = DEFAULT_TRANSIENT_DT_S
+    lateral_envelope_convergence_tolerance: float = DEFAULT_LATERAL_ENVELOPE_CONVERGENCE_TOLERANCE
+    transient_step: float = DEFAULT_TRANSIENT_STEP
 
     def validate(self) -> None:
         """Validate numerical solver settings.
@@ -104,7 +104,7 @@ class SimulationConfig:
 
 
 def build_simulation_config(
-    max_speed: float = DEFAULT_MAX_SPEED_MPS,
+    max_speed: float = DEFAULT_MAX_SPEED,
     numerics: NumericsConfig | None = None,
     enable_transient_refinement: bool = DEFAULT_ENABLE_TRANSIENT_REFINEMENT,
 ) -> SimulationConfig:

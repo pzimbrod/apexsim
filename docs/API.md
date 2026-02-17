@@ -35,21 +35,21 @@ Relevant `SimulationConfig` knobs:
 
 Vehicle-model API required by the solver:
 - `validate()`
-- `lateral_accel_limit(speed_mps, banking_rad)`
-- `max_longitudinal_accel(speed_mps, ay_required_mps2, grade, banking_rad)`
-- `max_longitudinal_decel(speed_mps, ay_required_mps2, grade, banking_rad)`
-- `diagnostics(speed_mps, ax_mps2, ay_mps2, curvature_1pm)`
+- `lateral_accel_limit(speed, banking)`
+- `max_longitudinal_accel(speed, lateral_accel_required, grade, banking)`
+- `max_longitudinal_decel(speed, lateral_accel_required, grade, banking)`
+- `diagnostics(speed, longitudinal_accel, lateral_accel, curvature)`
 
 Solver math and derivation:
 - `docs/SOLVER.md`
 - `docs/POINT_MASS_MODEL.md` (point-mass backend equations)
 
 `LapSimulationResult` contains:
-- `lap_time_s`
-- `speed_mps`, `ax_mps2`, `ay_mps2`
-- `yaw_moment_nm`
-- `front_axle_load_n`, `rear_axle_load_n`
-- `power_w`, `energy_j`
+- `lap_time`
+- `speed`, `longitudinal_accel`, `lateral_accel`
+- `yaw_moment`
+- `front_axle_load`, `rear_axle_load`
+- `power`, `energy`
 
 ## Analysis
 

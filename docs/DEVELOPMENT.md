@@ -55,16 +55,16 @@ Rules:
 Example:
 
 ```python
-def lateral_speed_limit(curvature_1pm: float, ay_limit_mps2: float, vmax_mps: float) -> float:
+def lateral_speed_limit(curvature: float, lateral_accel_limit: float, max_speed: float) -> float:
     """Compute speed limit from curvature and lateral acceleration capability.
 
     Args:
-        curvature_1pm: Signed path curvature in 1/m.
-        ay_limit_mps2: Available lateral acceleration magnitude in m/s^2.
-        vmax_mps: Global hard speed cap in m/s.
+        curvature: Signed path curvature [1/m].
+        lateral_accel_limit: Available lateral acceleration magnitude [m/s^2].
+        max_speed: Global hard speed cap [m/s].
 
     Returns:
-        Maximum feasible speed in m/s under curvature and lateral limits.
+        Maximum feasible speed [m/s] under curvature and lateral limits.
     """
 ```
 
