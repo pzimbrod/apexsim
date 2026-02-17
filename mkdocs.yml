@@ -59,9 +59,11 @@ nav:
   - Guides:
       - API Overview: API.md
       - Solver: SOLVER.md
-      - Point-Mass Model: POINT_MASS_MODEL.md
       - Assumptions: ASSUMPTIONS.md
       - Development: DEVELOPMENT.md
+  - Vehicle Models:
+      - Bicycle Model: BICYCLE_MODEL.md
+      - Point-Mass Model: POINT_MASS_MODEL.md
   - API Reference:
       - Package: reference/pylapsim.md
       - Simulation: reference/simulation.md
