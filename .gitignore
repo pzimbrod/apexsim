@@ -14,6 +14,7 @@ htmlcov/
 coverage.xml
 build/
 dist/
+site/
 *.egg-info/
 .ipynb_checkpoints/
 .DS_Store
