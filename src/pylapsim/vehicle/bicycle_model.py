@@ -6,10 +6,11 @@ from dataclasses import dataclass
 
 from pylapsim.tire.models import AxleTireParameters
 from pylapsim.utils.exceptions import ConfigurationError
+from pylapsim.vehicle._bicycle_backends import BicycleNumbaBackendMixin, BicycleTorchBackendMixin
 from pylapsim.vehicle._bicycle_physics import BicyclePhysicalMixin
 from pylapsim.vehicle._model_base import EnvelopeVehicleModel
 from pylapsim.vehicle._physics_primitives import EnvelopePhysics
-from pylapsim.vehicle.bicycle_dynamics import BicycleDynamicsModel
+from pylapsim.vehicle.bicycle.dynamics import BicycleDynamicsModel
 from pylapsim.vehicle.params import VehicleParameters
 
 DEFAULT_MIN_LATERAL_ACCEL_LIMIT = 0.5
@@ -125,8 +126,20 @@ class BicycleNumerics:
             raise ConfigurationError(msg)
 
 
-class BicycleModel(BicyclePhysicalMixin, EnvelopeVehicleModel):
-    """Vehicle-model API implementation for the bicycle dynamics backend."""
+class BicycleModel(
+    BicycleTorchBackendMixin,
+    BicycleNumbaBackendMixin,
+    BicyclePhysicalMixin,
+    EnvelopeVehicleModel,
+):
+    """Vehicle-model API implementation for the bicycle dynamics backend.
+
+    The class is intentionally composed from separate OOP layers:
+
+    - ``BicyclePhysicalMixin`` for backend-agnostic bicycle physics,
+    - ``BicycleNumbaBackendMixin`` for numba-specific solver adapter API,
+    - ``BicycleTorchBackendMixin`` for torch-specific solver adapter API.
+    """
 
     def __init__(
         self,

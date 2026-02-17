@@ -17,6 +17,7 @@ from pylapsim.vehicle import BicycleModel, BicycleNumerics, BicyclePhysics
 from tests.helpers import sample_vehicle_parameters
 
 NUMBA_AVAILABLE = importlib.util.find_spec("numba") is not None
+TORCH_AVAILABLE = importlib.util.find_spec("torch") is not None
 
 
 class SpeedProfileConvergenceTests(unittest.TestCase):
@@ -107,8 +108,8 @@ class SpeedProfileConvergenceTests(unittest.TestCase):
             solve_speed_profile_numba(track=self.track, model=self.model, config=config)
 
     @unittest.skipUnless(NUMBA_AVAILABLE, "Numba not installed")
-    def test_numba_profile_rejects_models_without_numba_api(self) -> None:
-        """Reject numba backend when model lacks numba parameter API."""
+    def test_numba_profile_accepts_bicycle_model_backend_api(self) -> None:
+        """Run numba profile solve successfully with bicycle backend adapters."""
         config = SimulationConfig(
             runtime=RuntimeConfig(
                 max_speed=115.0,
@@ -117,8 +118,25 @@ class SpeedProfileConvergenceTests(unittest.TestCase):
             ),
             numerics=NumericsConfig(),
         )
-        with self.assertRaises(ConfigurationError):
-            solve_speed_profile_numba(track=self.track, model=self.model, config=config)
+        result = solve_speed_profile_numba(track=self.track, model=self.model, config=config)
+        self.assertEqual(result.speed.shape, self.track.arc_length.shape)
+        self.assertGreater(result.lap_time, 0.0)
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_torch_profile_accepts_bicycle_model_backend_api(self) -> None:
+        """Run torch profile solve successfully with bicycle backend adapters."""
+        config = SimulationConfig(
+            runtime=RuntimeConfig(
+                max_speed=115.0,
+                enable_transient_refinement=False,
+                compute_backend="torch",
+                torch_device="cpu",
+            ),
+            numerics=NumericsConfig(),
+        )
+        result = solve_speed_profile_torch(track=self.track, model=self.model, config=config)
+        self.assertEqual(result.speed.shape, self.track.arc_length.shape)
+        self.assertGreater(result.lap_time, 0.0)
 
 
 if __name__ == "__main__":

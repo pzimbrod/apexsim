@@ -114,6 +114,13 @@ For backend-enabled models, keep backend adapters out of the physics layer:
 - Backend-specific methods (`numba`, `torch`) stay isolated in adapter mixins.
 - `BicycleModel` composes `src/pylapsim/vehicle/_bicycle_physics.py`,
   which extends `PointMassPhysicalMixin` to reuse the shared physical core.
+- Bicycle backend adapters live in `src/pylapsim/vehicle/_bicycle_backends.py`
+  and mirror the point-mass backend adapter structure.
+- Bicycle-specific dynamics/supporting components live in
+  `src/pylapsim/vehicle/bicycle/` (for example `dynamics.py`,
+  `load_transfer.py`) to keep model-specific code grouped together.
+- Legacy module paths (`vehicle/bicycle_dynamics.py`, `vehicle/load_transfer.py`)
+  are lightweight compatibility re-exports only.
 
 ## Refreshing Spa Data
 

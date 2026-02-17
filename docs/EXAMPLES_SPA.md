@@ -24,7 +24,7 @@ Each script follows the same structure:
 
 Only the vehicle-model backend differs.
 
-## 2. `examples/spa_lap.py` (bicycle baseline)
+## 2. `examples/spa_lap_bicycle.py` (bicycle baseline)
 
 ### 2.1 Why start here?
 
@@ -150,7 +150,7 @@ Use caution when drawing conclusions about:
 
 ## 8. Suggested study workflow
 
-1. Start from `spa_lap.py`.
+1. Start from `spa_lap_bicycle.py`.
 2. Run `spa_lap_point_mass.py`.
 3. Run `spa_model_comparison.py`.
 4. Calibrate/adjust parameters and rerun all three for consistency.
@@ -158,7 +158,7 @@ Use caution when drawing conclusions about:
 ## Run commands
 
 ```bash
-python examples/spa_lap.py
+python examples/spa_lap_bicycle.py
 python examples/spa_lap_point_mass.py
 python examples/spa_model_comparison.py
 ```

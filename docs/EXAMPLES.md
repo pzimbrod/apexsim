@@ -26,7 +26,7 @@ Reason:
 
 - `examples/synthetic_track_scenarios.py`
   - "Is my model setup physically consistent on canonical test geometries?"
-- `examples/spa_lap.py`
+- `examples/spa_lap_bicycle.py`
   - "What does the bicycle model predict on a realistic circuit?"
 - `examples/spa_lap_point_mass.py`
   - "What is the low-complexity baseline on the same circuit?"

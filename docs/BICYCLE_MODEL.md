@@ -176,6 +176,6 @@ analysis diagnostics (e.g., yaw-moment traces).
 ## 8. Example
 
 - Bicycle standalone usage:
-  `examples/spa_lap.py`
+  `examples/spa_lap_bicycle.py`
 - Side-by-side comparison against point-mass model:
   `examples/spa_model_comparison.py`

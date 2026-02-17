@@ -10,7 +10,7 @@ from pylapsim.tire.models import AxleTireParameters
 from pylapsim.tire.pacejka import axle_lateral_forces
 from pylapsim.utils.constants import SMALL_EPS
 from pylapsim.vehicle.aero import aero_forces
-from pylapsim.vehicle.load_transfer import estimate_normal_loads
+from pylapsim.vehicle.bicycle.load_transfer import estimate_normal_loads
 from pylapsim.vehicle.params import VehicleParameters
 
 MIN_SLIP_ANGLE_REFERENCE_SPEED = 0.5

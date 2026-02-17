@@ -7,8 +7,8 @@ import unittest
 from pylapsim.tire import default_axle_tire_parameters
 from pylapsim.utils.constants import GRAVITY
 from pylapsim.vehicle.aero import aero_forces
-from pylapsim.vehicle.bicycle_dynamics import BicycleDynamicsModel, ControlInput, VehicleState
-from pylapsim.vehicle.load_transfer import estimate_normal_loads
+from pylapsim.vehicle.bicycle.dynamics import BicycleDynamicsModel, ControlInput, VehicleState
+from pylapsim.vehicle.bicycle.load_transfer import estimate_normal_loads
 from tests.helpers import sample_vehicle_parameters
 
 

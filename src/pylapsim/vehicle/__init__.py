@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from pylapsim.vehicle.bicycle_dynamics import (
+from pylapsim.vehicle.bicycle.dynamics import (
     BicycleDynamicsModel,
     ControlInput,
     ForceBalance,

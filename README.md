@@ -34,7 +34,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -e '.[dev]'
 pytest
-python examples/spa_lap.py
+python examples/spa_lap_bicycle.py
 python examples/spa_lap_point_mass.py
 python examples/spa_model_comparison.py
 python examples/synthetic_track_scenarios.py
@@ -42,7 +42,7 @@ python examples/synthetic_track_scenarios.py
 
 ## Example Scripts
 
-- `examples/spa_lap.py`: Bicycle model end-to-end run with KPI/plot export.
+- `examples/spa_lap_bicycle.py`: Bicycle model end-to-end run with KPI/plot export.
 - `examples/spa_lap_point_mass.py`: Point-mass model end-to-end run with KPI/plot export.
 - `examples/spa_model_comparison.py`: Side-by-side bicycle vs calibrated point-mass comparison with KPI deltas and speed-trace overlay.
 - `examples/synthetic_track_scenarios.py`: Straight, circle, and figure-eight benchmark runs for physical-consistency inspection.

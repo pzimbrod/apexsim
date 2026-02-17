@@ -11,8 +11,8 @@ from pylapsim.tire.models import AxleTireParameters
 from pylapsim.tire.pacejka import magic_formula_lateral
 from pylapsim.utils.constants import GRAVITY, SMALL_EPS
 from pylapsim.vehicle._point_mass_physics import PointMassPhysicalMixin, PointMassPhysicalState
-from pylapsim.vehicle.bicycle_dynamics import BicycleDynamicsModel, ControlInput, VehicleState
-from pylapsim.vehicle.load_transfer import estimate_normal_loads
+from pylapsim.vehicle.bicycle.dynamics import BicycleDynamicsModel, ControlInput, VehicleState
+from pylapsim.vehicle.bicycle.load_transfer import estimate_normal_loads
 
 
 class BicycleLateralPhysicsProtocol(Protocol):
