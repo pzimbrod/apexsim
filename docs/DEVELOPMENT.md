@@ -95,10 +95,10 @@ Defaulting guidance:
 
 The solver contract is represented at two levels:
 
-- `LapTimeVehicleModel` (Protocol) in `src/lap_time_sim/simulation/model_api.py`
+- `VehicleModel` (Protocol) in `src/pylapsim/simulation/model_api.py`
   keeps the simulation pipeline structurally open for external backends.
-- `AbstractLapTimeVehicleModel` plus
-  `EnvelopeVehicleModel` in `src/lap_time_sim/vehicle/_model_base.py`
+- `VehicleModelBase` plus
+  `EnvelopeVehicleModel` in `src/pylapsim/vehicle/_model_base.py`
   provides inheritance-based code organization for built-in backends.
 
 Built-in models (`BicycleModel`, `PointMassModel`) inherit the same base class

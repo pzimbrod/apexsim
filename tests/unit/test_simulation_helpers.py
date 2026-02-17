@@ -6,14 +6,14 @@ import unittest
 
 import numpy as np
 
-from lap_time_sim.simulation.config import (
+from pylapsim.simulation.config import (
     NumericsConfig,
     RuntimeConfig,
     SimulationConfig,
     build_simulation_config,
 )
-from lap_time_sim.simulation.integrator import rk4_step
-from lap_time_sim.utils.exceptions import ConfigurationError
+from pylapsim.simulation.integrator import rk4_step
+from pylapsim.utils.exceptions import ConfigurationError
 
 
 class SimulationHelpersTests(unittest.TestCase):

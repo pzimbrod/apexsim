@@ -6,10 +6,10 @@ import unittest
 
 import numpy as np
 
-from lap_time_sim.tire.models import PacejkaParameters
-from lap_time_sim.track.models import TrackData
-from lap_time_sim.utils.exceptions import ConfigurationError, TrackDataError
-from lap_time_sim.vehicle.params import VehicleParameters
+from pylapsim.tire.models import PacejkaParameters
+from pylapsim.track.models import TrackData
+from pylapsim.utils.exceptions import ConfigurationError, TrackDataError
+from pylapsim.vehicle.params import VehicleParameters
 
 
 class ParameterValidationTests(unittest.TestCase):

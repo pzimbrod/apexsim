@@ -1,4 +1,4 @@
-# Lap Time Sim
+# PyLapSim
 
 A modular lap time simulation library for race cars with interchangeable vehicle models.
 
@@ -14,11 +14,11 @@ A modular lap time simulation library for race cars with interchangeable vehicle
 
 ## Project Layout
 
-- `src/lap_time_sim/vehicle`: Vehicle dynamics, aero, load transfer
-- `src/lap_time_sim/tire`: Tire models
-- `src/lap_time_sim/track`: Track parsing and geometry
-- `src/lap_time_sim/simulation`: Integrators and lap simulation
-- `src/lap_time_sim/analysis`: KPIs and visualizations
+- `src/pylapsim/vehicle`: Vehicle dynamics, aero, load transfer
+- `src/pylapsim/tire`: Tire models
+- `src/pylapsim/track`: Track parsing and geometry
+- `src/pylapsim/simulation`: Integrators and lap simulation
+- `src/pylapsim/analysis`: KPIs and visualizations
 - `tests`: Unit, integration, and validation tests
 
 ## Quick Start

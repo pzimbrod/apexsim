@@ -7,10 +7,10 @@ from pathlib import Path
 
 import numpy as np
 
-from lap_time_sim.simulation import build_simulation_config, simulate_lap
-from lap_time_sim.tire import default_axle_tire_parameters
-from lap_time_sim.track import load_track_csv
-from lap_time_sim.vehicle import (
+from pylapsim.simulation import build_simulation_config, simulate_lap
+from pylapsim.tire import default_axle_tire_parameters
+from pylapsim.track import load_track_csv
+from pylapsim.vehicle import (
     BicyclePhysics,
     PointMassPhysics,
     build_bicycle_model,

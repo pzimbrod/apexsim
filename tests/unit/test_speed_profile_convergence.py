@@ -5,11 +5,11 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
-from lap_time_sim.simulation.config import NumericsConfig, RuntimeConfig, SimulationConfig
-from lap_time_sim.simulation.profile import solve_speed_profile
-from lap_time_sim.tire.models import default_axle_tire_parameters
-from lap_time_sim.track.io import load_track_csv
-from lap_time_sim.vehicle import BicycleModel, BicycleNumerics, BicyclePhysics
+from pylapsim.simulation.config import NumericsConfig, RuntimeConfig, SimulationConfig
+from pylapsim.simulation.profile import solve_speed_profile
+from pylapsim.tire.models import default_axle_tire_parameters
+from pylapsim.track.io import load_track_csv
+from pylapsim.vehicle import BicycleModel, BicycleNumerics, BicyclePhysics
 from tests.helpers import sample_vehicle_parameters
 
 

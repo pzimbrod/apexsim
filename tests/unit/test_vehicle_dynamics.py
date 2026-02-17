@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import unittest
 
-from lap_time_sim.tire import default_axle_tire_parameters
-from lap_time_sim.utils.constants import GRAVITY
-from lap_time_sim.vehicle.aero import aero_forces
-from lap_time_sim.vehicle.bicycle_dynamics import BicycleDynamicsModel, ControlInput, VehicleState
-from lap_time_sim.vehicle.load_transfer import estimate_normal_loads
+from pylapsim.tire import default_axle_tire_parameters
+from pylapsim.utils.constants import GRAVITY
+from pylapsim.vehicle.aero import aero_forces
+from pylapsim.vehicle.bicycle_dynamics import BicycleDynamicsModel, ControlInput, VehicleState
+from pylapsim.vehicle.load_transfer import estimate_normal_loads
 from tests.helpers import sample_vehicle_parameters
 
 

@@ -10,15 +10,15 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-from lap_time_sim.analysis import compute_kpis, export_standard_plots
-from lap_time_sim.analysis.export import export_kpi_json
-from lap_time_sim.simulation import build_simulation_config, simulate_lap
-from lap_time_sim.simulation.runner import LapSimulationResult
-from lap_time_sim.tire import default_axle_tire_parameters
-from lap_time_sim.track import load_track_csv
-from lap_time_sim.utils import configure_logging
-from lap_time_sim.utils.constants import STANDARD_AIR_DENSITY
-from lap_time_sim.vehicle import (
+from pylapsim.analysis import compute_kpis, export_standard_plots
+from pylapsim.analysis.export import export_kpi_json
+from pylapsim.simulation import build_simulation_config, simulate_lap
+from pylapsim.simulation.runner import LapResult
+from pylapsim.tire import default_axle_tire_parameters
+from pylapsim.track import load_track_csv
+from pylapsim.utils import configure_logging
+from pylapsim.utils.constants import STANDARD_AIR_DENSITY
+from pylapsim.vehicle import (
     BicyclePhysics,
     PointMassPhysics,
     VehicleParameters,
@@ -57,8 +57,8 @@ def _example_vehicle_parameters() -> VehicleParameters:
 
 
 def _export_speed_comparison_plot(
-    bicycle_result: LapSimulationResult,
-    point_mass_result: LapSimulationResult,
+    bicycle_result: LapResult,
+    point_mass_result: LapResult,
     path: Path,
 ) -> None:
     """Export an overlay plot of speed traces for both vehicle models.
@@ -91,8 +91,8 @@ def _export_speed_comparison_plot(
 
 
 def _kpi_delta_dict(
-    bicycle_result: LapSimulationResult,
-    point_mass_result: LapSimulationResult,
+    bicycle_result: LapResult,
+    point_mass_result: LapResult,
 ) -> dict[str, float]:
     """Compute comparison deltas between bicycle and point-mass outputs.
 

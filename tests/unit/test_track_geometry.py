@@ -9,9 +9,9 @@ from pathlib import Path
 
 import numpy as np
 
-from lap_time_sim.track.geometry import build_track_data
-from lap_time_sim.track.io import load_track_csv
-from lap_time_sim.utils.exceptions import TrackDataError
+from pylapsim.track.geometry import build_track_data
+from pylapsim.track.io import load_track_csv
+from pylapsim.utils.exceptions import TrackDataError
 
 
 class TrackGeometryTests(unittest.TestCase):

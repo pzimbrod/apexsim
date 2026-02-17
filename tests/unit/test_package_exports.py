@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import unittest
 
-import lap_time_sim.simulation as simulation_pkg
-import lap_time_sim.vehicle as vehicle_pkg
+import pylapsim.simulation as simulation_pkg
+import pylapsim.vehicle as vehicle_pkg
 
 
 class PackageExportTests(unittest.TestCase):
@@ -13,10 +13,10 @@ class PackageExportTests(unittest.TestCase):
 
     def test_simulation_lazy_exports_resolve(self) -> None:
         """Resolve simulation exports that are provided lazily."""
-        self.assertIsNotNone(simulation_pkg.AbstractLapTimeVehicleModel)
-        self.assertIsNotNone(simulation_pkg.LapTimeVehicleModel)
-        self.assertIsNotNone(simulation_pkg.VehicleModelDiagnostics)
-        self.assertIsNotNone(simulation_pkg.LapSimulationResult)
+        self.assertIsNotNone(simulation_pkg.VehicleModelBase)
+        self.assertIsNotNone(simulation_pkg.VehicleModel)
+        self.assertIsNotNone(simulation_pkg.ModelDiagnostics)
+        self.assertIsNotNone(simulation_pkg.LapResult)
         self.assertIsNotNone(simulation_pkg.simulate_lap)
         self.assertIsNotNone(simulation_pkg.RuntimeConfig)
         self.assertIsNotNone(simulation_pkg.NumericsConfig)

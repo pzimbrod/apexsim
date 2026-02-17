@@ -8,14 +8,14 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from lap_time_sim.analysis import compute_kpis, export_standard_plots
-from lap_time_sim.analysis.export import export_kpi_json
-from lap_time_sim.simulation.config import NumericsConfig, RuntimeConfig, SimulationConfig
-from lap_time_sim.simulation.runner import simulate_lap
-from lap_time_sim.tire.models import default_axle_tire_parameters
-from lap_time_sim.track.io import load_track_csv
-from lap_time_sim.utils.logging import configure_logging
-from lap_time_sim.vehicle import BicycleModel, BicycleNumerics, BicyclePhysics
+from pylapsim.analysis import compute_kpis, export_standard_plots
+from pylapsim.analysis.export import export_kpi_json
+from pylapsim.simulation.config import NumericsConfig, RuntimeConfig, SimulationConfig
+from pylapsim.simulation.runner import simulate_lap
+from pylapsim.tire.models import default_axle_tire_parameters
+from pylapsim.track.io import load_track_csv
+from pylapsim.utils.logging import configure_logging
+from pylapsim.vehicle import BicycleModel, BicycleNumerics, BicyclePhysics
 from tests.helpers import sample_vehicle_parameters
 
 
@@ -87,7 +87,7 @@ class AnalysisAndUtilsTests(unittest.TestCase):
     def test_logging_helper_runs(self) -> None:
         """Smoke-test logging helper configuration."""
         configure_logging(logging.INFO)
-        logger = logging.getLogger("lap_time_sim_test")
+        logger = logging.getLogger("pylapsim_test")
         logger.info("smoke")
 
 

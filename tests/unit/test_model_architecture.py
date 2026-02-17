@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import unittest
 
-from lap_time_sim.simulation.model_api import AbstractLapTimeVehicleModel
-from lap_time_sim.tire.models import default_axle_tire_parameters
-from lap_time_sim.vehicle._model_base import EnvelopeVehicleModel
-from lap_time_sim.vehicle.bicycle_model import BicycleModel, BicycleNumerics, BicyclePhysics
-from lap_time_sim.vehicle.point_mass_model import PointMassModel, PointMassPhysics
+from pylapsim.simulation.model_api import VehicleModelBase
+from pylapsim.tire.models import default_axle_tire_parameters
+from pylapsim.vehicle._model_base import EnvelopeVehicleModel
+from pylapsim.vehicle.bicycle_model import BicycleModel, BicycleNumerics, BicyclePhysics
+from pylapsim.vehicle.point_mass_model import PointMassModel, PointMassPhysics
 from tests.helpers import sample_vehicle_parameters
 
 
@@ -17,8 +17,8 @@ class ModelArchitectureTests(unittest.TestCase):
 
     def test_models_derive_from_common_abstract_vehicle_model(self) -> None:
         """Ensure backends derive from the abstract solver model contract."""
-        self.assertTrue(issubclass(BicycleModel, AbstractLapTimeVehicleModel))
-        self.assertTrue(issubclass(PointMassModel, AbstractLapTimeVehicleModel))
+        self.assertTrue(issubclass(BicycleModel, VehicleModelBase))
+        self.assertTrue(issubclass(PointMassModel, VehicleModelBase))
 
     def test_models_share_common_envelope_vehicle_base(self) -> None:
         """Ensure backends share the envelope-limited base implementation."""

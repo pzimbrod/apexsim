@@ -5,10 +5,10 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
-from lap_time_sim.analysis.kpi import compute_kpis
-from lap_time_sim.simulation import build_simulation_config, simulate_lap
-from lap_time_sim.track.io import load_track_csv
-from lap_time_sim.vehicle import PointMassPhysics, build_point_mass_model
+from pylapsim.analysis.kpi import compute_kpis
+from pylapsim.simulation import build_simulation_config, simulate_lap
+from pylapsim.track.io import load_track_csv
+from pylapsim.vehicle import PointMassPhysics, build_point_mass_model
 from tests.helpers import sample_vehicle_parameters
 
 

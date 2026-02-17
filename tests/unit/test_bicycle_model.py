@@ -6,9 +6,9 @@ import unittest
 
 import numpy as np
 
-from lap_time_sim.tire.models import default_axle_tire_parameters
-from lap_time_sim.utils.exceptions import ConfigurationError
-from lap_time_sim.vehicle import (
+from pylapsim.tire.models import default_axle_tire_parameters
+from pylapsim.utils.exceptions import ConfigurationError
+from pylapsim.vehicle import (
     BicycleModel,
     BicycleNumerics,
     BicyclePhysics,

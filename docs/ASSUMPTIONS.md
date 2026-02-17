@@ -11,7 +11,7 @@
   tolerance and iteration cap in `SimulationConfig`.
 - Aero model uses constant coefficients (`c_l`, `c_d`) and rigid ride height.
 - The lap-time solver is decoupled from specific vehicle equations and only
-  depends on the `LapTimeVehicleModel` API contract.
+  depends on the `VehicleModel` API contract.
 - Track data expects closed-loop CSV with columns: `x`, `y`, `elevation`, `banking`.
 - Current Spa import uses real centerline coordinates, while `elevation` and `banking` are
   set to `0.0` until higher-fidelity telemetry/map layers are integrated.

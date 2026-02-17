@@ -2,31 +2,31 @@
 
 ## Track
 
-- `lap_time_sim.track.load_track_csv(path) -> TrackData`
+- `pylapsim.track.load_track_csv(path) -> TrackData`
   - Input CSV columns: `x`, `y`, `elevation`, `banking`
 
 ## Vehicle and Tires
 
-- `lap_time_sim.tire.default_axle_tire_parameters() -> AxleTireParameters`
-- `lap_time_sim.vehicle.VehicleParameters` (provide explicit vehicle data)
-- `lap_time_sim.vehicle.BicycleModel(vehicle, tires, physics, numerics)`
-- `lap_time_sim.vehicle.BicyclePhysics` (sensible defaults included)
-- `lap_time_sim.vehicle.BicycleNumerics` (sensible numerical defaults included)
-- `lap_time_sim.vehicle.BicycleDynamicsModel` (state-space 3-DOF backend)
-- `lap_time_sim.vehicle.build_bicycle_model(vehicle, tires, physics=None, numerics=None)`
-- `lap_time_sim.vehicle.PointMassModel(vehicle, physics)`
-- `lap_time_sim.vehicle.PointMassPhysics` (sensible defaults included)
-- `lap_time_sim.vehicle.build_point_mass_model(vehicle, physics=None)`
-- `lap_time_sim.vehicle.calibrate_point_mass_friction_to_bicycle(vehicle, tires, ...)`
+- `pylapsim.tire.default_axle_tire_parameters() -> AxleTireParameters`
+- `pylapsim.vehicle.VehicleParameters` (provide explicit vehicle data)
+- `pylapsim.vehicle.BicycleModel(vehicle, tires, physics, numerics)`
+- `pylapsim.vehicle.BicyclePhysics` (sensible defaults included)
+- `pylapsim.vehicle.BicycleNumerics` (sensible numerical defaults included)
+- `pylapsim.vehicle.BicycleDynamicsModel` (state-space 3-DOF backend)
+- `pylapsim.vehicle.build_bicycle_model(vehicle, tires, physics=None, numerics=None)`
+- `pylapsim.vehicle.PointMassModel(vehicle, physics)`
+- `pylapsim.vehicle.PointMassPhysics` (sensible defaults included)
+- `pylapsim.vehicle.build_point_mass_model(vehicle, physics=None)`
+- `pylapsim.vehicle.calibrate_point_mass_friction_to_bicycle(vehicle, tires, ...)`
 
 ## Simulation
 
-- `lap_time_sim.simulation.SimulationConfig`
-- `lap_time_sim.simulation.RuntimeConfig`
-- `lap_time_sim.simulation.NumericsConfig` (sensible numerical defaults included)
-- `lap_time_sim.simulation.AbstractLapTimeVehicleModel` (optional OOP base class)
-- `lap_time_sim.simulation.simulate_lap(track, model, config) -> LapSimulationResult`
-- `lap_time_sim.simulation.build_simulation_config(max_speed=115.0, numerics=None, enable_transient_refinement=False)`
+- `pylapsim.simulation.SimulationConfig`
+- `pylapsim.simulation.RuntimeConfig`
+- `pylapsim.simulation.NumericsConfig` (sensible numerical defaults included)
+- `pylapsim.simulation.VehicleModelBase` (optional OOP base class)
+- `pylapsim.simulation.simulate_lap(track, model, config) -> LapResult`
+- `pylapsim.simulation.build_simulation_config(max_speed=115.0, numerics=None, enable_transient_refinement=False)`
 
 Relevant `SimulationConfig` knobs:
 - `runtime.max_speed`
@@ -45,7 +45,7 @@ Solver math and derivation:
 - `docs/SOLVER.md`
 - `docs/POINT_MASS_MODEL.md` (point-mass backend equations)
 
-`LapSimulationResult` contains:
+`LapResult` contains:
 - `lap_time`
 - `speed`, `longitudinal_accel`, `lateral_accel`
 - `yaw_moment`
@@ -54,9 +54,9 @@ Solver math and derivation:
 
 ## Analysis
 
-- `lap_time_sim.analysis.compute_kpis(result) -> KpiSummary`
-- `lap_time_sim.analysis.export_standard_plots(result, output_dir)`
-- `lap_time_sim.analysis.export.export_kpi_json(kpis, path)`
+- `pylapsim.analysis.compute_kpis(result) -> KpiSummary`
+- `pylapsim.analysis.export_standard_plots(result, output_dir)`
+- `pylapsim.analysis.export.export_kpi_json(kpis, path)`
 
 `KpiSummary` includes mandatory KPIs:
 - lap time

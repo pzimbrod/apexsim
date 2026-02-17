@@ -1,7 +1,7 @@
 # Solver Mathematics
 
 This document explains how lap time is computed in the current quasi-steady solver
-implementation (`src/lap_time_sim/simulation/profile.py`).
+implementation (`src/pylapsim/simulation/profile.py`).
 
 ## 1. Discretization and State
 
@@ -164,29 +164,29 @@ These simplifications keep the solver fast and stable, while preserving core con
 for lap-time studies.
 
 The same solver routine can be used with different backends implementing
-`LapTimeVehicleModel`, including the bicycle and point-mass models.
+`VehicleModel`, including the bicycle and point-mass models.
 
 ## 9. Equation-to-Code Mapping
 
 - $a_{y,i} = v_i^2\kappa_i$:
-  - `src/lap_time_sim/simulation/profile.py` (`solve_speed_profile`, `ay = ...`)
+  - `src/pylapsim/simulation/profile.py` (`solve_speed_profile`, `ay = ...`)
 - $v_{\text{lat},i} = \sqrt{a_{y,\text{lim},i}/|\kappa_i|}$ (with clipping):
-  - `src/lap_time_sim/simulation/envelope.py` (`lateral_speed_limit`)
-  - `src/lap_time_sim/simulation/profile.py` (`solve_speed_profile`, `v_lat[idx] = ...`)
+  - `src/pylapsim/simulation/envelope.py` (`lateral_speed_limit`)
+  - `src/pylapsim/simulation/profile.py` (`solve_speed_profile`, `v_lat[idx] = ...`)
 - Friction-circle scaling $\lambda_i$ (vehicle-model dependent):
-  - `src/lap_time_sim/vehicle/bicycle_model.py` (`_friction_circle_scale`)
+  - `src/pylapsim/vehicle/bicycle_model.py` (`_friction_circle_scale`)
 - Forward pass $v_{i+1}^2 = v_i^2 + 2a\Delta s$:
-  - `src/lap_time_sim/simulation/profile.py` (`solve_speed_profile`, `next_speed_sq = ...`)
+  - `src/pylapsim/simulation/profile.py` (`solve_speed_profile`, `next_speed_sq = ...`)
 - Backward pass braking feasibility:
-  - `src/lap_time_sim/simulation/profile.py` (`solve_speed_profile`, `entry_speed_sq = ...`)
+  - `src/pylapsim/simulation/profile.py` (`solve_speed_profile`, `entry_speed_sq = ...`)
 - Lap-time accumulation $T = \sum \Delta t_i$:
-  - `src/lap_time_sim/simulation/profile.py` (`lap_time += _segment_dt(...)`)
+  - `src/pylapsim/simulation/profile.py` (`lap_time += _segment_dt(...)`)
 - Segment time model $\Delta t_i = \Delta s_i / \bar v_i$:
-  - `src/lap_time_sim/simulation/profile.py` (`_segment_dt`)
+  - `src/pylapsim/simulation/profile.py` (`_segment_dt`)
 - Lateral limit fixed-point update:
-  - `src/lap_time_sim/vehicle/bicycle_model.py` (`lateral_accel_limit`)
+  - `src/pylapsim/vehicle/bicycle_model.py` (`lateral_accel_limit`)
 - Lateral envelope fixed-point convergence in speed domain:
-  - `src/lap_time_sim/simulation/profile.py` (`for iteration_idx ...`, `max_delta_speed ...`)
+  - `src/pylapsim/simulation/profile.py` (`for iteration_idx ...`, `max_delta_speed ...`)
 - Vehicle-model API contract consumed by the solver:
-  - `src/lap_time_sim/simulation/model_api.py` (`LapTimeVehicleModel`)
-  - `src/lap_time_sim/simulation/profile.py` (`solve_speed_profile`, calls on `model`)
+  - `src/pylapsim/simulation/model_api.py` (`VehicleModel`)
+  - `src/pylapsim/simulation/profile.py` (`solve_speed_profile`, calls on `model`)

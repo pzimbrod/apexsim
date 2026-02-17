@@ -5,13 +5,13 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from lap_time_sim.analysis import compute_kpis, export_standard_plots
-from lap_time_sim.analysis.export import export_kpi_json
-from lap_time_sim.simulation import build_simulation_config, simulate_lap
-from lap_time_sim.track import load_track_csv
-from lap_time_sim.utils import configure_logging
-from lap_time_sim.utils.constants import STANDARD_AIR_DENSITY
-from lap_time_sim.vehicle import PointMassPhysics, VehicleParameters, build_point_mass_model
+from pylapsim.analysis import compute_kpis, export_standard_plots
+from pylapsim.analysis.export import export_kpi_json
+from pylapsim.simulation import build_simulation_config, simulate_lap
+from pylapsim.track import load_track_csv
+from pylapsim.utils import configure_logging
+from pylapsim.utils.constants import STANDARD_AIR_DENSITY
+from pylapsim.vehicle import PointMassPhysics, VehicleParameters, build_point_mass_model
 
 
 def _example_vehicle_parameters() -> VehicleParameters:
