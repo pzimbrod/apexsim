@@ -1,60 +1,60 @@
 # Spa Walkthrough
 
-This page walks through the Spa example scripts in code order.
+This tutorial explains the Spa example scripts in execution order and in practical
+engineering language.
 
-Use these scripts after validating your setup on synthetic tracks.
+Use this after the synthetic-track tutorial.
 
-## 1. Common workflow skeleton
+## What this tutorial helps you do
 
-All Spa scripts follow the same core pattern:
+- Run realistic full-lap simulations on Spa.
+- Understand the difference between bicycle and point-mass outputs.
+- Build a reproducible model-comparison workflow.
+- Interpret outputs within the limits of a quasi-steady solver.
 
-1. Load track geometry from CSV.
-2. Define vehicle and model parameters.
-3. Configure solver numerics.
+## 1. Shared workflow across all Spa scripts
+
+Each script follows the same structure:
+
+1. Load Spa track CSV.
+2. Create vehicle/model inputs.
+3. Configure runtime/numerics.
 4. Run `simulate_lap(...)`.
-5. Export KPIs and plots.
+5. Export plots and KPI JSON.
 
-Only the vehicle model backend changes between scripts.
+Only the vehicle-model backend differs.
 
-## 2. `examples/spa_lap.py` (Bicycle Model)
+## 2. `examples/spa_lap.py` (bicycle baseline)
 
-### 2.1 Imports
+### 2.1 Why start here?
 
-Main modules:
+This is the highest-fidelity backend currently available in the library’s
+standard pipeline.
 
-- `track.load_track_csv` for real track input,
-- `vehicle.build_bicycle_model` + tire defaults,
-- `simulation.build_simulation_config` + `simulate_lap`,
-- `analysis` export functions.
+### 2.2 Code flow
 
-### 2.2 Physical model setup
-
-The script builds:
-
-- `VehicleParameters` (car data),
-- `AxleTireParameters` from `default_axle_tire_parameters()`,
-- `BicyclePhysics()` for envelope and lateral approximation settings.
-
-The bicycle backend adds axle-level lateral-force behavior and yaw diagnostics.
-
-### 2.3 Track loading
+- Load track:
 
 ```python
 track = load_track_csv(project_root / "data" / "spa_francorchamps.csv")
 ```
 
-Track preprocessing computes arc length, heading, curvature, and grade.
+- Build inputs:
 
-### 2.4 Numerics and solver
+```python
+vehicle = _example_vehicle_parameters()
+tires = default_axle_tire_parameters()
+model = build_bicycle_model(vehicle=vehicle, tires=tires, physics=BicyclePhysics())
+```
+
+- Configure and run:
 
 ```python
 config = build_simulation_config()
 result = simulate_lap(track=track, model=model, config=config)
 ```
 
-Defaults are chosen for stable convergence and can be refined later.
-
-### 2.5 Postprocessing
+- Export:
 
 ```python
 kpis = compute_kpis(result)
@@ -62,50 +62,98 @@ export_standard_plots(result, output_dir)
 export_kpi_json(kpis, output_dir / "kpis.json")
 ```
 
-This is the recommended baseline script for realistic lap studies.
+### 2.3 What this script captures well
 
-## 3. `examples/spa_lap_point_mass.py` (Point-Mass Model)
+- lateral-force-limited behavior with load sensitivity,
+- drag/downforce interaction,
+- axle-load diagnostics,
+- yaw-moment diagnostics.
 
-This script uses the same pipeline but swaps the backend:
+### 2.4 What it still does not capture fully
+
+- full transient driver/steering control effects,
+- advanced powertrain/energy strategy effects,
+- full multi-body suspension compliance.
+
+## 3. `examples/spa_lap_point_mass.py` (fast baseline)
+
+### 3.1 Purpose
+
+Use this for rapid studies, initial sweeps, and baseline checks.
+
+### 3.2 Core code difference
+
+Only model backend changes:
 
 ```python
 model = build_point_mass_model(
     vehicle=vehicle,
-    physics=PointMassPhysics(...),
+    physics=PointMassPhysics(
+        max_drive_accel=8.0,
+        max_brake_accel=16.0,
+        friction_coefficient=1.7,
+    ),
 )
 ```
 
-Use cases:
+### 3.3 Interpretation
 
-- quick trade studies,
-- parameter sweeps,
-- baseline sanity checks before higher-fidelity runs.
+- faster and simpler than bicycle,
+- no yaw-state dynamics,
+- yaw moment reported as zero by construction.
 
-## 4. `examples/spa_model_comparison.py` (Model Tradeoff)
+## 4. `examples/spa_model_comparison.py` (tradeoff study)
 
-This script demonstrates model-comparison workflow:
+### 4.1 Why this script matters
+
+It demonstrates how to quantify value added by model complexity, not just compare lap times.
+
+### 4.2 Sequence
 
 1. Run bicycle model.
-2. Fit point-mass friction level to bicycle lateral envelope.
+2. Calibrate point-mass friction to bicycle lateral envelope.
 3. Run calibrated point-mass model.
-4. Export KPI deltas and overlay plots.
+4. Export KPI deltas and speed overlay.
 
-This is useful for quantifying the value of additional model complexity.
+### 4.3 Key outputs to inspect
 
-## 5. What users should tune first
+- `comparison_kpis.json`
+- `speed_trace_comparison.png`
+- per-model KPI JSON and plots under comparison folders.
 
-When adapting Spa scripts to a new car, tune in this order:
+## 5. Parameter tuning order for a new vehicle
 
-1. `VehicleParameters` (mass, aero, axle distribution).
-2. Tire coefficients.
-3. Model-physics limits (`BicyclePhysics` or `PointMassPhysics`).
-4. Solver numerics only if convergence/robustness needs adjustment.
+Recommended order:
 
-## 6. Common interpretation notes
+1. Vehicle mass and aero parameters.
+2. Tire parameters.
+3. Model physics limits (`BicyclePhysics` / `PointMassPhysics`).
+4. Numerical solver settings (only if required for convergence robustness).
 
-1. Differences between bicycle and point-mass outputs are expected.
-2. Yaw moment is meaningful only for models that represent yaw dynamics.
-3. Lap-time changes from tiny parameter edits can be large on long tracks.
+This minimizes risk of hiding physical mis-modeling behind numerical tuning.
+
+## 6. How to read Spa results correctly
+
+1. Lap time alone is not enough; inspect speed trace shape and acceleration envelopes.
+2. Compare where models differ along track distance, not only global KPIs.
+3. Treat yaw-moment plots only as meaningful for models that represent yaw dynamics.
+4. Validate magnitude ranges against known class-level expectations.
+
+## 7. Practical limitations to keep in mind
+
+Even with bicycle model, this remains a quasi-steady solver workflow.
+Use caution when drawing conclusions about:
+
+- highly transient driver actions,
+- fine control-system behavior,
+- sub-second event details.
+
+## 8. Suggested study workflow
+
+1. Start from `spa_lap.py`.
+2. Run `spa_lap_point_mass.py`.
+3. Run `spa_model_comparison.py`.
+4. Calibrate/adjust parameters and rerun all three for consistency.
 
 ## Run commands
 

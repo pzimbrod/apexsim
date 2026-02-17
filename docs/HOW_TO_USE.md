@@ -1,21 +1,47 @@
 # How to Use PyLapSim
 
-This guide is a practical, engineer-oriented walkthrough of the typical workflow.
-It is designed for users with strong vehicle-dynamics background and limited
-programming experience.
+This guide is a practical, engineer-oriented walkthrough of the complete workflow.
+It is written for race engineers and Students who may have strong dynamics knowledge
+but limited software background.
 
-## What you build in every simulation
+## What PyLapSim is designed to do
 
-Every PyLapSim run has the same structure:
+PyLapSim is optimized for fast, physically grounded lap-time studies with modular
+vehicle models.
+
+Main strengths:
+
+- Quasi-steady lap-time simulation on arbitrary track centerlines.
+- Interchangeable vehicle models behind one solver API.
+- Clear separation between physical inputs and numerical solver settings.
+- Reproducible engineering outputs (KPIs + standardized plots).
+- Fast iteration loops for setup changes and what-if studies.
+
+## What PyLapSim does not do (yet)
+
+Current model boundaries are important for correct interpretation:
+
+- No full transient lap solver in production path yet.
+- No driver model or closed-loop control strategy model.
+- No detailed powertrain/energy management model yet.
+- No full multi-body chassis compliance model.
+- No direct tire thermal/wear state evolution.
+
+Interpretation rule:
+
+- Use PyLapSim for comparative setup studies and first-order lap-time sensitivity,
+  not as final truth for every transient detail.
+
+## The 6-step workflow (always the same)
 
 1. Import modules.
-2. Define vehicle and model parameters.
+2. Define physical model inputs.
 3. Load or generate a track.
-4. Configure simulation numerics.
-5. Run the lap simulation.
-6. Postprocess KPIs and plots.
+4. Configure numerics and runtime bounds.
+5. Run the simulation.
+6. Postprocess and review outputs.
 
-If you remember this 6-step pattern, you can run all examples and extend them.
+This pattern is identical across all examples.
 
 ## Step 1: Imports
 
@@ -31,16 +57,16 @@ from pylapsim.utils.constants import STANDARD_AIR_DENSITY
 from pylapsim.vehicle import BicyclePhysics, VehicleParameters, build_bicycle_model
 ```
 
-Why these imports matter:
+How to read these imports as an engineer:
 
-- `track`: where geometry comes from.
-- `vehicle` and `tire`: physical model inputs.
-- `simulation`: solver configuration and execution.
-- `analysis`: engineering outputs (KPIs and plots).
+- `track`: geometry and road profile.
+- `vehicle` + `tire`: physical car model.
+- `simulation`: numerical solver and runtime bounds.
+- `analysis`: KPI and visualization outputs.
 
-## Step 2: Define model inputs
+## Step 2: Define physical model inputs
 
-### 2.1 Vehicle parameters (physical)
+### 2.1 Vehicle parameters (real-system inputs)
 
 ```python
 vehicle = VehicleParameters(
@@ -65,19 +91,22 @@ vehicle = VehicleParameters(
 )
 ```
 
-These parameters represent the real system (car + aero + suspension).
+This block should reflect the best available engineering estimate of the real car.
 
-### 2.2 Tire parameters
+### 2.2 Tire data
 
 ```python
 tires = default_axle_tire_parameters()
 ```
 
-For first studies, start with defaults. Replace later with measured/identified tire data.
+Recommendation:
 
-### 2.3 Choose a vehicle model
+- Start with defaults for initial integration.
+- Replace with identified tire parameters for decision-quality studies.
 
-Bicycle model (higher fidelity):
+### 2.3 Choose model complexity
+
+Bicycle model:
 
 ```python
 model = build_bicycle_model(
@@ -87,7 +116,7 @@ model = build_bicycle_model(
 )
 ```
 
-Point-mass model (faster, simpler):
+Point-mass model:
 
 ```python
 from pylapsim.vehicle import PointMassPhysics, build_point_mass_model
@@ -98,6 +127,11 @@ model = build_point_mass_model(
 )
 ```
 
+When to use which:
+
+- Bicycle: better diagnostics (yaw moment, axle-load dynamics), better cornering interpretation.
+- Point-mass: fast baseline and sensitivity sweeps.
+
 ## Step 3: Load or generate track
 
 ### Option A: Real track from CSV
@@ -107,7 +141,14 @@ project_root = Path(__file__).resolve().parents[1]
 track = load_track_csv(project_root / "data" / "spa_francorchamps.csv")
 ```
 
-Required CSV columns: `x`, `y`, `elevation`, `banking`.
+Required columns:
+
+- `x`
+- `y`
+- `elevation`
+- `banking`
+
+Internally, PyLapSim derives arc length, heading, curvature, and grade.
 
 ### Option B: Synthetic validation tracks
 
@@ -119,21 +160,20 @@ circle = build_circular_track(radius=50.0)
 figure_eight = build_figure_eight_track(lobe_radius=80.0)
 ```
 
-Use synthetic tracks for quick physical sanity checks before running real tracks.
+Why synthetic tracks matter:
 
-## Step 4: Configure simulation numerics
+- You can verify single effects in isolation.
+- Debugging is easier than on a full GP circuit.
+
+## Step 4: Configure runtime and numerics
+
+Simple setup:
 
 ```python
 config = build_simulation_config(max_speed=115.0)
 ```
 
-Important distinction:
-
-- Physical inputs: `VehicleParameters`, tire data, model physics classes.
-- Numerical inputs: `SimulationConfig`, `NumericsConfig`, convergence tolerances,
-  iteration limits.
-
-If needed, create explicit numerics:
+Explicit setup:
 
 ```python
 from pylapsim.simulation import NumericsConfig, RuntimeConfig, SimulationConfig
@@ -149,14 +189,28 @@ config = SimulationConfig(
 )
 ```
 
-## Step 5: Run simulation
+Critical distinction:
+
+- Physical parameters represent the car/track reality.
+- Numerical parameters control solver stability and convergence.
+
+Do not compensate wrong physics by over-tuning numerics.
+
+## Step 5: Run the lap simulation
 
 ```python
 result = simulate_lap(track=track, model=model, config=config)
 ```
 
-`result` contains speed trace, accelerations, yaw moment, axle loads, power, energy,
-and lap time.
+`result` includes:
+
+- lap time
+- speed trace
+- longitudinal/lateral accelerations
+- yaw moment
+- axle loads
+- power trace
+- integrated energy
 
 ## Step 6: Postprocess and export
 
@@ -168,24 +222,37 @@ export_standard_plots(result, output_dir)
 export_kpi_json(kpis, output_dir / "kpis.json")
 ```
 
-Key KPI outputs:
+Minimum review set:
 
 - lap time
-- average/max lateral acceleration
-- average/max longitudinal acceleration
-- integrated traction energy
+- max lateral acceleration
+- max longitudinal acceleration/deceleration
+- speed trace shape vs track layout
 
-## Physical sanity checklist (recommended)
+## Engineering interpretation checklist
 
-Before trusting a result:
+Before using results for decisions:
 
-1. Straight track: lateral acceleration should be near zero.
-2. Constant-radius circle: speed and longitudinal acceleration should be nearly steady in the interior.
-3. Figure-eight: lateral acceleration should change sign.
-4. Magnitudes should be realistic for your vehicle class.
+1. Straight track check: near-zero lateral acceleration.
+2. Constant-radius check: quasi-steady cornering in interior segments.
+3. Figure-eight check: lateral acceleration sign change and entry/exit transitions.
+4. Magnitude check: compare against realistic bounds for your car class.
+5. Model check: verify whether selected model complexity can represent the effect you study.
 
-## Learning path
+## Typical pitfalls (and fixes)
 
-1. Run [Synthetic Track Examples](EXAMPLES_SYNTHETIC.md).
-2. Run [Spa-Francorchamps Examples](EXAMPLES_SPA.md).
-3. Compare models with `examples/spa_model_comparison.py`.
+1. "The solver should always accelerate to max speed."
+   - Not necessarily. At high speed, drag can exceed available drive force.
+2. "Yaw moment should always be visible."
+   - Not with point-mass model (yaw moment is structurally zero).
+3. "Changing numerics changed physics dramatically."
+   - Re-check physical parameters first; numerics should refine stability, not redefine behavior.
+4. "My results jump near lap closure."
+   - For closed loops, inspect interior segments and avoid over-interpreting seam points.
+
+## Recommended onboarding path
+
+1. Read [Synthetic Track Walkthrough](EXAMPLES_SYNTHETIC.md).
+2. Run [Spa Walkthrough](EXAMPLES_SPA.md).
+3. Compare model complexity with `examples/spa_model_comparison.py`.
+4. Move from default tire/model settings to identified vehicle data.

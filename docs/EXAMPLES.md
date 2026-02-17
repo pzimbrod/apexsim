@@ -1,41 +1,69 @@
 # Examples
 
-This section is a guided path through the example scripts.
-It is written for race engineers and student teams who want fast onboarding.
+This section is the tutorial path through the example scripts.
+It is designed for race engineers and Students who want practical onboarding.
 
-## Start here
+## What you will learn from the examples
 
-If you are new to the package, read [How to Use](HOW_TO_USE.md) first.
-Then use the examples in this order:
+After finishing all example pages, you should be able to:
 
-1. [Synthetic Tracks](EXAMPLES_SYNTHETIC.md)
-2. [Spa-Francorchamps](EXAMPLES_SPA.md)
+- set up a complete lap-time run from scratch,
+- choose between point-mass and bicycle model for a study goal,
+- interpret key plots and KPI outputs correctly,
+- understand where model assumptions limit interpretation.
 
-## Why this order?
+## Recommended tutorial sequence
 
-- Synthetic tracks isolate single effects and make validation intuitive.
-- Spa combines all effects into a realistic full-lap workflow.
+1. [Synthetic Track Walkthrough](EXAMPLES_SYNTHETIC.md)
+2. [Spa Walkthrough](EXAMPLES_SPA.md)
 
-## Which script answers which engineering question?
+Reason:
+
+- Synthetic tracks isolate single effects and simplify debugging.
+- Spa introduces full-track interactions and realistic complexity.
+
+## Mapping scripts to engineering questions
 
 - `examples/synthetic_track_scenarios.py`
-  - "Are my model settings physically consistent on simple geometry?"
+  - "Is my model setup physically consistent on canonical test geometries?"
 - `examples/spa_lap.py`
-  - "What does the higher-fidelity bicycle model predict on a real track?"
+  - "What does the bicycle model predict on a realistic circuit?"
 - `examples/spa_lap_point_mass.py`
-  - "What does a faster low-complexity baseline predict?"
+  - "What is the low-complexity baseline on the same circuit?"
 - `examples/spa_model_comparison.py`
-  - "What do I gain by adding model complexity?"
+  - "What do I gain from additional model fidelity?"
 
-## Output convention
+## What the example suite covers well
 
-All scripts export to `examples/output/`.
+- End-to-end solver use on real and synthetic tracks.
+- KPI and plot export workflows.
+- Direct model-complexity comparison.
+- Practical interpretation of speed/acceleration/yaw diagnostics.
+
+## What the example suite does not claim
+
+- It is not a final validation against fully instrumented race telemetry.
+- It does not include a full transient driver + powertrain control stack.
+- It does not replace model-calibration work on real vehicle data.
+
+## Output structure
+
+All scripts export into `examples/output/` with consistent folder logic.
 Typical artifacts:
 
 - `kpis.json`
-- speed trace plots
+- speed traces
 - G-G diagram
 - yaw moment vs. lateral acceleration
-- power and tire-load plots
+- tire-load and power traces
 
-This uniform output structure makes script results directly comparable.
+Because output format is standardized, comparisons across scripts are straightforward.
+
+## Before applying results to decisions
+
+Use this quick quality gate:
+
+1. Check whether the selected model can represent your target effect.
+2. Confirm basic sanity checks on synthetic tracks.
+3. Check if KPI magnitudes are plausible for your vehicle class.
+4. Document assumptions used in the run.

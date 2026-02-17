@@ -1,37 +1,43 @@
 # Synthetic Track Walkthrough
 
-This page walks through `examples/synthetic_track_scenarios.py` in the same order
-as the code.
+This tutorial walks through `examples/synthetic_track_scenarios.py` in code order.
 
-Purpose: isolate physics effects on simple geometry before using real tracks.
+Goal: build intuition for solver behavior on controlled geometries before moving
+to real circuits.
 
-## 1. Imports and what they do
+## Why this tutorial is important
 
-The script imports five functional blocks:
+Synthetic tracks are your first physical consistency filter.
+If behavior is implausible here, Spa results are likely hard to trust.
 
-- `analysis`: KPI and plot export.
-- `simulation`: solver setup and execution.
-- `track`: synthetic layout builders.
-- `vehicle`: point-mass model and its physics parameters.
-- `utils/constants`: logging and air-density constant.
+## 1. Imports: map code to engineering blocks
 
-If you are new to Python, think of imports as selecting toolbox modules.
+The script imports:
 
-## 2. Define physical model inputs
+- `analysis`: KPI and figure export,
+- `simulation`: lap solver,
+- `track`: synthetic layout generators,
+- `vehicle`: point-mass model and its physics settings,
+- `utils`: logging and constants.
 
-### 2.1 Vehicle data
+If you are new to Python: imports are simply selecting the tools you need.
 
-`_example_vehicle_parameters()` returns a fully defined `VehicleParameters` object.
+## 2. Define vehicle and model
 
-What matters for this script:
+### 2.1 Vehicle parameter block
 
-- mass and aero terms affect acceleration and top-speed balance,
-- axle split is used for diagnostic load outputs,
-- remaining parameters keep interface compatibility with other models.
+`_example_vehicle_parameters()` provides a complete car definition.
 
-### 2.2 Vehicle model
+Most influential fields for this tutorial:
 
-The example uses:
+- `mass`, `lift_coefficient`, `drag_coefficient`, `frontal_area`
+  - govern acceleration/drag balance and high-speed behavior,
+- `front_weight_fraction`
+  - influences axle-load diagnostics,
+- remaining vehicle parameters
+  - keep cross-model compatibility.
+
+### 2.2 Model choice: point-mass
 
 ```python
 model = build_point_mass_model(vehicle=vehicle, physics=PointMassPhysics())
@@ -39,22 +45,22 @@ model = build_point_mass_model(vehicle=vehicle, physics=PointMassPhysics())
 
 Interpretation:
 
-- fast and robust for benchmark studies,
-- no yaw-state dynamics,
-- yaw moment diagnostic is therefore zero by design.
+- very fast and stable for benchmark scenarios,
+- no explicit yaw state,
+- yaw moment output is structurally zero by design.
 
-### 2.3 Solver numerics
+If your study requires yaw-moment dynamics, switch to bicycle model.
+
+### 2.3 Solver setup
 
 ```python
 config = build_simulation_config(max_speed=115.0)
 ```
 
-`max_speed` is a runtime bound, not a physical tire limit.
-Physical limits still come from model + aero + friction.
+`max_speed` is a runtime cap, not a guarantee that the car can sustain this speed.
+Actual speed comes from force balance and constraints.
 
-## 3. Build the synthetic tracks
-
-The script creates three layouts:
+## 3. Build three benchmark tracks
 
 ```python
 tracks = {
@@ -64,33 +70,41 @@ tracks = {
 }
 ```
 
-Engineering interpretation:
+### 3.1 Straight (1 km)
 
-- Straight: pure longitudinal behavior.
-- Circle: steady cornering behavior.
-- Figure-eight: turn-transition behavior with curvature sign change.
+Tests pure longitudinal behavior with no curvature demand.
 
-## 4. Run the simulation loop
+### 3.2 Circle (50 m radius)
 
-Per scenario, the same three operations are executed:
+Tests quasi-steady cornering with near-constant curvature.
+
+### 3.3 Figure-eight
+
+Tests left/right transition dynamics and sign changes in lateral acceleration.
+
+## 4. Run simulation loop
+
+Per scenario:
 
 ```python
 result = simulate_lap(track=track, model=model, config=config)
 kpis = compute_kpis(result)
 export_standard_plots(result, scenario_dir)
+export_kpi_json(kpis, scenario_dir / "kpis.json")
 ```
 
-This pattern is the standard PyLapSim workflow and can be reused for custom tracks.
+This is the canonical PyLapSim pattern and can be reused for custom studies.
 
-## 5. Export summary artifacts
+## 5. Cross-scenario comparison output
 
-The script writes:
+After scenario runs, script generates:
 
-- per-scenario plots and `kpis.json`,
-- one cross-scenario speed overlay,
-- one `scenario_summary.json` with KPI comparison.
+- `speed_trace_comparison.png`
+- `scenario_summary.json`
 
-## 6. What to check in results
+These files support quick A/B/C interpretation across geometries.
+
+## 6. How to interpret each scenario
 
 ### Straight (`straight_1km`)
 
@@ -98,31 +112,57 @@ Expected:
 
 - lateral acceleration near zero,
 - curvature near zero,
-- speed evolves only from longitudinal force balance.
+- speed governed by net longitudinal balance.
 
-Note: speed may decrease if drag at chosen speed cap exceeds available drive acceleration.
+Important nuance:
+
+- speed can decrease if drag at current speed exceeds available drive acceleration.
 
 ### Circle (`circle_r50`)
 
 Expected:
 
-- near-constant interior speed,
-- near-zero interior longitudinal acceleration,
-- positive lateral acceleration around the loop.
+- interior speed close to steady value,
+- interior longitudinal acceleration near zero,
+- positive lateral acceleration around loop.
+
+Practical tip:
+
+- ignore seam-adjacent points for steady-state assessment.
 
 ### Figure-eight (`figure_eight`)
 
 Expected:
 
 - lateral acceleration changes sign,
-- acceleration/deceleration phases around entry/exit,
-- stronger speed variation than in constant-radius cornering.
+- acceleration and braking phases near transitions,
+- stronger speed variation than constant-radius cornering.
 
-## 7. Typical user pitfalls
+## 7. What this tutorial validates well
 
-1. Interpreting `max_speed` as guaranteed speed target.
-2. Expecting nonzero yaw moment from the point-mass model.
-3. Comparing edge samples on closed tracks without trimming seam points.
+- solver stability,
+- unit consistency and sign conventions,
+- gross physical plausibility,
+- basic model-behavior sanity.
+
+## 8. What this tutorial does not validate alone
+
+- absolute lap-time fidelity on a real circuit,
+- transient steering/yaw control quality,
+- powertrain energy strategy realism.
+
+## 9. Common mistakes and fixes
+
+1. Expecting nonzero yaw moment with point-mass model.
+   - Use bicycle model if yaw diagnostics are required.
+2. Treating seam points as steady-state evidence.
+   - trim boundary points before concluding.
+3. Assuming `max_speed` is always reached.
+   - check drag and available drive force first.
+
+## 10. Suggested next step
+
+After this tutorial, continue with [Spa Walkthrough](EXAMPLES_SPA.md).
 
 ## Run command
 
