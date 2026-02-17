@@ -2,9 +2,17 @@ name: Docs Stable
 
 on:
   push:
+    branches: ["main"]
     tags:
       - "v*"
+    paths:
+      - "pyproject.toml"
+      - ".github/workflows/docs-stable.yml"
   workflow_dispatch:
+
+concurrency:
+  group: docs-pages
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -31,13 +39,32 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e '.[docs]'
 
+      - name: Validate docs build (strict)
+        run: mkdocs build --strict
+
       - name: Configure Git identity
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Resolve stable version
+        id: version
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION="$(python - <<'PY'
+import tomllib
+with open('pyproject.toml', 'rb') as handle:
+    print(tomllib.load(handle)['project']['version'])
+PY
+)"
+          fi
+
+          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "Deploying stable docs for version: ${VERSION}"
+
       - name: Deploy stable docs via mike
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          mike deploy --push --update-aliases "$VERSION" stable
+          mike deploy --push --update-aliases "${{ steps.version.outputs.version }}" stable
           mike set-default --push stable

@@ -13,6 +13,10 @@ on:
       - "README.md"
   workflow_dispatch:
 
+concurrency:
+  group: docs-pages
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
@@ -38,10 +42,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e '.[docs]'
 
+      - name: Validate docs build (strict)
+        run: mkdocs build --strict
+
       - name: Configure Git identity
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Deploy dev docs via mike
-        run: mike deploy --push dev
+        run: |
+          mike deploy --push dev
+
+          # Bootstrap stable alias once to avoid /stable/ returning 404 before first tagged release.
+          if ! mike list | grep -q '\[stable\]'; then
+            mike alias --push dev stable
+            mike set-default --push stable
+          fi
