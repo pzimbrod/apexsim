@@ -5,6 +5,7 @@ from __future__ import annotations
 import unittest
 
 import pylapsim.simulation as simulation_pkg
+import pylapsim.track as track_pkg
 import pylapsim.vehicle as vehicle_pkg
 
 
@@ -21,6 +22,14 @@ class PackageExportTests(unittest.TestCase):
         self.assertIsNotNone(simulation_pkg.RuntimeConfig)
         self.assertIsNotNone(simulation_pkg.NumericsConfig)
         self.assertIsNotNone(simulation_pkg.build_simulation_config)
+
+    def test_track_exports_resolve(self) -> None:
+        """Resolve track exports including synthetic layout builder helpers."""
+        self.assertIsNotNone(track_pkg.TrackData)
+        self.assertIsNotNone(track_pkg.load_track_csv)
+        self.assertIsNotNone(track_pkg.build_straight_track)
+        self.assertIsNotNone(track_pkg.build_circular_track)
+        self.assertIsNotNone(track_pkg.build_figure_eight_track)
 
     def test_vehicle_lazy_exports_resolve(self) -> None:
         """Resolve vehicle exports that are provided lazily."""

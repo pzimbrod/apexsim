@@ -12,6 +12,7 @@ A modular lap time simulation library for race cars with interchangeable vehicle
 - Point-mass vehicle model with isotropic friction-circle coupling
 - Pacejka-style lateral tire model with load sensitivity
 - Track CSV parsing (`x, y, elevation, banking`) and geometry processing
+- Synthetic benchmark layouts (straight, circle, figure-eight) for model validation
 - Quasi-steady lap simulation with forward/backward speed-profile optimization
 - Vehicle-model API abstraction for plugging in multiple model complexities
 - KPI and plot generation (lap time, g-levels, speed trace, yaw moment, G-G diagram)
@@ -35,6 +36,7 @@ pytest
 python examples/spa_lap.py
 python examples/spa_lap_point_mass.py
 python examples/spa_model_comparison.py
+python examples/synthetic_track_scenarios.py
 ```
 
 ## Example Scripts
@@ -42,6 +44,7 @@ python examples/spa_model_comparison.py
 - `examples/spa_lap.py`: Bicycle model end-to-end run with KPI/plot export.
 - `examples/spa_lap_point_mass.py`: Point-mass model end-to-end run with KPI/plot export.
 - `examples/spa_model_comparison.py`: Side-by-side bicycle vs calibrated point-mass comparison with KPI deltas and speed-trace overlay.
+- `examples/synthetic_track_scenarios.py`: Straight, circle, and figure-eight benchmark runs for physical-consistency inspection.
 
 ## Assumptions and Limitations
 
