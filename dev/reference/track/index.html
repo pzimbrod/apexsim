@@ -851,6 +851,39 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pylapsim.track.build_circular_track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        build_circular_track
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pylapsim.track.build_figure_eight_track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        build_figure_eight_track
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pylapsim.track.build_straight_track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        build_straight_track
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pylapsim.track.load_track_csv" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -988,6 +1021,39 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pylapsim.track.build_circular_track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        build_circular_track
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pylapsim.track.build_figure_eight_track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        build_figure_eight_track
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pylapsim.track.build_straight_track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        build_straight_track
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pylapsim.track.load_track_csv" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1038,7 +1104,7 @@
 
     <div class="doc doc-contents first">
 
-        <p>Track loading and geometry processing.</p>
+        <p>Track loading, synthetic layout generation, and geometry processing.</p>
 
 
 
@@ -1343,6 +1409,475 @@ length monotonicity, or numeric validity checks fail.</p>
 
 </div>
 
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pylapsim.track.build_circular_track" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">build_circular_track</span>
+
+
+<a href="#pylapsim.track.build_circular_track" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">build_circular_track</span><span class="p">(</span><span class="n">radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_CIRCLE_RADIUS</span><span class="p">,</span> <span class="n">sample_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_CIRCLE_SAMPLE_COUNT</span><span class="p">,</span> <span class="n">clockwise</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">elevation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">banking</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrackData</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Build a circular closed-loop track with approximately constant curvature.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>radius</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Circle radius [m].</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="pylapsim.track.layouts.DEFAULT_CIRCLE_RADIUS">DEFAULT_CIRCLE_RADIUS</span></code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>sample_count</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of unique samples around the circle.</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="pylapsim.track.layouts.DEFAULT_CIRCLE_SAMPLE_COUNT">DEFAULT_CIRCLE_SAMPLE_COUNT</span></code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>clockwise</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to traverse the circle clockwise.</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>elevation</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Constant elevation value along the track [m].</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.0</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>banking</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Constant banking angle along the track [rad].</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.0</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="TrackData
+
+
+  
+      dataclass
+   (pylapsim.track.models.TrackData)" href="#pylapsim.track.TrackData">TrackData</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Validated circular <code>TrackData</code> representation.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="pylapsim.utils.exceptions.TrackDataError">TrackDataError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If geometric input values are
+outside valid bounds.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pylapsim.track.build_figure_eight_track" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">build_figure_eight_track</span>
+
+
+<a href="#pylapsim.track.build_figure_eight_track" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">build_figure_eight_track</span><span class="p">(</span><span class="n">lobe_radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_FIGURE_EIGHT_RADIUS</span><span class="p">,</span> <span class="n">sample_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_FIGURE_EIGHT_SAMPLE_COUNT</span><span class="p">,</span> <span class="n">elevation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">banking</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrackData</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Build a closed figure-eight track using a Gerono lemniscate centerline.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>lobe_radius</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Characteristic lobe radius scaling the layout [m].</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="pylapsim.track.layouts.DEFAULT_FIGURE_EIGHT_RADIUS">DEFAULT_FIGURE_EIGHT_RADIUS</span></code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>sample_count</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of unique samples along the centerline.</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="pylapsim.track.layouts.DEFAULT_FIGURE_EIGHT_SAMPLE_COUNT">DEFAULT_FIGURE_EIGHT_SAMPLE_COUNT</span></code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>elevation</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Constant elevation value along the track [m].</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.0</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>banking</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Constant banking angle along the track [rad].</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.0</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="TrackData
+
+
+  
+      dataclass
+   (pylapsim.track.models.TrackData)" href="#pylapsim.track.TrackData">TrackData</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Validated figure-eight <code>TrackData</code> representation.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="pylapsim.utils.exceptions.TrackDataError">TrackDataError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If geometric input values are
+outside valid bounds.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pylapsim.track.build_straight_track" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">build_straight_track</span>
+
+
+<a href="#pylapsim.track.build_straight_track" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">build_straight_track</span><span class="p">(</span><span class="n">length</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_STRAIGHT_LENGTH</span><span class="p">,</span> <span class="n">sample_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_STRAIGHT_SAMPLE_COUNT</span><span class="p">,</span> <span class="n">elevation</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">banking</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TrackData</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Build a straight track centerline with constant elevation and banking.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>length</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Total straight-line track length [m].</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="pylapsim.track.layouts.DEFAULT_STRAIGHT_LENGTH">DEFAULT_STRAIGHT_LENGTH</span></code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>sample_count</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of centerline samples.</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="pylapsim.track.layouts.DEFAULT_STRAIGHT_SAMPLE_COUNT">DEFAULT_STRAIGHT_SAMPLE_COUNT</span></code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>elevation</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Constant elevation value along the track [m].</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.0</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>banking</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Constant banking angle along the track [rad].</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.0</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="TrackData
+
+
+  
+      dataclass
+   (pylapsim.track.models.TrackData)" href="#pylapsim.track.TrackData">TrackData</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Validated straight <code>TrackData</code> representation.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="pylapsim.utils.exceptions.TrackDataError">TrackDataError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If geometric input values are
+outside valid bounds.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 
