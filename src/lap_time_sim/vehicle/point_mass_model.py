@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -12,6 +13,12 @@ from lap_time_sim.utils.exceptions import ConfigurationError
 from lap_time_sim.vehicle._physics_primitives import EnvelopePhysics
 from lap_time_sim.vehicle.aero import aero_forces
 from lap_time_sim.vehicle.params import VehicleParameters
+
+if TYPE_CHECKING:
+    from lap_time_sim.tire.models import AxleTireParameters
+    from lap_time_sim.vehicle.bicycle_model import BicycleNumerics, BicyclePhysics
+
+DEFAULT_CALIBRATION_SAMPLE_COUNT = 50
 
 
 @dataclass(frozen=True)
@@ -55,6 +62,28 @@ class PointMassPhysics:
         if self.friction_coefficient <= 0.0:
             msg = "friction_coefficient must be positive"
             raise ConfigurationError(msg)
+
+
+@dataclass(frozen=True)
+class PointMassCalibrationResult:
+    """Calibration outputs for matching point-mass lateral limits to bicycle behavior.
+
+    Args:
+        friction_coefficient: Identified isotropic friction coefficient (-).
+        speed_samples: Calibration speed samples used by the identification (m/s).
+        bicycle_lateral_limit: Bicycle-model lateral limit evaluated at
+            ``speed_samples`` (m/s^2).
+        normal_accel_limit: Point-mass normal acceleration budget evaluated at
+            ``speed_samples`` (m/s^2).
+        mu_samples: Per-sample effective friction ratios computed as
+            ``bicycle_lateral_limit / normal_accel_limit`` (-).
+    """
+
+    friction_coefficient: float
+    speed_samples: np.ndarray
+    bicycle_lateral_limit: np.ndarray
+    normal_accel_limit: np.ndarray
+    mu_samples: np.ndarray
 
 
 class PointMassModel:
@@ -244,3 +273,79 @@ def build_point_mass_model(
         Fully validated solver-facing point-mass model.
     """
     return PointMassModel(vehicle=vehicle, physics=physics or PointMassPhysics())
+
+
+def calibrate_point_mass_friction_to_bicycle(
+    vehicle: VehicleParameters,
+    tires: AxleTireParameters,
+    bicycle_physics: BicyclePhysics | None = None,
+    bicycle_numerics: BicycleNumerics | None = None,
+    speed_samples: np.ndarray | None = None,
+) -> PointMassCalibrationResult:
+    """Calibrate point-mass friction coefficient to bicycle lateral capability.
+
+    The calibration matches the point-mass isotropic lateral limit
+    ``mu * (g + F_down(v)/m)`` to the bicycle model's quasi-steady lateral limit
+    in a least-squares sense over provided speed samples.
+
+    Args:
+        vehicle: Vehicle parameterization shared by both models.
+        tires: Tire parameters used by the bicycle model.
+        bicycle_physics: Optional bicycle-physics settings for calibration.
+            Defaults to :class:`lap_time_sim.vehicle.BicyclePhysics`.
+        bicycle_numerics: Optional bicycle numerical settings for calibration.
+            Defaults to :class:`lap_time_sim.vehicle.BicycleNumerics`.
+        speed_samples: Optional calibration speeds in m/s. If omitted, a linear
+            sweep from 10 to 90 m/s is used.
+
+    Returns:
+        Calibration result with identified friction coefficient and
+        intermediate traces.
+
+    Raises:
+        lap_time_sim.utils.exceptions.ConfigurationError: If provided speed
+            samples are empty or contain non-positive entries.
+    """
+    from lap_time_sim.vehicle.bicycle_model import BicycleModel, BicycleNumerics, BicyclePhysics
+
+    bicycle_model = BicycleModel(
+        vehicle=vehicle,
+        tires=tires,
+        physics=bicycle_physics or BicyclePhysics(),
+        numerics=bicycle_numerics or BicycleNumerics(),
+    )
+    bicycle_model.validate()
+
+    if speed_samples is None:
+        speeds = np.linspace(10.0, 90.0, DEFAULT_CALIBRATION_SAMPLE_COUNT, dtype=float)
+    else:
+        speeds = np.asarray(speed_samples, dtype=float)
+        if speeds.size == 0:
+            msg = "speed_samples must not be empty"
+            raise ConfigurationError(msg)
+        if np.any(speeds <= 0.0):
+            msg = "speed_samples must be strictly positive"
+            raise ConfigurationError(msg)
+
+    bicycle_ay = np.array(
+        [bicycle_model.lateral_accel_limit(float(v), 0.0) for v in speeds],
+        dtype=float,
+    )
+    normal_accel = np.array(
+        [GRAVITY_MPS2 + aero_forces(vehicle, float(v)).downforce_n / vehicle.mass for v in speeds],
+        dtype=float,
+    )
+    normal_accel = np.maximum(normal_accel, SMALL_EPS)
+
+    numerator = float(np.dot(normal_accel, bicycle_ay))
+    denominator = float(np.dot(normal_accel, normal_accel))
+    mu_fit = max(numerator / max(denominator, SMALL_EPS), SMALL_EPS)
+    mu_samples = bicycle_ay / normal_accel
+
+    return PointMassCalibrationResult(
+        friction_coefficient=float(mu_fit),
+        speed_samples=speeds,
+        bicycle_lateral_limit=bicycle_ay,
+        normal_accel_limit=normal_accel,
+        mu_samples=mu_samples,
+    )

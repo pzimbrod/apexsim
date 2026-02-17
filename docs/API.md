@@ -17,6 +17,7 @@
 - `lap_time_sim.vehicle.PointMassModel(vehicle, physics)`
 - `lap_time_sim.vehicle.PointMassPhysics` (sensible defaults included)
 - `lap_time_sim.vehicle.build_point_mass_model(vehicle, physics=None)`
+- `lap_time_sim.vehicle.calibrate_point_mass_friction_to_bicycle(vehicle, tires, ...)`
 
 ## Simulation
 
@@ -66,4 +67,4 @@ Solver math and derivation:
 
 - `examples/spa_lap.py`: Bicycle model baseline example.
 - `examples/spa_lap_point_mass.py`: Point-mass model baseline example.
-- `examples/spa_model_comparison.py`: Bicycle vs point-mass comparison with KPI deltas.
+- `examples/spa_model_comparison.py`: Bicycle vs calibrated point-mass comparison with KPI deltas.

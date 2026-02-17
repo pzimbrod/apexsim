@@ -15,6 +15,7 @@ from lap_time_sim.vehicle import (
     PointMassPhysics,
     build_bicycle_model,
     build_point_mass_model,
+    calibrate_point_mass_friction_to_bicycle,
 )
 from tests.helpers import sample_vehicle_parameters
 
@@ -49,6 +50,57 @@ class ModelComparisonTests(unittest.TestCase):
         self.assertEqual(len(bicycle_result.speed_mps), len(point_mass_result.speed_mps))
         self.assertTrue(np.max(np.abs(point_mass_result.yaw_moment_nm)) == 0.0)
         self.assertGreater(np.max(np.abs(bicycle_result.yaw_moment_nm)), 1e-9)
+
+    def test_calibrated_point_mass_matches_bicycle_more_closely(self) -> None:
+        """Reduce bicycle-vs-point-mass speed and lap-time deltas via calibration."""
+        root = Path(__file__).resolve().parents[2]
+        track = load_track_csv(root / "data" / "spa_francorchamps.csv")
+        vehicle = sample_vehicle_parameters()
+        config = build_simulation_config()
+        tires = default_axle_tire_parameters()
+        bicycle_physics = BicyclePhysics()
+
+        bicycle_model = build_bicycle_model(vehicle=vehicle, tires=tires, physics=bicycle_physics)
+        bicycle_result = simulate_lap(track=track, model=bicycle_model, config=config)
+
+        point_mass_default = build_point_mass_model(
+            vehicle=vehicle,
+            physics=PointMassPhysics(
+                max_drive_accel=bicycle_physics.max_drive_accel,
+                max_brake_accel=bicycle_physics.max_brake_accel,
+                friction_coefficient=1.70,
+            ),
+        )
+        default_result = simulate_lap(track=track, model=point_mass_default, config=config)
+
+        calibration = calibrate_point_mass_friction_to_bicycle(
+            vehicle=vehicle,
+            tires=tires,
+            bicycle_physics=bicycle_physics,
+            speed_samples=bicycle_result.speed_mps,
+        )
+        point_mass_calibrated = build_point_mass_model(
+            vehicle=vehicle,
+            physics=PointMassPhysics(
+                max_drive_accel=bicycle_physics.max_drive_accel,
+                max_brake_accel=bicycle_physics.max_brake_accel,
+                friction_coefficient=calibration.friction_coefficient,
+            ),
+        )
+        calibrated_result = simulate_lap(track=track, model=point_mass_calibrated, config=config)
+
+        lap_delta_default = abs(bicycle_result.lap_time_s - default_result.lap_time_s)
+        lap_delta_calibrated = abs(bicycle_result.lap_time_s - calibrated_result.lap_time_s)
+        self.assertLess(lap_delta_calibrated, lap_delta_default)
+
+        segment_mask = (track.s_m >= 6075.0) & (track.s_m <= 6280.0)
+        default_speed_delta = np.abs(
+            bicycle_result.speed_mps[segment_mask] - default_result.speed_mps[segment_mask]
+        )
+        calibrated_speed_delta = np.abs(
+            bicycle_result.speed_mps[segment_mask] - calibrated_result.speed_mps[segment_mask]
+        )
+        self.assertLess(float(np.mean(calibrated_speed_delta)), float(np.mean(default_speed_delta)))
 
 
 if __name__ == "__main__":

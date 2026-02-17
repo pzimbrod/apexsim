@@ -119,7 +119,22 @@ The backend reports:
 - diagnostics:
   `PointMassModel.diagnostics(...)`
 
-## 8. Example
+## 8. Cross-Model Calibration
+
+To align the point-mass model with the bicycle model's lateral envelope, the
+library provides:
+
+- `calibrate_point_mass_friction_to_bicycle(vehicle, tires, ...)`
+
+This identifies an effective isotropic $\mu$ by least-squares fitting:
+
+$$
+\mu^\star = \arg\min_\mu \sum_i \left(\mu a_n(v_i) - a_{y,\text{lim,bicycle}}(v_i)\right)^2.
+$$
+
+The comparison example uses this calibration before running the point-mass model.
+
+## 9. Example
 
 - Point-mass standalone usage:
   `examples/spa_lap_point_mass.py`

@@ -6,8 +6,14 @@ import unittest
 
 import numpy as np
 
+from lap_time_sim.tire.models import default_axle_tire_parameters
 from lap_time_sim.utils.exceptions import ConfigurationError
-from lap_time_sim.vehicle import PointMassModel, PointMassPhysics, build_point_mass_model
+from lap_time_sim.vehicle import (
+    PointMassModel,
+    PointMassPhysics,
+    build_point_mass_model,
+    calibrate_point_mass_friction_to_bicycle,
+)
 from tests.helpers import sample_vehicle_parameters
 
 
@@ -99,6 +105,31 @@ class PointMassModelTests(unittest.TestCase):
         """Build a model with default physical settings when omitted."""
         model = build_point_mass_model(vehicle=sample_vehicle_parameters())
         self.assertEqual(model.physics, PointMassPhysics())
+
+    def test_calibration_returns_reasonable_positive_friction(self) -> None:
+        """Return a physically plausible positive friction fit from bicycle limits."""
+        calibration = calibrate_point_mass_friction_to_bicycle(
+            vehicle=sample_vehicle_parameters(),
+            tires=default_axle_tire_parameters(),
+        )
+        self.assertGreater(calibration.friction_coefficient, 0.5)
+        self.assertLess(calibration.friction_coefficient, 2.5)
+        self.assertEqual(calibration.speed_samples.size, calibration.mu_samples.size)
+
+    def test_calibration_rejects_invalid_speed_samples(self) -> None:
+        """Reject empty and non-positive speed sample arrays."""
+        with self.assertRaises(ConfigurationError):
+            calibrate_point_mass_friction_to_bicycle(
+                vehicle=sample_vehicle_parameters(),
+                tires=default_axle_tire_parameters(),
+                speed_samples=np.array([], dtype=float),
+            )
+        with self.assertRaises(ConfigurationError):
+            calibrate_point_mass_friction_to_bicycle(
+                vehicle=sample_vehicle_parameters(),
+                tires=default_axle_tire_parameters(),
+                speed_samples=np.array([10.0, 0.0, 20.0], dtype=float),
+            )
 
 
 if __name__ == "__main__":

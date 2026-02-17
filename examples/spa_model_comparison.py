@@ -24,6 +24,7 @@ from lap_time_sim.vehicle import (
     VehicleParameters,
     build_bicycle_model,
     build_point_mass_model,
+    calibrate_point_mass_friction_to_bicycle,
 )
 
 
@@ -78,7 +79,7 @@ def _export_speed_comparison_plot(
         point_mass_result.track.s_m,
         point_mass_result.speed_mps,
         lw=2.0,
-        label="Point-mass model",
+        label="Point-mass model (calibrated)",
     )
     ax.set_xlabel("Arc length [m]")
     ax.set_ylabel("Speed [m/s]")
@@ -132,25 +133,36 @@ def main() -> None:
     track = load_track_csv(project_root / "data" / "spa_francorchamps.csv")
     vehicle = _example_vehicle_parameters()
     config = build_simulation_config()
+    tires = default_axle_tire_parameters()
+    bicycle_physics = BicyclePhysics()
 
     bicycle_model = build_bicycle_model(
         vehicle=vehicle,
-        tires=default_axle_tire_parameters(),
-        physics=BicyclePhysics(),
+        tires=tires,
+        physics=bicycle_physics,
+    )
+    bicycle_result = simulate_lap(track=track, model=bicycle_model, config=config)
+    calibration = calibrate_point_mass_friction_to_bicycle(
+        vehicle=vehicle,
+        tires=tires,
+        bicycle_physics=bicycle_physics,
+        speed_samples=bicycle_result.speed_mps,
     )
     point_mass_model = build_point_mass_model(
         vehicle=vehicle,
-        physics=PointMassPhysics(),
+        physics=PointMassPhysics(
+            max_drive_accel=bicycle_physics.max_drive_accel,
+            max_brake_accel=bicycle_physics.max_brake_accel,
+            friction_coefficient=calibration.friction_coefficient,
+        ),
     )
-
-    bicycle_result = simulate_lap(track=track, model=bicycle_model, config=config)
     point_mass_result = simulate_lap(track=track, model=point_mass_model, config=config)
     bicycle_kpis = compute_kpis(bicycle_result)
     point_mass_kpis = compute_kpis(point_mass_result)
     delta = _kpi_delta_dict(bicycle_result=bicycle_result, point_mass_result=point_mass_result)
 
     bicycle_dir = output_dir / "bicycle"
-    point_mass_dir = output_dir / "point_mass"
+    point_mass_dir = output_dir / "point_mass_calibrated"
     export_standard_plots(bicycle_result, bicycle_dir)
     export_standard_plots(point_mass_result, point_mass_dir)
     export_kpi_json(bicycle_kpis, bicycle_dir / "kpis.json")
@@ -162,6 +174,13 @@ def main() -> None:
     )
 
     comparison_payload = {
+        "calibration": {
+            "friction_coefficient": calibration.friction_coefficient,
+            "mu_mean": float(np.mean(calibration.mu_samples)),
+            "mu_min": float(np.min(calibration.mu_samples)),
+            "mu_max": float(np.max(calibration.mu_samples)),
+            "sample_count": int(calibration.speed_samples.size),
+        },
         "bicycle_kpis": asdict(bicycle_kpis),
         "point_mass_kpis": asdict(point_mass_kpis),
         "delta_bicycle_minus_point_mass": delta,
@@ -172,7 +191,11 @@ def main() -> None:
     )
 
     logger.info("Bicycle lap time: %.2f s", bicycle_kpis.lap_time_s)
-    logger.info("Point-mass lap time: %.2f s", point_mass_kpis.lap_time_s)
+    logger.info(
+        "Point-mass (calibrated) lap time: %.2f s | fitted mu: %.3f",
+        point_mass_kpis.lap_time_s,
+        calibration.friction_coefficient,
+    )
     logger.info(
         "Delta (bicycle - point-mass): %.2f s (%.2f %%)",
         delta["lap_time_delta_s"],
