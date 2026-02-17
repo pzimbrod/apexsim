@@ -37,7 +37,7 @@ class NumericsConfig:
 
         Raises:
             pylapsim.utils.exceptions.ConfigurationError: If any solver
-            configuration value violates its bound.
+                configuration value violates its bound.
         """
         if self.min_speed <= 0.0:
             msg = "min_speed must be positive"
