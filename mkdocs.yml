@@ -6,6 +6,25 @@ repo_name: pzimbrod/pylapsim
 
 theme:
   name: material
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Use system theme
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
 
 plugins:
   - search
@@ -50,3 +69,7 @@ nav:
       - Tire: reference/tire.md
       - Track: reference/track.md
       - Analysis: reference/analysis.md
+
+extra:
+  version:
+    provider: mike
