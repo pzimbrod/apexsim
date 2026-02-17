@@ -50,3 +50,8 @@ For point-mass model equations and assumptions, see `docs/POINT_MASS_MODEL.md`.
 
 The Spa centerline dataset is based on the public TUMFTM racetrack database.
 See `data/README.md` for provenance and conversion details.
+
+## License
+
+This project is licensed under the Apache License 2.0.
+See `LICENSE` for the full text.

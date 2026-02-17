@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Lap time simulation library with interchangeable bicycle and point-mass models"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = { text = "Apache-2.0" }
 authors = [
   { name = "Lap Time Sim Team" }
 ]
