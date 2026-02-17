@@ -163,6 +163,9 @@ Current solver is intentionally quasi-steady:
 These simplifications keep the solver fast and stable, while preserving core constraints
 for lap-time studies.
 
+The same solver routine can be used with different backends implementing
+`LapTimeVehicleModel`, including the bicycle and point-mass models.
+
 ## 9. Equation-to-Code Mapping
 
 - $a_{y,i} = v_i^2\kappa_i$:

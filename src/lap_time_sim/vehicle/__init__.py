@@ -19,6 +19,11 @@ if TYPE_CHECKING:
         BicyclePhysics,
         build_bicycle_model,
     )
+    from lap_time_sim.vehicle.point_mass_model import (
+        PointMassModel,
+        PointMassPhysics,
+        build_point_mass_model,
+    )
 
 __all__ = [
     "BicycleDynamicsModel",
@@ -27,9 +32,12 @@ __all__ = [
     "BicyclePhysics",
     "ControlInput",
     "ForceBalance",
+    "PointMassModel",
+    "PointMassPhysics",
     "VehicleParameters",
     "VehicleState",
     "build_bicycle_model",
+    "build_point_mass_model",
 ]
 
 
@@ -61,5 +69,17 @@ def __getattr__(name: str) -> Any:
         from lap_time_sim.vehicle.bicycle_model import build_bicycle_model
 
         return build_bicycle_model
+    if name == "PointMassModel":
+        from lap_time_sim.vehicle.point_mass_model import PointMassModel
+
+        return PointMassModel
+    if name == "PointMassPhysics":
+        from lap_time_sim.vehicle.point_mass_model import PointMassPhysics
+
+        return PointMassPhysics
+    if name == "build_point_mass_model":
+        from lap_time_sim.vehicle.point_mass_model import build_point_mass_model
+
+        return build_point_mass_model
     msg = f"module {__name__!r} has no attribute {name!r}"
     raise AttributeError(msg)

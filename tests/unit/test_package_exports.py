@@ -28,6 +28,9 @@ class PackageExportTests(unittest.TestCase):
         self.assertIsNotNone(vehicle_pkg.BicyclePhysics)
         self.assertIsNotNone(vehicle_pkg.BicycleNumerics)
         self.assertIsNotNone(vehicle_pkg.build_bicycle_model)
+        self.assertIsNotNone(vehicle_pkg.PointMassModel)
+        self.assertIsNotNone(vehicle_pkg.PointMassPhysics)
+        self.assertIsNotNone(vehicle_pkg.build_point_mass_model)
 
     def test_lazy_export_raises_for_missing_symbol(self) -> None:
         """Raise ``AttributeError`` for unknown lazy export names."""

@@ -14,6 +14,9 @@
 - `lap_time_sim.vehicle.BicycleNumerics` (sensible numerical defaults included)
 - `lap_time_sim.vehicle.BicycleDynamicsModel` (state-space 3-DOF backend)
 - `lap_time_sim.vehicle.build_bicycle_model(vehicle, tires, physics=None, numerics=None)`
+- `lap_time_sim.vehicle.PointMassModel(vehicle, physics)`
+- `lap_time_sim.vehicle.PointMassPhysics` (sensible defaults included)
+- `lap_time_sim.vehicle.build_point_mass_model(vehicle, physics=None)`
 
 ## Simulation
 
@@ -38,6 +41,7 @@ Vehicle-model API required by the solver:
 
 Solver math and derivation:
 - `docs/SOLVER.md`
+- `docs/POINT_MASS_MODEL.md` (point-mass backend equations)
 
 `LapSimulationResult` contains:
 - `lap_time_s`

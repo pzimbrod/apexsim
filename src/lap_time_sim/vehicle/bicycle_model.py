@@ -11,6 +11,7 @@ from lap_time_sim.tire.models import AxleTireParameters
 from lap_time_sim.tire.pacejka import magic_formula_lateral
 from lap_time_sim.utils.constants import GRAVITY_MPS2, SMALL_EPS
 from lap_time_sim.utils.exceptions import ConfigurationError
+from lap_time_sim.vehicle._physics_primitives import EnvelopePhysics
 from lap_time_sim.vehicle.aero import aero_forces
 from lap_time_sim.vehicle.bicycle_dynamics import BicycleDynamicsModel, ControlInput, VehicleState
 from lap_time_sim.vehicle.load_transfer import estimate_normal_loads
@@ -19,35 +20,6 @@ from lap_time_sim.vehicle.params import VehicleParameters
 DEFAULT_MIN_LATERAL_ACCEL_LIMIT_MPS2 = 0.5
 DEFAULT_LATERAL_LIMIT_MAX_ITERATIONS = 12
 DEFAULT_LATERAL_LIMIT_CONVERGENCE_TOL_MPS2 = 0.05
-
-
-@dataclass(frozen=True)
-class _EnvelopePhysics:
-    """Shared longitudinal envelope limits used by lap-time solvers.
-
-    Args:
-        max_drive_accel: Maximum forward tire acceleration on flat road and zero
-            lateral demand, excluding drag and grade (m/s^2).
-        max_brake_accel: Maximum braking deceleration magnitude on flat road and
-            zero lateral demand, excluding drag and grade (m/s^2).
-    """
-
-    max_drive_accel: float
-    max_brake_accel: float
-
-    def validate(self) -> None:
-        """Validate shared longitudinal envelope limits.
-
-        Raises:
-            lap_time_sim.utils.exceptions.ConfigurationError: If limits are not
-                strictly positive.
-        """
-        if self.max_drive_accel <= 0.0:
-            msg = "max_drive_accel must be positive"
-            raise ConfigurationError(msg)
-        if self.max_brake_accel <= 0.0:
-            msg = "max_brake_accel must be positive"
-            raise ConfigurationError(msg)
 
 
 @dataclass(frozen=True)
@@ -91,14 +63,14 @@ class BicyclePhysics:
     peak_slip_angle: float = 0.12
 
     @property
-    def envelope(self) -> _EnvelopePhysics:
+    def envelope(self) -> EnvelopePhysics:
         """Return shared longitudinal envelope limits.
 
         Returns:
             Internal shared envelope-limit representation used by multiple
             solver model families.
         """
-        return _EnvelopePhysics(
+        return EnvelopePhysics(
             max_drive_accel=self.max_drive_accel,
             max_brake_accel=self.max_brake_accel,
         )

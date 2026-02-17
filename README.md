@@ -1,10 +1,11 @@
 # Lap Time Sim
 
-A modular lap time simulation library for race cars using a 3-DOF bicycle model.
+A modular lap time simulation library for race cars with interchangeable vehicle models.
 
 ## Features
 
 - 3-DOF bicycle dynamics with aerodynamic effects
+- Point-mass vehicle model with isotropic friction-circle coupling
 - Pacejka-style lateral tire model with load sensitivity
 - Track CSV parsing (`x, y, elevation, banking`) and geometry processing
 - Quasi-steady lap simulation with forward/backward speed-profile optimization
@@ -28,6 +29,7 @@ source .venv/bin/activate
 pip install -e '.[dev]'
 pytest
 python examples/spa_lap.py
+python examples/spa_lap_point_mass.py
 ```
 
 ## Assumptions and Limitations
@@ -35,6 +37,7 @@ python examples/spa_lap.py
 This initial version uses a quasi-steady speed profile and a simplified longitudinal force model.
 See `docs/ASSUMPTIONS.md` for details.
 For the mathematical derivation of the lap-time solver, see `docs/SOLVER.md`.
+For point-mass model equations and assumptions, see `docs/POINT_MASS_MODEL.md`.
 
 ## Data Source
 

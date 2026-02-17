@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "lap-time-sim"
 version = "0.1.0"
-description = "Lap time simulation library based on a 3-DOF bicycle model"
+description = "Lap time simulation library with interchangeable bicycle and point-mass models"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
