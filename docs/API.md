@@ -1,71 +1,96 @@
 # API Overview
 
-## Track
+This page maps the public API to the engineering workflow.
+
+If you are new to the package, start with [How to Use](HOW_TO_USE.md).
+
+## 1. Track inputs
+
+### Load measured/real track data
 
 - `pylapsim.track.load_track_csv(path) -> TrackData`
-  - Input CSV columns: `x`, `y`, `elevation`, `banking`
 
-## Vehicle and Tires
+Required CSV columns:
+
+- `x`
+- `y`
+- `elevation`
+- `banking`
+
+### Generate synthetic validation tracks
+
+- `pylapsim.track.build_straight_track(...) -> TrackData`
+- `pylapsim.track.build_circular_track(...) -> TrackData`
+- `pylapsim.track.build_figure_eight_track(...) -> TrackData`
+
+## 2. Vehicle and tire models
+
+### Shared physical vehicle parameters
+
+- `pylapsim.vehicle.VehicleParameters`
+
+### Tire parameters
 
 - `pylapsim.tire.default_axle_tire_parameters() -> AxleTireParameters`
-- `pylapsim.vehicle.VehicleParameters` (provide explicit vehicle data)
+
+### Bicycle backend
+
 - `pylapsim.vehicle.BicycleModel(vehicle, tires, physics, numerics)`
-- `pylapsim.vehicle.BicyclePhysics` (sensible defaults included)
-- `pylapsim.vehicle.BicycleNumerics` (sensible numerical defaults included)
-- `pylapsim.vehicle.BicycleDynamicsModel` (state-space 3-DOF backend)
+- `pylapsim.vehicle.BicyclePhysics`
+- `pylapsim.vehicle.BicycleNumerics`
 - `pylapsim.vehicle.build_bicycle_model(vehicle, tires, physics=None, numerics=None)`
+
+### Point-mass backend
+
 - `pylapsim.vehicle.PointMassModel(vehicle, physics)`
-- `pylapsim.vehicle.PointMassPhysics` (sensible defaults included)
+- `pylapsim.vehicle.PointMassPhysics`
 - `pylapsim.vehicle.build_point_mass_model(vehicle, physics=None)`
 - `pylapsim.vehicle.calibrate_point_mass_friction_to_bicycle(vehicle, tires, ...)`
 
-## Simulation
+## 3. Simulation setup and run
 
-- `pylapsim.simulation.SimulationConfig`
 - `pylapsim.simulation.RuntimeConfig`
-- `pylapsim.simulation.NumericsConfig` (sensible numerical defaults included)
-- `pylapsim.simulation.VehicleModelBase` (optional OOP base class)
+- `pylapsim.simulation.NumericsConfig`
+- `pylapsim.simulation.SimulationConfig`
+- `pylapsim.simulation.build_simulation_config(...)`
 - `pylapsim.simulation.simulate_lap(track, model, config) -> LapResult`
-- `pylapsim.simulation.build_simulation_config(max_speed=115.0, numerics=None, enable_transient_refinement=False)`
 
-Relevant `SimulationConfig` knobs:
-- `runtime.max_speed`
-- `numerics.min_speed`
-- `numerics.lateral_envelope_max_iterations`
-- `numerics.lateral_envelope_convergence_tolerance`
+Vehicle-model solver contract:
 
-Vehicle-model API required by the solver:
 - `validate()`
 - `lateral_accel_limit(speed, banking)`
 - `max_longitudinal_accel(speed, lateral_accel_required, grade, banking)`
 - `max_longitudinal_decel(speed, lateral_accel_required, grade, banking)`
 - `diagnostics(speed, longitudinal_accel, lateral_accel, curvature)`
 
-Solver math and derivation:
-- `docs/SOLVER.md`
-- `docs/POINT_MASS_MODEL.md` (point-mass backend equations)
-
-`LapResult` contains:
-- `lap_time`
-- `speed`, `longitudinal_accel`, `lateral_accel`
-- `yaw_moment`
-- `front_axle_load`, `rear_axle_load`
-- `power`, `energy`
-
-## Analysis
+## 4. Postprocessing
 
 - `pylapsim.analysis.compute_kpis(result) -> KpiSummary`
 - `pylapsim.analysis.export_standard_plots(result, output_dir)`
 - `pylapsim.analysis.export.export_kpi_json(kpis, path)`
 
-`KpiSummary` includes mandatory KPIs:
+`LapResult` provides:
+
 - lap time
-- average and max lateral acceleration
-- average and max longitudinal acceleration
-- energy usage
+- speed / longitudinal acceleration / lateral acceleration traces
+- yaw moment
+- front/rear axle loads
+- power and energy
 
-## Examples
+## 5. Minimal usage pattern
 
-- `examples/spa_lap.py`: Bicycle model baseline example.
-- `examples/spa_lap_point_mass.py`: Point-mass model baseline example.
-- `examples/spa_model_comparison.py`: Bicycle vs calibrated point-mass comparison with KPI deltas.
+```python
+track = load_track_csv("data/spa_francorchamps.csv")
+model = build_bicycle_model(vehicle=vehicle, tires=tires, physics=BicyclePhysics())
+config = build_simulation_config(max_speed=115.0)
+result = simulate_lap(track=track, model=model, config=config)
+kpis = compute_kpis(result)
+```
+
+## 6. Related guides
+
+- [How to Use](HOW_TO_USE.md)
+- [Examples Overview](EXAMPLES.md)
+- [Solver](SOLVER.md)
+- [Bicycle Model](BICYCLE_MODEL.md)
+- [Point-Mass Model](POINT_MASS_MODEL.md)
