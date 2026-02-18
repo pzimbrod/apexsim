@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Any, Protocol, cast
+from dataclasses import dataclass
+from typing import Any, Protocol
+
+import numpy as np
 
 from apexsim.simulation.config import SimulationConfig
 from apexsim.simulation.profile import SpeedProfileResult
@@ -68,6 +71,43 @@ class TorchSpeedModel(Protocol):
         Returns:
             Available deceleration-magnitude tensor [m/s^2].
         """
+
+
+@dataclass(frozen=True)
+class TorchSpeedProfileResult:
+    """Differentiable torch speed-profile output tensors.
+
+    Args:
+        speed: Converged speed trace along track arc length [m/s].
+        longitudinal_accel: Net longitudinal acceleration trace [m/s^2].
+        lateral_accel: Lateral acceleration trace [m/s^2].
+        lateral_envelope_iterations: Number of fixed-point iterations used for
+            lateral envelope convergence.
+        lap_time: Integrated lap time over one track traversal [s].
+    """
+
+    speed: Any
+    longitudinal_accel: Any
+    lateral_accel: Any
+    lateral_envelope_iterations: int
+    lap_time: Any
+
+    def to_numpy(self) -> SpeedProfileResult:
+        """Convert torch tensor result to ``SpeedProfileResult``.
+
+        Returns:
+            NumPy-based speed-profile result detached from autograd graph.
+        """
+        return SpeedProfileResult(
+            speed=np.asarray(self.speed.detach().cpu().numpy(), dtype=float),
+            longitudinal_accel=np.asarray(
+                self.longitudinal_accel.detach().cpu().numpy(),
+                dtype=float,
+            ),
+            lateral_accel=np.asarray(self.lateral_accel.detach().cpu().numpy(), dtype=float),
+            lateral_envelope_iterations=int(self.lateral_envelope_iterations),
+            lap_time=float(self.lap_time.detach().cpu().item()),
+        )
 
 
 def _require_torch() -> Any:
@@ -151,11 +191,46 @@ def _compiled_solver(
     return compiled
 
 
+def _validate_torch_solver_inputs(
+    track: TrackData,
+    model: TorchSpeedModel,
+    config: SimulationConfig,
+) -> None:
+    """Validate common preconditions for torch-backed profile solvers.
+
+    Args:
+        track: Track geometry and derived arc-length-domain quantities.
+        model: Vehicle model implementing torch-native speed-limit methods.
+        config: Solver runtime and numerical controls.
+
+    Raises:
+        apexsim.utils.exceptions.ConfigurationError: If backend selection is
+            incompatible with the provided model or runtime settings.
+    """
+    if config.runtime.compute_backend != "torch":
+        msg = "torch profile solvers require runtime.compute_backend='torch'"
+        raise ConfigurationError(msg)
+
+    track.validate()
+    model.validate()
+    config.validate()
+
+    required_methods = (
+        "lateral_accel_limit_torch",
+        "max_longitudinal_accel_torch",
+        "max_longitudinal_decel_torch",
+    )
+    missing = [name for name in required_methods if not hasattr(model, name)]
+    if missing:
+        msg = "Model does not implement required torch backend methods: " f"{missing}"
+        raise ConfigurationError(msg)
+
+
 def _solve_speed_profile_torch_impl(
     track: TrackData,
     model: TorchSpeedModel,
     config: SimulationConfig,
-) -> SpeedProfileResult:
+) -> TorchSpeedProfileResult:
     """Solve speed profile on torch backend without validation checks.
 
     Args:
@@ -164,7 +239,7 @@ def _solve_speed_profile_torch_impl(
         config: Solver runtime and numerical controls.
 
     Returns:
-        Converged speed profile and integrated lap metrics as NumPy arrays.
+        Converged speed profile and integrated lap metrics as torch tensors.
     """
     torch = _require_torch()
 
@@ -182,7 +257,14 @@ def _solve_speed_profile_torch_impl(
 
     min_speed = float(config.numerics.min_speed)
     max_speed = float(config.runtime.max_speed)
+    start_speed = (
+        max_speed
+        if config.runtime.initial_speed is None
+        else float(config.runtime.initial_speed)
+    )
+
     max_speed_tensor = torch.as_tensor(max_speed, dtype=dtype, device=device)
+    start_speed_tensor = torch.as_tensor(start_speed, dtype=dtype, device=device)
     min_speed_squared = min_speed * min_speed
 
     lateral_accel_limit_torch = model.lateral_accel_limit_torch
@@ -193,7 +275,7 @@ def _solve_speed_profile_torch_impl(
     lateral_envelope_iterations = 0
 
     for iteration_idx in range(config.numerics.lateral_envelope_max_iterations):
-        previous_v_lat = v_lat.clone()
+        previous_v_lat = v_lat
         ay_limit = lateral_accel_limit_torch(speed=v_lat, banking=banking)
 
         v_lat = _lateral_speed_limit_torch(
@@ -209,11 +291,11 @@ def _solve_speed_profile_torch_impl(
         if float(max_delta_speed.item()) <= config.numerics.lateral_envelope_convergence_tolerance:
             break
 
-    v_forward = v_lat.clone()
-    v_forward[0] = torch.minimum(v_forward[0], max_speed_tensor)
-
+    forward_speeds: list[Any] = [
+        torch.minimum(v_lat[0], torch.minimum(start_speed_tensor, max_speed_tensor))
+    ]
     for idx in range(n - 1):
-        speed_value = v_forward[idx]
+        speed_value = forward_speeds[-1]
         ay_required = speed_value * speed_value * curvature_abs[idx]
         net_accel = max_longitudinal_accel_torch(
             speed=speed_value,
@@ -225,15 +307,15 @@ def _solve_speed_profile_torch_impl(
         next_speed_squared = speed_value * speed_value + 2.0 * net_accel * ds[idx]
         v_candidate = torch.sqrt(torch.clamp(next_speed_squared, min=min_speed_squared))
 
-        bounded = torch.minimum(v_forward[idx + 1], v_candidate)
-        bounded = torch.minimum(bounded, v_lat[idx + 1])
+        bounded = torch.minimum(v_lat[idx + 1], v_candidate)
         bounded = torch.minimum(bounded, max_speed_tensor)
-        v_forward[idx + 1] = bounded
+        forward_speeds.append(bounded)
 
-    v_profile = v_forward.clone()
+    v_forward = torch.stack(forward_speeds)
 
+    backward_reverse: list[Any] = [v_forward[-1]]
     for idx in range(n - 2, -1, -1):
-        speed_value = v_profile[idx + 1]
+        speed_value = backward_reverse[-1]
         ay_required = speed_value * speed_value * curvature_abs[idx + 1]
         available_decel = max_longitudinal_decel_torch(
             speed=speed_value,
@@ -245,27 +327,30 @@ def _solve_speed_profile_torch_impl(
         entry_speed_squared = speed_value * speed_value + 2.0 * available_decel * ds[idx]
         v_entry = torch.sqrt(torch.clamp(entry_speed_squared, min=min_speed_squared))
 
-        bounded = torch.minimum(v_profile[idx], v_entry)
+        bounded = torch.minimum(v_forward[idx], v_entry)
         bounded = torch.minimum(bounded, v_lat[idx])
         bounded = torch.minimum(bounded, max_speed_tensor)
-        v_profile[idx] = bounded
+        backward_reverse.append(bounded)
 
-    ax = torch.zeros_like(v_profile)
+    v_profile = torch.stack(backward_reverse[::-1])
+
     if n > 1:
-        ax[:-1] = (v_profile[1:] * v_profile[1:] - v_profile[:-1] * v_profile[:-1]) / (2.0 * ds)
-        ax[-1] = ax[-2]
+        ax_core = (v_profile[1:] * v_profile[1:] - v_profile[:-1] * v_profile[:-1]) / (2.0 * ds)
+        ax = torch.cat((ax_core, ax_core[-1:]))
+    else:
+        ax = torch.zeros_like(v_profile)
 
     ay = v_profile * v_profile * curvature
 
     segment_speed_avg = torch.clamp(0.5 * (v_profile[:-1] + v_profile[1:]), min=SMALL_EPS)
     lap_time = torch.sum(ds / segment_speed_avg)
 
-    return SpeedProfileResult(
-        speed=v_profile.detach().cpu().numpy(),
-        longitudinal_accel=ax.detach().cpu().numpy(),
-        lateral_accel=ay.detach().cpu().numpy(),
+    return TorchSpeedProfileResult(
+        speed=v_profile,
+        longitudinal_accel=ax,
+        lateral_accel=ay,
         lateral_envelope_iterations=lateral_envelope_iterations,
-        lap_time=float(lap_time.item()),
+        lap_time=lap_time,
     )
 
 
@@ -273,8 +358,8 @@ def solve_speed_profile_torch(
     track: TrackData,
     model: TorchSpeedModel,
     config: SimulationConfig,
-) -> SpeedProfileResult:
-    """Solve lap speed profile with a torch-backed numerical backend.
+) -> TorchSpeedProfileResult:
+    """Solve lap speed profile with a torch-backed differentiable backend.
 
     Args:
         track: Track geometry and derived arc-length-domain quantities.
@@ -282,30 +367,19 @@ def solve_speed_profile_torch(
         config: Solver runtime and numerical controls.
 
     Returns:
-        Converged speed profile and integrated lap metrics as NumPy arrays.
+        Differentiable tensor-valued speed-profile result.
 
     Raises:
         apexsim.utils.exceptions.ConfigurationError: If backend selection is
             incompatible with the provided model or runtime settings.
     """
-    if config.runtime.compute_backend != "torch":
-        msg = "solve_speed_profile_torch requires runtime.compute_backend='torch'"
+    _validate_torch_solver_inputs(track=track, model=model, config=config)
+
+    if config.runtime.torch_compile:
+        msg = (
+            "solve_speed_profile_torch does not support torch_compile=True. "
+            "Disable torch_compile for the torch simulation backend."
+        )
         raise ConfigurationError(msg)
 
-    track.validate()
-    model.validate()
-    config.validate()
-
-    required_methods = (
-        "lateral_accel_limit_torch",
-        "max_longitudinal_accel_torch",
-        "max_longitudinal_decel_torch",
-    )
-    missing = [name for name in required_methods if not hasattr(model, name)]
-    if missing:
-        msg = "Model does not implement required torch backend methods: " f"{missing}"
-        raise ConfigurationError(msg)
-
-    solver = _compiled_solver(enable_compile=config.runtime.torch_compile)
-    result = solver(track=track, model=model, config=config)
-    return cast(SpeedProfileResult, result)
+    return _solve_speed_profile_torch_impl(track=track, model=model, config=config)

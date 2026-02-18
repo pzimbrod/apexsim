@@ -12,6 +12,7 @@ DEFAULT_LATERAL_ENVELOPE_CONVERGENCE_TOLERANCE = 0.1
 DEFAULT_TRANSIENT_STEP = 0.01
 DEFAULT_MAX_SPEED = 115.0
 DEFAULT_ENABLE_TRANSIENT_REFINEMENT = False
+DEFAULT_INITIAL_SPEED: float | None = None
 DEFAULT_COMPUTE_BACKEND = "numpy"
 DEFAULT_TORCH_DEVICE = "cpu"
 DEFAULT_ENABLE_TORCH_COMPILE = False
@@ -63,15 +64,20 @@ class RuntimeConfig:
 
     Args:
         max_speed: Hard speed cap used by the quasi-steady profile solver [m/s].
+        initial_speed: Optional initial speed at the first track sample [m/s].
+            If ``None``, the solver keeps the legacy behavior and initializes
+            from lateral/global speed limits.
         enable_transient_refinement: Flag for optional second-pass transient solve.
         compute_backend: Numerical backend identifier (``numpy``, ``numba``,
             or ``torch``).
         torch_device: Torch device identifier. ``numpy`` and ``numba`` are
             CPU-only backends and therefore require ``torch_device='cpu'``.
-        torch_compile: Enable ``torch.compile`` for the ``torch`` backend.
+        torch_compile: Reserved flag for future compile support in the ``torch``
+            backend. Must currently remain ``False``.
     """
 
     max_speed: float
+    initial_speed: float | None = DEFAULT_INITIAL_SPEED
     enable_transient_refinement: bool = DEFAULT_ENABLE_TRANSIENT_REFINEMENT
     compute_backend: str = DEFAULT_COMPUTE_BACKEND
     torch_device: str = DEFAULT_TORCH_DEVICE
@@ -90,6 +96,13 @@ class RuntimeConfig:
         if self.max_speed <= numerics.min_speed:
             msg = "max_speed must be greater than numerics.min_speed"
             raise ConfigurationError(msg)
+        if self.initial_speed is not None:
+            if self.initial_speed < 0.0:
+                msg = "initial_speed must be greater than or equal to 0"
+                raise ConfigurationError(msg)
+            if self.initial_speed > self.max_speed:
+                msg = "initial_speed must be less than or equal to max_speed"
+                raise ConfigurationError(msg)
         if self.compute_backend not in VALID_COMPUTE_BACKENDS:
             msg = (
                 "compute_backend must be one of "
@@ -118,6 +131,12 @@ class RuntimeConfig:
             self._validate_numba_runtime()
         if self.compute_backend == "torch":
             self._validate_torch_runtime()
+            if self.torch_compile:
+                msg = (
+                    "torch_compile is currently not supported for "
+                    "compute_backend='torch'. Keep torch_compile=False."
+                )
+                raise ConfigurationError(msg)
 
     def _validate_numba_runtime(self) -> None:
         """Validate availability of numba runtime.
@@ -184,6 +203,7 @@ class SimulationConfig:
 
 def build_simulation_config(
     max_speed: float = DEFAULT_MAX_SPEED,
+    initial_speed: float | None = DEFAULT_INITIAL_SPEED,
     numerics: NumericsConfig | None = None,
     enable_transient_refinement: bool = DEFAULT_ENABLE_TRANSIENT_REFINEMENT,
     compute_backend: str = DEFAULT_COMPUTE_BACKEND,
@@ -194,13 +214,17 @@ def build_simulation_config(
 
     Args:
         max_speed: Runtime speed cap for the quasi-steady profile solver [m/s].
+        initial_speed: Optional initial speed at the first track sample [m/s].
+            If ``None``, the solver keeps the legacy behavior and initializes
+            from lateral/global speed limits.
         numerics: Optional numerical settings. Defaults to :class:`NumericsConfig`.
         enable_transient_refinement: Flag for optional transient post-processing.
         compute_backend: Numerical backend identifier (``numpy``, ``numba``,
             or ``torch``).
         torch_device: Torch device identifier. ``numpy`` and ``numba`` are
             CPU-only backends and therefore require ``torch_device='cpu'``.
-        torch_compile: Enable ``torch.compile`` for the ``torch`` backend.
+        torch_compile: Reserved flag for future compile support in the ``torch``
+            backend. Must currently remain ``False``.
 
     Returns:
         Fully validated simulation configuration.
@@ -212,6 +236,7 @@ def build_simulation_config(
     config = SimulationConfig(
         runtime=RuntimeConfig(
             max_speed=max_speed,
+            initial_speed=initial_speed,
             enable_transient_refinement=enable_transient_refinement,
             compute_backend=compute_backend,
             torch_device=torch_device,

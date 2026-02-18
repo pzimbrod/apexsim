@@ -155,6 +155,11 @@ def solve_speed_profile(
     ds = np.diff(track.arc_length)
 
     max_speed = config.runtime.max_speed
+    start_speed = (
+        max_speed
+        if config.runtime.initial_speed is None
+        else float(config.runtime.initial_speed)
+    )
     min_speed = config.numerics.min_speed
     min_speed_squared = min_speed * min_speed
     banking = track.banking
@@ -184,7 +189,7 @@ def solve_speed_profile(
     max_longitudinal_decel = model.max_longitudinal_decel
 
     v_forward = np.copy(v_lat)
-    v_forward[0] = min(v_forward[0], max_speed)
+    v_forward[0] = min(v_forward[0], start_speed, max_speed)
     for idx in range(n - 1):
         speed_value = float(v_forward[idx])
         ay_required = speed_value * speed_value * float(curvature_abs[idx])

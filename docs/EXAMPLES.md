@@ -16,11 +16,13 @@ After finishing all example pages, you should be able to:
 
 1. [Synthetic Track Walkthrough](EXAMPLES_SYNTHETIC.md)
 2. [Spa Walkthrough](examples/spa/index.md)
+3. [Sensitivity Walkthrough](examples/sensitivity/index.md)
 
 Reason:
 
 - Synthetic tracks isolate single effects and simplify debugging.
 - Spa introduces full-track interactions and realistic complexity.
+- Sensitivity examples connect parameter changes to lap-time and energy outcomes.
 
 ## Mapping scripts to engineering questions
 
@@ -36,6 +38,10 @@ Reason:
   - "How does the speed-dependent G-G envelope differ by model complexity?"
 - `examples/backend_benchmarks.py`
   - "Which compute backend should I use for my workload?"
+- `examples/sensitivity/synthetic_single_track_sensitivity.py`
+  - "How sensitive are lap time and energy to key parameters on a canonical track via the Sensitivity API?"
+- `examples/sensitivity/spa_single_track_sensitivity.py`
+  - "Which parameters matter most for lap time and energy on Spa via the Sensitivity API?"
 
 ## What the example suite covers well
 
@@ -43,6 +49,7 @@ Reason:
 - KPI and plot export workflows.
 - Direct model-complexity comparison.
 - Practical interpretation of speed/acceleration/yaw diagnostics.
+- Parameter sensitivity interpretation for lap time and energy objectives.
 
 ## What the example suite does not claim
 

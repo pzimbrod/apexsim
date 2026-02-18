@@ -73,6 +73,7 @@ class SimulationHelpersTests(unittest.TestCase):
         config = build_simulation_config(max_speed=115.0)
         self.assertEqual(config.numerics, NumericsConfig())
         self.assertFalse(config.runtime.enable_transient_refinement)
+        self.assertIsNone(config.runtime.initial_speed)
 
         with self.assertRaises(ConfigurationError):
             SimulationConfig(
@@ -127,6 +128,13 @@ class SimulationHelpersTests(unittest.TestCase):
                 numerics=NumericsConfig(),
             ).validate()
 
+    def test_runtime_config_rejects_initial_speed_outside_bounds(self) -> None:
+        """Reject initial-speed selections outside [0, max_speed]."""
+        with self.assertRaises(ConfigurationError):
+            build_simulation_config(max_speed=115.0, initial_speed=-1.0)
+        with self.assertRaises(ConfigurationError):
+            build_simulation_config(max_speed=115.0, initial_speed=120.0)
+
     def test_build_simulation_config_supports_torch_backend(self) -> None:
         """Build a validated configuration that selects the torch backend."""
         config = build_simulation_config(max_speed=115.0, compute_backend="torch")
@@ -134,12 +142,24 @@ class SimulationHelpersTests(unittest.TestCase):
         self.assertEqual(config.runtime.torch_device, "cpu")
         self.assertFalse(config.runtime.torch_compile)
 
-        compiled = build_simulation_config(
-            max_speed=115.0,
-            compute_backend="torch",
-            torch_compile=True,
-        )
-        self.assertTrue(compiled.runtime.torch_compile)
+    def test_runtime_config_rejects_torch_compile_for_torch_backend(self) -> None:
+        """Reject torch_compile to keep torch backend solves AD-compatible."""
+        with self.assertRaises(ConfigurationError):
+            build_simulation_config(
+                max_speed=115.0,
+                compute_backend="torch",
+                torch_compile=True,
+            )
+
+    def test_build_simulation_config_supports_initial_speed(self) -> None:
+        """Build a validated configuration with explicit initial speed."""
+        config = build_simulation_config(max_speed=115.0, initial_speed=20.0)
+        self.assertEqual(config.runtime.initial_speed, 20.0)
+
+    def test_build_simulation_config_supports_standing_start(self) -> None:
+        """Allow standing starts for straight-line launch scenarios."""
+        config = build_simulation_config(max_speed=115.0, initial_speed=0.0)
+        self.assertEqual(config.runtime.initial_speed, 0.0)
 
     @unittest.skipUnless(NUMBA_AVAILABLE, "Numba not installed")
     def test_build_simulation_config_supports_numba_backend(self) -> None:

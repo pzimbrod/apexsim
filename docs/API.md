@@ -58,12 +58,20 @@ Terminology note:
 - `apexsim.simulation.SimulationConfig`
 - `apexsim.simulation.build_simulation_config(...)`
 - `apexsim.simulation.simulate_lap(track, model, config) -> LapResult`
+- `apexsim.simulation.solve_speed_profile_torch(track, model, config) -> TorchSpeedProfileResult`
 
 Backend runtime controls:
 
 - `RuntimeConfig.compute_backend`: `"numpy"`, `"numba"`, or `"torch"`
 - `RuntimeConfig.torch_device`: keep `"cpu"` for `numpy`/`numba`; use `"cpu"` or `"cuda:0"` for `torch`
-- `RuntimeConfig.torch_compile`: optional compile acceleration for `torch` only
+- `RuntimeConfig.torch_compile`: reserved flag, must currently remain `False` for simulation
+- `RuntimeConfig.initial_speed`: optional start speed at first track sample [m/s]
+  (supports `0.0` for standing starts)
+
+Constraint for differentiable solver use:
+
+- `solve_speed_profile_torch(...)` is the differentiable torch solver and requires
+  `RuntimeConfig.torch_compile = False`
 
 See [Compute Backends](BACKENDS.md) for selection guidance and benchmarks.
 
@@ -85,6 +93,16 @@ Vehicle-model solver contract:
 - `apexsim.analysis.PerformanceEnvelopeNumerics`
 - `apexsim.analysis.PerformanceEnvelopeRuntime`
 - `apexsim.analysis.build_performance_envelope_config(...) -> PerformanceEnvelopeConfig`
+- `apexsim.analysis.SensitivityParameter`
+- `apexsim.analysis.SensitivityNumerics`
+- `apexsim.analysis.SensitivityRuntime`
+- `apexsim.analysis.SensitivityConfig`
+- `apexsim.analysis.build_sensitivity_config(...) -> SensitivityConfig`
+- `apexsim.analysis.compute_sensitivities(objective, parameters, ...) -> SensitivityResult`
+- `apexsim.analysis.SensitivityStudyParameter`
+- `apexsim.analysis.SensitivityStudyResult`
+- `apexsim.analysis.register_sensitivity_model_adapter(...) -> None`
+- `apexsim.analysis.run_lap_sensitivity_study(...) -> SensitivityStudyResult`
 
 `LapResult` provides:
 
@@ -101,6 +119,19 @@ Vehicle-model solver contract:
 - sampled lateral-acceleration grid
 - max/min longitudinal acceleration grid
 - optional `.to_dataframe()` conversion for tabular studies
+
+`SensitivityResult` provides:
+
+- baseline scalar objective value
+- local sensitivities per parameter
+- method metadata (`autodiff` or `finite_difference`)
+- baseline parameter values and parameter kind (`physical` / `numerical`)
+
+`SensitivityStudyResult` provides:
+
+- multi-objective lap sensitivity outputs (`lap_time_s`, `energy_kwh`)
+- long-form tabular export via `.to_dataframe()`
+- compact parameter × objective table via `.to_pivot()`
 
 ## 5. Minimal usage pattern
 

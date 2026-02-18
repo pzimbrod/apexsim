@@ -179,7 +179,7 @@ Explicit setup:
 from apexsim.simulation import NumericsConfig, RuntimeConfig, SimulationConfig
 
 config = SimulationConfig(
-    runtime=RuntimeConfig(max_speed=115.0),
+    runtime=RuntimeConfig(max_speed=115.0, initial_speed=20.0),
     numerics=NumericsConfig(
         min_speed=8.0,
         lateral_envelope_max_iterations=20,
@@ -216,6 +216,11 @@ Critical distinction:
 - Numerical parameters control solver stability and convergence.
 
 Do not compensate wrong physics by over-tuning numerics.
+
+`initial_speed` is optional. If omitted (`None`), the solver keeps the legacy
+start behavior. Set it explicitly when you need controlled acceleration phases
+from the first sample (for example, straight-line bottleneck studies or
+standing starts with `initial_speed=0.0`).
 
 ## Step 5: Run the lap simulation
 
@@ -258,6 +263,84 @@ envelope = compute_performance_envelope(
     numerics=PerformanceEnvelopeNumerics(speed_samples=31, lateral_accel_samples=41),
 )
 envelope_array = envelope.to_numpy()
+```
+
+Optional: run a local lap-sensitivity study (AD default on torch backend):
+
+```python
+from apexsim.analysis import (
+    SensitivityStudyParameter,
+    SensitivityRuntime,
+    run_lap_sensitivity_study,
+)
+
+model = build_single_track_model(
+    vehicle=vehicle,
+    tires=tires,
+    physics=SingleTrackPhysics(),
+)
+study = run_lap_sensitivity_study(
+    track=track,
+    model=model,
+    simulation_config=config_torch,
+    parameters=[
+        SensitivityStudyParameter(name="mass", target="vehicle.mass", label="Vehicle mass"),
+        SensitivityStudyParameter(
+            name="drag_coefficient",
+            target="vehicle.drag_coefficient",
+            label="Drag coefficient",
+        ),
+    ],
+    label="Spa single-track",
+)
+long_table = study.to_dataframe()
+pivot_table = study.to_pivot()
+```
+
+To force finite differences (for regression checks), pass:
+
+```python
+study_fd = run_lap_sensitivity_study(
+    track=track,
+    model=model,
+    simulation_config=config_torch,
+    parameters=[SensitivityStudyParameter(name="mass", target="vehicle.mass")],
+    runtime=SensitivityRuntime(method="finite_difference"),
+)
+```
+
+To support custom model classes, register an adapter once:
+
+```python
+from apexsim.analysis import register_sensitivity_model_adapter
+
+register_sensitivity_model_adapter(
+    model_type=TwinTrackModel,
+    model_factory=build_twin_track_model,
+    model_inputs_getter=lambda model: {
+        "vehicle": model.vehicle,
+        "tires": model.tires,
+        "physics": model.physics,
+        "numerics": model.numerics,
+    },
+)
+```
+
+Optional: run the public differentiable torch speed-profile API directly
+for custom gradient workflows:
+
+```python
+from apexsim.simulation import build_simulation_config, solve_speed_profile_torch
+
+torch_config = build_simulation_config(
+    compute_backend="torch",
+    torch_device="cpu",
+    torch_compile=False,  # torch backend keeps AD-compatible behavior
+    max_speed=115.0,
+    initial_speed=20.0,
+)
+torch_result = solve_speed_profile_torch(track=track, model=model, config=torch_config)
+lap_time_tensor = torch_result.lap_time
 ```
 
 Minimum review set:

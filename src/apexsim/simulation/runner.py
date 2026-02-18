@@ -81,7 +81,8 @@ def _solve_profile(
         from apexsim.simulation.torch_profile import TorchSpeedModel, solve_speed_profile_torch
 
         torch_model = cast(TorchSpeedModel, model)
-        return solve_speed_profile_torch(track=track, model=torch_model, config=config)
+        torch_profile = solve_speed_profile_torch(track=track, model=torch_model, config=config)
+        return torch_profile.to_numpy()
 
     if config.runtime.compute_backend == "numba":
         from apexsim.simulation.numba_profile import NumbaSpeedModel, solve_speed_profile_numba

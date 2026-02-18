@@ -19,7 +19,9 @@ class PackageExportTests(unittest.TestCase):
         self.assertIsNotNone(simulation_pkg.VehicleModel)
         self.assertIsNotNone(simulation_pkg.ModelDiagnostics)
         self.assertIsNotNone(simulation_pkg.LapResult)
+        self.assertIsNotNone(simulation_pkg.TorchSpeedProfileResult)
         self.assertIsNotNone(simulation_pkg.simulate_lap)
+        self.assertIsNotNone(simulation_pkg.solve_speed_profile_torch)
         self.assertIsNotNone(simulation_pkg.RuntimeConfig)
         self.assertIsNotNone(simulation_pkg.NumericsConfig)
         self.assertIsNotNone(simulation_pkg.build_simulation_config)
@@ -44,6 +46,17 @@ class PackageExportTests(unittest.TestCase):
         self.assertIsNotNone(analysis_pkg.PerformanceEnvelopeResult)
         self.assertIsNotNone(analysis_pkg.build_performance_envelope_config)
         self.assertIsNotNone(analysis_pkg.compute_performance_envelope)
+        self.assertIsNotNone(analysis_pkg.SensitivityParameter)
+        self.assertIsNotNone(analysis_pkg.SensitivityNumerics)
+        self.assertIsNotNone(analysis_pkg.SensitivityRuntime)
+        self.assertIsNotNone(analysis_pkg.SensitivityConfig)
+        self.assertIsNotNone(analysis_pkg.SensitivityResult)
+        self.assertIsNotNone(analysis_pkg.SensitivityStudyParameter)
+        self.assertIsNotNone(analysis_pkg.SensitivityStudyResult)
+        self.assertIsNotNone(analysis_pkg.build_sensitivity_config)
+        self.assertIsNotNone(analysis_pkg.compute_sensitivities)
+        self.assertIsNotNone(analysis_pkg.register_sensitivity_model_adapter)
+        self.assertIsNotNone(analysis_pkg.run_lap_sensitivity_study)
 
     def test_vehicle_lazy_exports_resolve(self) -> None:
         """Resolve vehicle exports that are provided lazily."""

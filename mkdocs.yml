@@ -30,6 +30,10 @@ theme:
 
 plugins:
   - search
+  - mkdocs-jupyter:
+      execute: false
+      include_source: true
+      ignore_h1_titles: true
   - mkdocstrings:
       handlers:
         python:
@@ -74,6 +78,10 @@ nav:
           - Point-Mass Lap: examples/spa/point_mass_lap.md
           - Model Comparison: examples/spa/model_comparison.md
           - Performance Envelope: examples/spa/performance_envelope.md
+      - Sensitivity:
+          - Overview: examples/sensitivity/index.md
+          - Synthetic Single-Track: examples/sensitivity/synthetic_single_track_sensitivity.ipynb
+          - Spa Single-Track: examples/sensitivity/spa_single_track_sensitivity.ipynb
   - Vehicle Models:
       - Single-Track Model: SINGLE_TRACK_MODEL.md
       - Point-Mass Model: POINT_MASS_MODEL.md
