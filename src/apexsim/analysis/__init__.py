@@ -17,8 +17,13 @@ from apexsim.analysis.sensitivity import (
     SensitivityParameter,
     SensitivityResult,
     SensitivityRuntime,
+    SensitivityStudyModel,
+    SensitivityStudyParameter,
+    SensitivityStudyResult,
     build_sensitivity_config,
+    build_sensitivity_study_model,
     compute_sensitivities,
+    run_lap_sensitivity_study,
 )
 
 __all__ = [
@@ -33,10 +38,15 @@ __all__ = [
     "SensitivityParameter",
     "SensitivityResult",
     "SensitivityRuntime",
+    "SensitivityStudyModel",
+    "SensitivityStudyParameter",
+    "SensitivityStudyResult",
     "build_performance_envelope_config",
     "build_sensitivity_config",
+    "build_sensitivity_study_model",
     "compute_kpis",
     "compute_performance_envelope",
     "compute_sensitivities",
     "export_standard_plots",
+    "run_lap_sensitivity_study",
 ]

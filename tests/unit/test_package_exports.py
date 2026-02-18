@@ -51,8 +51,13 @@ class PackageExportTests(unittest.TestCase):
         self.assertIsNotNone(analysis_pkg.SensitivityRuntime)
         self.assertIsNotNone(analysis_pkg.SensitivityConfig)
         self.assertIsNotNone(analysis_pkg.SensitivityResult)
+        self.assertIsNotNone(analysis_pkg.SensitivityStudyModel)
+        self.assertIsNotNone(analysis_pkg.SensitivityStudyParameter)
+        self.assertIsNotNone(analysis_pkg.SensitivityStudyResult)
         self.assertIsNotNone(analysis_pkg.build_sensitivity_config)
+        self.assertIsNotNone(analysis_pkg.build_sensitivity_study_model)
         self.assertIsNotNone(analysis_pkg.compute_sensitivities)
+        self.assertIsNotNone(analysis_pkg.run_lap_sensitivity_study)
 
     def test_vehicle_lazy_exports_resolve(self) -> None:
         """Resolve vehicle exports that are provided lazily."""

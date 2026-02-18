@@ -126,6 +126,33 @@ class PointMassTorchBackendMixin:
         usage = torch.clamp(torch.abs(lateral_accel_required) / safe_limit, min=0.0, max=1.0)
         return torch.sqrt(torch.clamp(1.0 - usage * usage, min=0.0, max=1.0))
 
+    def tractive_power_torch(
+        self,
+        speed: Any,
+        longitudinal_accel: Any,
+    ) -> Any:
+        """Compute tractive power for torch speed and acceleration tensors.
+
+        Args:
+            speed: Speed tensor [m/s].
+            longitudinal_accel: Net longitudinal-acceleration tensor [m/s^2].
+
+        Returns:
+            Tractive power tensor [W].
+        """
+        torch = self._torch_module()
+        speed_tensor = torch.as_tensor(speed)
+        accel_tensor = torch.as_tensor(
+            longitudinal_accel,
+            dtype=speed_tensor.dtype,
+            device=speed_tensor.device,
+        )
+        speed_non_negative = torch.clamp(speed_tensor, min=0.0)
+        speed_squared = speed_non_negative * speed_non_negative
+        drag_force = self._drag_force_scale * speed_squared
+        tractive_force = self.vehicle.mass * accel_tensor + drag_force
+        return tractive_force * speed_tensor
+
     def lateral_accel_limit_torch(
         self,
         speed: Any,

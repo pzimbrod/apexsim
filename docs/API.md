@@ -99,6 +99,11 @@ Vehicle-model solver contract:
 - `apexsim.analysis.SensitivityConfig`
 - `apexsim.analysis.build_sensitivity_config(...) -> SensitivityConfig`
 - `apexsim.analysis.compute_sensitivities(objective, parameters, ...) -> SensitivityResult`
+- `apexsim.analysis.SensitivityStudyModel`
+- `apexsim.analysis.SensitivityStudyParameter`
+- `apexsim.analysis.SensitivityStudyResult`
+- `apexsim.analysis.build_sensitivity_study_model(...) -> SensitivityStudyModel`
+- `apexsim.analysis.run_lap_sensitivity_study(...) -> SensitivityStudyResult`
 
 `LapResult` provides:
 
@@ -122,6 +127,12 @@ Vehicle-model solver contract:
 - local sensitivities per parameter
 - method metadata (`autodiff` or `finite_difference`)
 - baseline parameter values and parameter kind (`physical` / `numerical`)
+
+`SensitivityStudyResult` provides:
+
+- multi-objective lap sensitivity outputs (`lap_time_s`, `energy_kwh`)
+- long-form tabular export via `.to_dataframe()`
+- compact parameter × objective table via `.to_pivot()`
 
 ## 5. Minimal usage pattern
 

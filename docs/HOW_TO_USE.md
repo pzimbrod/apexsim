@@ -265,26 +265,46 @@ envelope = compute_performance_envelope(
 envelope_array = envelope.to_numpy()
 ```
 
-Optional: compute local scalar sensitivities (autodiff is default, finite
-difference remains available for regression checks):
+Optional: run a local lap-sensitivity study (AD default on torch backend):
 
 ```python
 from apexsim.analysis import (
-    SensitivityParameter,
+    SensitivityStudyParameter,
+    build_sensitivity_study_model,
     SensitivityRuntime,
-    compute_sensitivities,
+    run_lap_sensitivity_study,
 )
 
-def objective(params):
-    # Example scalar objective; replace by lap_time / energy KPI objective.
-    return params["mass"] ** 2 + 0.5 * params["drag_coefficient"]
-
-sens = compute_sensitivities(
-    objective=objective,
+study_model = build_sensitivity_study_model(
+    model_factory=build_single_track_model,
+    model_inputs={"vehicle": vehicle, "tires": tires, "physics": SingleTrackPhysics()},
+    label="Spa single-track",
+)
+study = run_lap_sensitivity_study(
+    track=track,
+    study_model=study_model,
+    simulation_config=config_torch,
     parameters=[
-        SensitivityParameter(name="mass", value=820.0, kind="physical"),
-        SensitivityParameter(name="drag_coefficient", value=0.92, kind="physical"),
+        SensitivityStudyParameter(name="mass", target="vehicle.mass", label="Vehicle mass"),
+        SensitivityStudyParameter(
+            name="drag_coefficient",
+            target="vehicle.drag_coefficient",
+            label="Drag coefficient",
+        ),
     ],
+)
+long_table = study.to_dataframe()
+pivot_table = study.to_pivot()
+```
+
+To force finite differences (for regression checks), pass:
+
+```python
+study_fd = run_lap_sensitivity_study(
+    track=track,
+    study_model=study_model,
+    simulation_config=config_torch,
+    parameters=[SensitivityStudyParameter(name="mass", target="vehicle.mass")],
     runtime=SensitivityRuntime(method="finite_difference"),
 )
 ```

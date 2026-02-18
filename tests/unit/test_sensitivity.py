@@ -11,18 +11,30 @@ from unittest.mock import patch
 
 import numpy as np
 
+import apexsim.analysis.sensitivity as sensitivity_module
 from apexsim.analysis.sensitivity import (
     SensitivityConfig,
     SensitivityNumerics,
     SensitivityParameter,
     SensitivityResult,
     SensitivityRuntime,
+    SensitivityStudyParameter,
     build_sensitivity_config,
+    build_sensitivity_study_model,
     compute_sensitivities,
+    run_lap_sensitivity_study,
 )
 from apexsim.simulation import build_simulation_config, solve_speed_profile_torch
+from apexsim.tire import default_axle_tire_parameters
 from apexsim.track import build_straight_track
 from apexsim.utils.exceptions import ConfigurationError
+from apexsim.vehicle import (
+    PointMassPhysics,
+    SingleTrackPhysics,
+    build_point_mass_model,
+    build_single_track_model,
+)
+from tests.helpers import sample_vehicle_parameters
 
 TORCH_AVAILABLE = importlib.util.find_spec("torch") is not None
 
@@ -433,6 +445,583 @@ class SensitivityApiTests(unittest.TestCase):
                 parameter_values={"mass": 1000.0},
                 parameter_kinds={"mass": "unknown"},
             )
+
+
+class SensitivityStudyApiTests(unittest.TestCase):
+    """Validate high-level lap sensitivity study helpers."""
+
+    @staticmethod
+    def _single_track_study_inputs() -> dict[str, Any]:
+        """Return baseline model inputs for generic study API tests.
+
+        Returns:
+            Keyword-argument mapping used by ``build_single_track_model``.
+        """
+        return {
+            "vehicle": sample_vehicle_parameters(),
+            "tires": default_axle_tire_parameters(),
+            "physics": SingleTrackPhysics(),
+        }
+
+    @staticmethod
+    def _point_mass_study_inputs() -> dict[str, Any]:
+        """Return baseline model inputs for point-mass study API tests.
+
+        Returns:
+            Keyword-argument mapping used by ``build_point_mass_model``.
+        """
+        return {
+            "vehicle": sample_vehicle_parameters(),
+            "physics": PointMassPhysics(),
+        }
+
+    def test_build_sensitivity_study_model_rejects_invalid_inputs(self) -> None:
+        """Reject malformed study-model factory definitions."""
+        with self.assertRaises(ConfigurationError):
+            build_sensitivity_study_model(
+                model_factory=42,  # type: ignore[arg-type]
+                model_inputs={"vehicle": sample_vehicle_parameters()},
+            )
+        with self.assertRaises(ConfigurationError):
+            build_sensitivity_study_model(
+                model_factory=build_single_track_model,
+                model_inputs={},
+            )
+        with self.assertRaises(ConfigurationError):
+            build_sensitivity_study_model(
+                model_factory=build_single_track_model,
+                model_inputs={"vehicle": sample_vehicle_parameters()},
+                label="   ",
+            )
+
+    def test_sensitivity_study_parameter_rejects_invalid_inputs(self) -> None:
+        """Reject invalid study-parameter definitions."""
+        with self.assertRaises(ConfigurationError):
+            SensitivityStudyParameter(name="", target="vehicle.mass").validate()
+        with self.assertRaises(ConfigurationError):
+            SensitivityStudyParameter(name="mass", target="").validate()
+        with self.assertRaises(ConfigurationError):
+            SensitivityStudyParameter(name="mass", target="vehicle..mass").validate()
+        with self.assertRaises(ConfigurationError):
+            SensitivityStudyParameter(
+                name="mass",
+                target="vehicle.mass",
+                kind="unsupported",
+            ).validate()
+        with self.assertRaises(ConfigurationError):
+            SensitivityStudyParameter(
+                name="mass",
+                target="vehicle.mass",
+                label=" ",
+            ).validate()
+        with self.assertRaises(ConfigurationError):
+            SensitivityStudyParameter(
+                name="mass",
+                target="vehicle.mass",
+                relative_variation=0.0,
+            ).validate()
+        with self.assertRaises(ConfigurationError):
+            SensitivityStudyParameter(
+                name="mass",
+                target="vehicle.mass",
+                lower_bound=np.nan,
+            ).validate()
+        with self.assertRaises(ConfigurationError):
+            SensitivityStudyParameter(
+                name="mass",
+                target="vehicle.mass",
+                lower_bound=2.0,
+                upper_bound=1.0,
+            ).validate()
+
+    def test_study_result_validation_rejects_inconsistent_payloads(self) -> None:
+        """Reject inconsistent objective and parameter mappings in result payloads."""
+        parameter = SensitivityStudyParameter(name="mass", target="vehicle.mass")
+        base_result = SensitivityResult(
+            objective_value=10.0,
+            sensitivities={"mass": 0.1},
+            method="finite_difference",
+            parameter_values={"mass": 800.0},
+            parameter_kinds={"mass": "physical"},
+        )
+        with self.assertRaises(ConfigurationError):
+            sensitivity_module.SensitivityStudyResult(
+                study_label=None,
+                objective_order=(),
+                objective_units={},
+                parameters=(parameter,),
+                sensitivity_results={},
+            )
+        with self.assertRaises(ConfigurationError):
+            sensitivity_module.SensitivityStudyResult(
+                study_label=None,
+                objective_order=("lap_time_s",),
+                objective_units={},
+                parameters=(parameter,),
+                sensitivity_results={"lap_time_s": base_result},
+            )
+        with self.assertRaises(ConfigurationError):
+            sensitivity_module.SensitivityStudyResult(
+                study_label=None,
+                objective_order=("lap_time_s",),
+                objective_units={"lap_time_s": "s"},
+                parameters=(parameter,),
+                sensitivity_results={
+                    "lap_time_s": SensitivityResult(
+                        objective_value=10.0,
+                        sensitivities={"drag": 0.1},
+                        method="finite_difference",
+                        parameter_values={"drag": 0.9},
+                        parameter_kinds={"drag": "physical"},
+                    )
+                },
+            )
+
+    def test_private_dot_path_helpers_cover_error_and_object_branches(self) -> None:
+        """Exercise dot-path helper branches used by the study API."""
+        vehicle = sample_vehicle_parameters()
+        root = {"vehicle": vehicle}
+
+        with self.assertRaises(ConfigurationError):
+            sensitivity_module._resolve_dot_path(root, target="vehicle.unknown")
+        with self.assertRaises(ConfigurationError):
+            sensitivity_module._set_dot_path(root, target="unknown.mass", value=1.0)
+        with self.assertRaises(ConfigurationError):
+            sensitivity_module._set_dot_path(root, target="vehicle.unknown", value=1.0)
+
+        class MutableContainer:
+            """Simple mutable object for helper-branch coverage."""
+
+            def __init__(self) -> None:
+                self.value = 1.0
+
+        obj_root = {"obj": MutableContainer()}
+        obj_updated = sensitivity_module._set_dot_path(
+            obj_root,
+            target="obj.value",
+            value=2.0,
+        )
+        self.assertEqual(obj_root["obj"].value, 1.0)
+        self.assertEqual(obj_updated["obj"].value, 2.0)
+        with self.assertRaises(ConfigurationError):
+            sensitivity_module._set_dot_path(obj_root, target="obj.missing", value=0.0)
+
+    def test_private_study_helpers_reject_inconsistent_calls(self) -> None:
+        """Exercise study-helper error paths that are otherwise hard to trigger."""
+        parameter = SensitivityStudyParameter(name="mass", target="vehicle.mass")
+        with self.assertRaises(ConfigurationError):
+            sensitivity_module._resolve_lap_study_sensitivity_config(
+                config=SensitivityConfig(),
+                numerics=None,
+                runtime=SensitivityRuntime(method="finite_difference"),
+                default_torch_device="cpu",
+            )
+        with self.assertRaises(ConfigurationError):
+            sensitivity_module._normalize_lap_sensitivity_objectives(())
+        self.assertEqual(
+            sensitivity_module._normalize_lap_sensitivity_objectives(
+                ("lap_time_s", "lap_time_s", "energy_kwh")
+            ),
+            ["lap_time_s", "energy_kwh"],
+        )
+        with self.assertRaises(ConfigurationError):
+            sensitivity_module._build_study_model_inputs(
+                base_inputs={"vehicle": sample_vehicle_parameters()},
+                parameters={"mass": parameter},
+                parameter_values={},
+            )
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_private_energy_helper_rejects_missing_or_bad_power_shapes(self) -> None:
+        """Reject invalid model power hooks and shape mismatches for energy objective."""
+        import torch
+
+        track = build_straight_track(length=10.0, sample_count=4)
+
+        @dataclass(frozen=True)
+        class _Profile:
+            speed: Any
+            longitudinal_accel: Any
+
+        profile = _Profile(
+            speed=torch.tensor([5.0, 5.0, 5.0], dtype=torch.float64),
+            longitudinal_accel=torch.tensor([0.0, 0.0, 0.0], dtype=torch.float64),
+        )
+
+        with self.assertRaises(ConfigurationError):
+            sensitivity_module._compute_lap_energy_kwh_torch(
+                track=track,
+                model=object(),
+                speed_profile=profile,
+            )
+
+        class _BadPowerModel:
+            def tractive_power_torch(self, speed: Any, longitudinal_accel: Any) -> Any:
+                del speed, longitudinal_accel
+                return torch.tensor([1.0], dtype=torch.float64)
+
+        with self.assertRaises(ConfigurationError):
+            sensitivity_module._compute_lap_energy_kwh_torch(
+                track=track,
+                model=_BadPowerModel(),
+                speed_profile=profile,
+            )
+
+        class _SinglePointTrack:
+            arc_length = np.array([0.0], dtype=float)
+
+        class _ValidPowerModel:
+            def tractive_power_torch(self, speed: Any, longitudinal_accel: Any) -> Any:
+                return speed + 0.0 * longitudinal_accel
+
+        single_point_profile = _Profile(
+            speed=torch.tensor([5.0], dtype=torch.float64),
+            longitudinal_accel=torch.tensor([0.0], dtype=torch.float64),
+        )
+        energy = sensitivity_module._compute_lap_energy_kwh_torch(
+            track=_SinglePointTrack(),
+            model=_ValidPowerModel(),
+            speed_profile=single_point_profile,
+        )
+        self.assertEqual(float(energy.item()), 0.0)
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_run_lap_sensitivity_study_returns_expected_table_columns(self) -> None:
+        """Build long-form and pivot outputs with expected schemas."""
+        track = build_straight_track(length=300.0, sample_count=151)
+        config = build_simulation_config(
+            compute_backend="torch",
+            torch_device="cpu",
+            torch_compile=False,
+            max_speed=65.0,
+            initial_speed=0.0,
+        )
+        study_model = build_sensitivity_study_model(
+            model_factory=build_single_track_model,
+            model_inputs=self._single_track_study_inputs(),
+            label="unit-test-study",
+        )
+        parameters = [
+            SensitivityStudyParameter(
+                name="mass",
+                target="vehicle.mass",
+                label="Vehicle mass",
+            ),
+            SensitivityStudyParameter(
+                name="drag_coefficient",
+                target="vehicle.drag_coefficient",
+                label="Drag coefficient",
+            ),
+        ]
+        study = run_lap_sensitivity_study(
+            track=track,
+            study_model=study_model,
+            simulation_config=config,
+            parameters=parameters,
+        )
+
+        long_table = study.to_dataframe()
+        expected_columns = {
+            "study_label",
+            "objective",
+            "objective_unit",
+            "objective_value",
+            "parameter",
+            "parameter_label",
+            "parameter_target",
+            "parameter_kind",
+            "parameter_value",
+            "sensitivity_raw",
+            "sensitivity_pct_per_pct",
+            "variation_minus_pct",
+            "variation_plus_pct",
+            "predicted_objective_minus",
+            "predicted_objective_plus",
+            "method",
+        }
+        self.assertEqual(set(long_table.columns), expected_columns)
+        self.assertEqual(
+            set(long_table["objective"].unique().tolist()),
+            {"lap_time_s", "energy_kwh"},
+        )
+
+        pivot = study.to_pivot()
+        self.assertEqual(set(pivot.columns.tolist()), {"lap_time_s", "energy_kwh"})
+        self.assertEqual(set(pivot.index.tolist()), {"mass", "drag_coefficient"})
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_run_lap_sensitivity_study_rejects_invalid_target(self) -> None:
+        """Reject unresolved parameter target paths in study setup."""
+        track = build_straight_track(length=250.0, sample_count=101)
+        config = build_simulation_config(
+            compute_backend="torch",
+            torch_device="cpu",
+            torch_compile=False,
+            max_speed=55.0,
+            initial_speed=0.0,
+        )
+        study_model = build_sensitivity_study_model(
+            model_factory=build_single_track_model,
+            model_inputs=self._single_track_study_inputs(),
+        )
+
+        with self.assertRaises(ConfigurationError):
+            run_lap_sensitivity_study(
+                track=track,
+                study_model=study_model,
+                simulation_config=config,
+                parameters=[
+                    SensitivityStudyParameter(
+                        name="invalid",
+                        target="vehicle.not_a_field",
+                    )
+                ],
+            )
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_run_lap_sensitivity_study_rejects_non_torch_backend(self) -> None:
+        """Require torch simulation backend for AD-first lap study API."""
+        track = build_straight_track(length=250.0, sample_count=101)
+        numpy_config = build_simulation_config(
+            compute_backend="numpy",
+            max_speed=55.0,
+            initial_speed=0.0,
+        )
+        study_model = build_sensitivity_study_model(
+            model_factory=build_single_track_model,
+            model_inputs=self._single_track_study_inputs(),
+        )
+
+        with self.assertRaises(ConfigurationError):
+            run_lap_sensitivity_study(
+                track=track,
+                study_model=study_model,
+                simulation_config=numpy_config,
+                parameters=[SensitivityStudyParameter(name="mass", target="vehicle.mass")],
+            )
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_run_lap_sensitivity_study_rejects_unknown_objective(self) -> None:
+        """Reject objective identifiers outside the supported lap-study set."""
+        track = build_straight_track(length=250.0, sample_count=101)
+        config = build_simulation_config(
+            compute_backend="torch",
+            torch_device="cpu",
+            torch_compile=False,
+            max_speed=55.0,
+            initial_speed=0.0,
+        )
+        study_model = build_sensitivity_study_model(
+            model_factory=build_single_track_model,
+            model_inputs=self._single_track_study_inputs(),
+        )
+
+        with self.assertRaises(ConfigurationError):
+            run_lap_sensitivity_study(
+                track=track,
+                study_model=study_model,
+                simulation_config=config,
+                parameters=[SensitivityStudyParameter(name="mass", target="vehicle.mass")],
+                objectives=("lap_time_s", "unknown"),
+            )
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_run_lap_sensitivity_study_matches_fd_for_lap_time(self) -> None:
+        """Keep FD and AD derivatives consistent for a real lap-time study objective."""
+        track = build_straight_track(length=350.0, sample_count=181)
+        config = build_simulation_config(
+            compute_backend="torch",
+            torch_device="cpu",
+            torch_compile=False,
+            max_speed=70.0,
+            initial_speed=0.0,
+        )
+        study_model = build_sensitivity_study_model(
+            model_factory=build_single_track_model,
+            model_inputs=self._single_track_study_inputs(),
+        )
+        parameters = [
+            SensitivityStudyParameter(name="mass", target="vehicle.mass"),
+            SensitivityStudyParameter(name="drag_coefficient", target="vehicle.drag_coefficient"),
+        ]
+
+        autodiff = run_lap_sensitivity_study(
+            track=track,
+            study_model=study_model,
+            simulation_config=config,
+            parameters=parameters,
+            objectives=("lap_time_s",),
+        )
+        finite_difference = run_lap_sensitivity_study(
+            track=track,
+            study_model=study_model,
+            simulation_config=config,
+            parameters=parameters,
+            objectives=("lap_time_s",),
+            runtime=SensitivityRuntime(method="finite_difference"),
+            numerics=SensitivityNumerics(
+                finite_difference_scheme="central",
+                finite_difference_relative_step=1e-4,
+                finite_difference_absolute_step=1e-6,
+            ),
+        )
+
+        ad_result = autodiff.sensitivity_results["lap_time_s"]
+        fd_result = finite_difference.sensitivity_results["lap_time_s"]
+        self.assertEqual(ad_result.method, "autodiff")
+        self.assertEqual(fd_result.method, "finite_difference")
+        self.assertAlmostEqual(ad_result.objective_value, fd_result.objective_value, places=9)
+        self.assertAlmostEqual(
+            ad_result.sensitivities["mass"],
+            fd_result.sensitivities["mass"],
+            delta=1e-4,
+        )
+        self.assertAlmostEqual(
+            ad_result.sensitivities["drag_coefficient"],
+            fd_result.sensitivities["drag_coefficient"],
+            delta=1e-4,
+        )
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_run_lap_sensitivity_study_energy_objective_is_autodiff(self) -> None:
+        """Compute energy sensitivities through the AD-first lap study interface."""
+        track = build_straight_track(length=300.0, sample_count=151)
+        config = build_simulation_config(
+            compute_backend="torch",
+            torch_device="cpu",
+            torch_compile=False,
+            max_speed=65.0,
+            initial_speed=0.0,
+        )
+        study_model = build_sensitivity_study_model(
+            model_factory=build_single_track_model,
+            model_inputs=self._single_track_study_inputs(),
+        )
+
+        study = run_lap_sensitivity_study(
+            track=track,
+            study_model=study_model,
+            simulation_config=config,
+            parameters=[
+                SensitivityStudyParameter(name="mass", target="vehicle.mass"),
+                SensitivityStudyParameter(
+                    name="drag_coefficient",
+                    target="vehicle.drag_coefficient",
+                ),
+            ],
+            objectives=("energy_kwh",),
+        )
+
+        result = study.sensitivity_results["energy_kwh"]
+        self.assertEqual(result.method, "autodiff")
+        self.assertGreater(result.objective_value, 0.0)
+        self.assertTrue(np.isfinite(result.sensitivities["mass"]))
+        self.assertTrue(np.isfinite(result.sensitivities["drag_coefficient"]))
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_run_lap_sensitivity_study_supports_point_mass_model(self) -> None:
+        """Run the high-level study API with a point-mass model and both objectives."""
+        track = build_straight_track(length=320.0, sample_count=161)
+        config = build_simulation_config(
+            compute_backend="torch",
+            torch_device="cpu",
+            torch_compile=False,
+            max_speed=70.0,
+            initial_speed=0.0,
+        )
+        study_model = build_sensitivity_study_model(
+            model_factory=build_point_mass_model,
+            model_inputs=self._point_mass_study_inputs(),
+            label="point-mass-study",
+        )
+
+        study = run_lap_sensitivity_study(
+            track=track,
+            study_model=study_model,
+            simulation_config=config,
+            parameters=[
+                SensitivityStudyParameter(name="mass", target="vehicle.mass"),
+                SensitivityStudyParameter(
+                    name="drag_coefficient",
+                    target="vehicle.drag_coefficient",
+                ),
+                SensitivityStudyParameter(
+                    name="friction_coefficient",
+                    target="physics.friction_coefficient",
+                ),
+            ],
+        )
+
+        self.assertEqual(set(study.sensitivity_results.keys()), {"lap_time_s", "energy_kwh"})
+        self.assertEqual(study.sensitivity_results["lap_time_s"].method, "autodiff")
+        self.assertEqual(study.sensitivity_results["energy_kwh"].method, "autodiff")
+        long_table = study.to_dataframe()
+        self.assertEqual(
+            set(long_table["objective"].unique().tolist()),
+            {"lap_time_s", "energy_kwh"},
+        )
+        self.assertEqual(
+            set(long_table["parameter"].unique().tolist()),
+            {"mass", "drag_coefficient", "friction_coefficient"},
+        )
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_run_lap_sensitivity_study_point_mass_ad_matches_fd(self) -> None:
+        """Match point-mass AD and FD sensitivities for a real lap-time study objective."""
+        track = build_straight_track(length=280.0, sample_count=141)
+        config = build_simulation_config(
+            compute_backend="torch",
+            torch_device="cpu",
+            torch_compile=False,
+            max_speed=62.0,
+            initial_speed=0.0,
+        )
+        study_model = build_sensitivity_study_model(
+            model_factory=build_point_mass_model,
+            model_inputs=self._point_mass_study_inputs(),
+        )
+        parameters = [
+            SensitivityStudyParameter(name="mass", target="vehicle.mass"),
+            SensitivityStudyParameter(name="drag_coefficient", target="vehicle.drag_coefficient"),
+        ]
+
+        autodiff = run_lap_sensitivity_study(
+            track=track,
+            study_model=study_model,
+            simulation_config=config,
+            parameters=parameters,
+            objectives=("lap_time_s",),
+        ).sensitivity_results["lap_time_s"]
+
+        finite_difference = run_lap_sensitivity_study(
+            track=track,
+            study_model=study_model,
+            simulation_config=config,
+            parameters=parameters,
+            objectives=("lap_time_s",),
+            runtime=SensitivityRuntime(method="finite_difference"),
+            numerics=SensitivityNumerics(
+                finite_difference_scheme="central",
+                finite_difference_relative_step=1e-4,
+                finite_difference_absolute_step=1e-6,
+            ),
+        ).sensitivity_results["lap_time_s"]
+
+        self.assertAlmostEqual(
+            autodiff.objective_value,
+            finite_difference.objective_value,
+            places=9,
+        )
+        self.assertAlmostEqual(
+            autodiff.sensitivities["mass"],
+            finite_difference.sensitivities["mass"],
+            delta=1e-4,
+        )
+        self.assertAlmostEqual(
+            autodiff.sensitivities["drag_coefficient"],
+            finite_difference.sensitivities["drag_coefficient"],
+            delta=1e-4,
+        )
 
 
 if __name__ == "__main__":
