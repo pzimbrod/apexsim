@@ -197,8 +197,10 @@ Explicit transient setup:
 
 ```python
 from apexsim.simulation import (
+    PidSpeedSchedule,
     TransientConfig,
     TransientNumericsConfig,
+    TransientPidGainSchedulingConfig,
     TransientRuntimeConfig,
     build_simulation_config,
 )
@@ -212,11 +214,52 @@ config_transient = build_simulation_config(
             integration_method="rk4",
             max_iterations=60,
             control_interval=8,  # optimize on coarser control mesh, then interpolate
+            pid_gain_scheduling_mode="off",  # legacy-compatible default
         ),
         runtime=TransientRuntimeConfig(
             ode_backend_policy="auto",
             optimizer_backend_policy="auto",
+            driver_model="pid",  # default
             verbosity=1,  # 1: optimizer progress, 2: +track progress
+        ),
+    ),
+)
+```
+
+Physics-informed PID scheduling (recommended start for transient PID studies):
+
+```python
+config_transient_pid_sched = build_simulation_config(
+    compute_backend="numpy",
+    solver_mode="transient_oc",
+    initial_speed=0.0,
+    transient=TransientConfig(
+        numerics=TransientNumericsConfig(
+            pid_gain_scheduling_mode="physics_informed",
+        ),
+    ),
+)
+```
+
+Custom PWL schedule example:
+
+```python
+custom_schedule = TransientPidGainSchedulingConfig(
+    longitudinal_kp=PidSpeedSchedule((0.0, 20.0, 60.0), (0.9, 0.8, 0.7)),
+    longitudinal_ki=PidSpeedSchedule((0.0, 20.0, 60.0), (0.03, 0.02, 0.01)),
+    longitudinal_kd=PidSpeedSchedule((0.0, 20.0, 60.0), (0.07, 0.06, 0.05)),
+    steer_kp=PidSpeedSchedule((0.0, 20.0, 60.0), (1.8, 1.4, 0.9)),
+    steer_ki=PidSpeedSchedule((0.0, 20.0, 60.0), (0.08, 0.05, 0.03)),
+    steer_kd=PidSpeedSchedule((0.0, 20.0, 60.0), (0.16, 0.12, 0.09)),
+    steer_vy_damping=PidSpeedSchedule((0.0, 20.0, 60.0), (0.2, 0.27, 0.35)),
+)
+config_transient_custom = build_simulation_config(
+    compute_backend="numpy",
+    solver_mode="transient_oc",
+    transient=TransientConfig(
+        numerics=TransientNumericsConfig(
+            pid_gain_scheduling_mode="custom",
+            pid_gain_scheduling=custom_schedule,
         ),
     ),
 )
@@ -261,6 +304,10 @@ standing starts with `initial_speed=0.0`).
 - `transient_oc`: transient dynamic solver mode.
   - Default driver model: PID (`TransientRuntimeConfig.driver_model="pid"`).
   - Optional full optimizer path: `driver_model="optimal_control"`.
+  - PID scheduling modes:
+    - `off` (default): scalar gains only.
+    - `physics_informed`: deterministic speed-dependent PWL schedule from vehicle physics.
+    - `custom`: user-provided `TransientPidGainSchedulingConfig`.
 
 Transient dependency note:
 

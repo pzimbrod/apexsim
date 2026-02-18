@@ -57,9 +57,12 @@ Terminology note:
 - `apexsim.simulation.NumericsConfig`
 - `apexsim.simulation.TransientConfig`
 - `apexsim.simulation.TransientNumericsConfig`
+- `apexsim.simulation.TransientPidGainSchedulingConfig`
 - `apexsim.simulation.TransientRuntimeConfig`
+- `apexsim.simulation.PidSpeedSchedule`
 - `apexsim.simulation.SimulationConfig`
 - `apexsim.simulation.build_simulation_config(...)`
+- `apexsim.simulation.build_physics_informed_pid_gain_scheduling(...)`
 - `apexsim.simulation.simulate_lap(track, model, config) -> LapResult`
 - `apexsim.simulation.solve_speed_profile_torch(track, model, config) -> TorchSpeedProfileResult`
 - `apexsim.simulation.solve_transient_lap_torch(track, model, config) -> TorchTransientProfileResult`
@@ -73,11 +76,21 @@ Backend runtime controls:
 - `RuntimeConfig.initial_speed`: optional start speed at first track sample [m/s]
   (supports `0.0` for standing starts)
 - `TransientRuntimeConfig.driver_model`: `"pid"` (default) or `"optimal_control"`
+- `TransientNumericsConfig.pid_gain_scheduling_mode`: `"off"` (default),
+  `"physics_informed"`, or `"custom"`
+- `TransientNumericsConfig.pid_gain_scheduling`: optional
+  `TransientPidGainSchedulingConfig` (required for `"custom"` mode)
 
 Constraint for differentiable solver use:
 
 - `solve_speed_profile_torch(...)` is the differentiable torch solver and requires
   `RuntimeConfig.torch_compile = False`
+
+`PidSpeedSchedule` defines one gain table:
+
+- `speed_nodes_mps`: strictly increasing speed nodes [m/s]
+- `values`: gain values at each node
+- interpolation: piecewise-linear with boundary clamping
 
 See [Compute Backends](BACKENDS.md) for selection guidance and benchmarks.
 

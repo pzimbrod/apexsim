@@ -307,3 +307,72 @@ Transient mode adds time/state/control traces in `LapResult`:
 - `time`
 - `vx`, `vy`, `yaw_rate`
 - `steer_cmd`, `ax_cmd`
+
+### 11.5 PID Gain Scheduling
+
+The default transient driver is PID. ApexSim supports optional speed-dependent
+gain scheduling with piecewise-linear (PWL) tables:
+$$
+k(v) = \operatorname{interp}(v;\, v_{\text{nodes}}, k_{\text{nodes}})
+$$
+with boundary clamping at the first/last node.
+
+Scheduling modes in `TransientNumericsConfig`:
+
+- `off`: scalar gains only (legacy-compatible behavior).
+- `physics_informed`: deterministic schedule generated from vehicle physics.
+- `custom`: user-provided `TransientPidGainSchedulingConfig`.
+
+Physics-informed longitudinal scaling at node $v_j$:
+$$
+a_+(v_j) = a_{x,\max}(v_j, a_y=0, \theta=0, \beta=0), \quad
+a_-(v_j) = a_{x,\min}(v_j, a_y=0, \theta=0, \beta=0),
+$$
+$$
+a_{\text{eff}}(v_j) = \frac{a_+(v_j) + a_-(v_j)}{2}, \quad
+s_a(v_j) = \frac{a_{\text{eff}}(v_j)}{a_{\text{eff}}(v_{\text{ref}})}.
+$$
+The scheduled gains are:
+$$
+k_{p,\text{long}}(v_j) = k_{p,0}\,\operatorname{clip}(s_a, s_{\min}, s_{\max}),
+$$
+$$
+k_{i,\text{long}}(v_j) = k_{i,0}\,\operatorname{clip}(s_a, s_{\min}, s_{\max}),
+$$
+$$
+k_{d,\text{long}}(v_j) = k_{d,0}\,\operatorname{clip}(\sqrt{s_a}, s_{d,\min}, s_{d,\max}).
+$$
+
+Single-track steering scaling uses speed normalization:
+$$
+s_v(v_j) = \frac{v_{\text{ref}}}{\max(v_j, v_{\min})}.
+$$
+This yields:
+$$
+k_{p,\delta}(v_j) = k_{p,0}\,\operatorname{clip}(s_v, s_{kp,\min}, s_{kp,\max}),
+$$
+$$
+k_{i,\delta}(v_j) = k_{i,0}\,\operatorname{clip}(s_v, s_{ki,\min}, s_{ki,\max}),
+$$
+$$
+k_{d,\delta}(v_j) = k_{d,0}\,\operatorname{clip}(\sqrt{s_v}, s_{kd,\min}, s_{kd,\max}),
+$$
+$$
+k_{v_y}(v_j) = k_{v_y,0}\,\operatorname{clip}\!\left(
+1 + c_{v_y}\frac{v_j}{v_{\text{ref}}},
+s_{vy,\min},
+s_{vy,\max}
+\right).
+$$
+
+Default node set:
+$$
+v_{\text{nodes}} = (0,\,10,\,20,\,35,\,55,\,v_{\max})\ \text{m/s}
+$$
+(intermediate nodes above $v_{\max}$ are omitted).
+
+Rationale:
+
+- Longitudinal gains rise with available traction/braking authority.
+- Steering gains decrease with speed because yaw response sensitivity grows.
+- Lateral-velocity damping increases with speed to stabilize transient sideslip.

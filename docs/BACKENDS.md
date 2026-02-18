@@ -25,6 +25,8 @@ The runtime validator enforces this policy:
   backend-specific extras:
   - `numpy` and `numba`: `scipy`
   - `torch`: `torchdiffeq`
+- `TransientNumericsConfig.pid_gain_scheduling_mode` is supported in PID mode
+  on all three backends (`numpy`, `numba`, `torch`).
 
 ## Current model support
 
