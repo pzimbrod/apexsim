@@ -5,6 +5,7 @@
 </p>
 
 [![CI](https://github.com/pzimbrod/apexsim/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/pzimbrod/apexsim/actions/workflows/ci.yml)
+[![Coverage](https://raw.githubusercontent.com/pzimbrod/apexsim/main/.github/badges/coverage.svg)](https://github.com/pzimbrod/apexsim/actions/workflows/ci.yml)
 [![Docs Dev](https://img.shields.io/badge/docs-dev-1f6feb)](https://pzimbrod.github.io/apexsim/dev/)
 [![Docs Stable](https://img.shields.io/badge/docs-stable-2ea043)](https://pzimbrod.github.io/apexsim/stable/)
 

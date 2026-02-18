@@ -12,6 +12,7 @@ examples/output/
 .coverage
 htmlcov/
 coverage.xml
+coverage.json
 build/
 dist/
 site/

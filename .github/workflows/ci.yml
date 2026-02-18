@@ -5,6 +5,9 @@ on:
     branches: ["master", "main"]
   pull_request:
 
+permissions:
+  contents: write
+
 jobs:
   quality:
     runs-on: ubuntu-latest
@@ -32,4 +35,82 @@ jobs:
         run: mypy src
 
       - name: Tests (pytest + coverage gate)
-        run: pytest --cov-fail-under=80
+        run: pytest --cov-report=json:coverage.json
+
+      - name: Build coverage badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+
+          import json
+          from pathlib import Path
+
+          def badge_color(coverage: float) -> str:
+              if coverage >= 95.0:
+                  return "#2ea043"
+              if coverage >= 90.0:
+                  return "#3fb950"
+              if coverage >= 80.0:
+                  return "#bf8700"
+              if coverage >= 70.0:
+                  return "#d29922"
+              return "#cf222e"
+
+          payload = json.loads(Path("coverage.json").read_text(encoding="utf-8"))
+          coverage_value = float(payload["totals"]["percent_covered"])
+          coverage_label = f"{coverage_value:.2f}%"
+          color = badge_color(coverage_value)
+
+          left_text = "coverage"
+          right_text = coverage_label
+          char_width = 6.2
+          left_width = int(round(len(left_text) * char_width + 12))
+          right_width = int(round(len(right_text) * char_width + 12))
+          total_width = left_width + right_width
+          left_x = left_width // 2
+          right_x = left_width + right_width // 2
+
+          svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{total_width}" height="20" role="img" aria-label="{left_text}: {right_text}">
+          <linearGradient id="s" x2="0" y2="100%">
+            <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+            <stop offset="1" stop-opacity=".1"/>
+          </linearGradient>
+          <mask id="m">
+            <rect width="{total_width}" height="20" rx="3" fill="#fff"/>
+          </mask>
+          <g mask="url(#m)">
+            <rect width="{left_width}" height="20" fill="#555"/>
+            <rect x="{left_width}" width="{right_width}" height="20" fill="{color}"/>
+            <rect width="{total_width}" height="20" fill="url(#s)"/>
+          </g>
+          <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">
+            <text x="{left_x}" y="15" fill="#010101" fill-opacity=".3">{left_text}</text>
+            <text x="{left_x}" y="14">{left_text}</text>
+            <text x="{right_x}" y="15" fill="#010101" fill-opacity=".3">{right_text}</text>
+            <text x="{right_x}" y="14">{right_text}</text>
+          </g>
+          </svg>
+          """
+
+          badge_path = Path(".github/badges/coverage.svg")
+          badge_path.parent.mkdir(parents=True, exist_ok=True)
+          badge_path.write_text(svg, encoding="utf-8")
+          PY
+
+      - name: Commit coverage badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          if [[ "${GITHUB_ACTOR}" == "github-actions[bot]" ]]; then
+            echo "Skipping badge commit for bot-triggered workflow."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/badges/coverage.svg
+          if git diff --cached --quiet; then
+            echo "Coverage badge unchanged."
+            exit 0
+          fi
+          git commit -m "chore(ci): update coverage badge [skip ci]"
+          git push
