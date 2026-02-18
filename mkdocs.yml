@@ -68,7 +68,12 @@ nav:
   - Examples:
       - Overview: EXAMPLES.md
       - Synthetic Tracks: EXAMPLES_SYNTHETIC.md
-      - Spa-Francorchamps: EXAMPLES_SPA.md
+      - Spa:
+          - Overview: examples/spa/index.md
+          - Single-Track Lap: examples/spa/single_track_lap.md
+          - Point-Mass Lap: examples/spa/point_mass_lap.md
+          - Model Comparison: examples/spa/model_comparison.md
+          - Performance Envelope: examples/spa/performance_envelope.md
   - Vehicle Models:
       - Single-Track Model: SINGLE_TRACK_MODEL.md
       - Point-Mass Model: POINT_MASS_MODEL.md

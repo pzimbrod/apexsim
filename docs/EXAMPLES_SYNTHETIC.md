@@ -162,7 +162,7 @@ Expected:
 
 ## 10. Suggested next step
 
-After this tutorial, continue with [Spa Walkthrough](EXAMPLES_SPA.md).
+After this tutorial, continue with [Spa Walkthrough](examples/spa/index.md).
 
 ## Run command
 

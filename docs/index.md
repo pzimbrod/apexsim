@@ -18,7 +18,7 @@ interchangeable vehicle models.
 - [API Overview](API.md)
 - [Examples Overview](EXAMPLES.md)
 - [Synthetic Track Walkthrough](EXAMPLES_SYNTHETIC.md)
-- [Spa Walkthrough](EXAMPLES_SPA.md)
+- [Spa Walkthrough](examples/spa/index.md)
 - [Solver Derivation](SOLVER.md)
 - [Single-Track Model](SINGLE_TRACK_MODEL.md)
 - [Point-Mass Model](POINT_MASS_MODEL.md)

@@ -15,7 +15,7 @@ After finishing all example pages, you should be able to:
 ## Recommended tutorial sequence
 
 1. [Synthetic Track Walkthrough](EXAMPLES_SYNTHETIC.md)
-2. [Spa Walkthrough](EXAMPLES_SPA.md)
+2. [Spa Walkthrough](examples/spa/index.md)
 
 Reason:
 
