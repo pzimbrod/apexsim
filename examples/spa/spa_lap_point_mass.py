@@ -3,43 +3,15 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
+
+from common import example_vehicle_parameters, spa_output_root, spa_track_path
 
 from pylapsim.analysis import compute_kpis, export_standard_plots
 from pylapsim.analysis.export import export_kpi_json
 from pylapsim.simulation import build_simulation_config, simulate_lap
 from pylapsim.track import load_track_csv
 from pylapsim.utils import configure_logging
-from pylapsim.utils.constants import STANDARD_AIR_DENSITY
-from pylapsim.vehicle import PointMassPhysics, VehicleParameters, build_point_mass_model
-
-
-def _example_vehicle_parameters() -> VehicleParameters:
-    """Create explicit vehicle parameters used by the Spa example.
-
-    Returns:
-        Vehicle parameter set for the example run.
-    """
-    return VehicleParameters(
-        mass=798.0,
-        yaw_inertia=1120.0,
-        cg_height=0.31,
-        wheelbase=3.60,
-        front_track=1.60,
-        rear_track=1.55,
-        front_weight_fraction=0.46,
-        cop_position=0.10,
-        lift_coefficient=3.20,
-        drag_coefficient=0.90,
-        frontal_area=1.50,
-        roll_rate=4200.0,
-        front_spring_rate=180000.0,
-        rear_spring_rate=165000.0,
-        front_arb_distribution=0.55,
-        front_ride_height=0.030,
-        rear_ride_height=0.050,
-        air_density=STANDARD_AIR_DENSITY,
-    )
+from pylapsim.vehicle import PointMassPhysics, build_point_mass_model
 
 
 def main() -> None:
@@ -47,9 +19,8 @@ def main() -> None:
     configure_logging(logging.INFO)
     logger = logging.getLogger("spa_point_mass_example")
 
-    project_root = Path(__file__).resolve().parents[1]
-    track = load_track_csv(project_root / "data" / "spa_francorchamps.csv")
-    vehicle = _example_vehicle_parameters()
+    track = load_track_csv(spa_track_path())
+    vehicle = example_vehicle_parameters()
 
     model = build_point_mass_model(
         vehicle=vehicle,
@@ -63,7 +34,7 @@ def main() -> None:
     result = simulate_lap(track=track, model=model, config=config)
     kpis = compute_kpis(result)
 
-    output_dir = project_root / "examples" / "output" / "point_mass"
+    output_dir = spa_output_root() / "point_mass"
     export_standard_plots(result, output_dir)
     export_kpi_json(kpis, output_dir / "kpis.json")
 

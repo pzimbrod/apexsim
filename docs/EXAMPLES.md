@@ -26,12 +26,14 @@ Reason:
 
 - `examples/synthetic_track_scenarios.py`
   - "Is my model setup physically consistent on canonical test geometries?"
-- `examples/spa_lap_single_track.py`
+- `examples/spa/spa_lap_single_track.py`
   - "What does the single-track model predict on a realistic circuit?"
-- `examples/spa_lap_point_mass.py`
+- `examples/spa/spa_lap_point_mass.py`
   - "What is the low-complexity baseline on the same circuit?"
-- `examples/spa_model_comparison.py`
+- `examples/spa/spa_model_comparison.py`
   - "What do I gain from additional model fidelity?"
+- `examples/spa/spa_performance_envelope.py`
+  - "How does the speed-dependent G-G envelope differ by model complexity?"
 - `examples/backend_benchmarks.py`
   - "Which compute backend should I use for my workload?"
 
@@ -50,7 +52,8 @@ Reason:
 
 ## Output structure
 
-All scripts export into `examples/output/` with consistent folder logic.
+All scripts export into `examples/output/` with consistent folder logic
+(`examples/output/spa/` for Spa-specific workflows).
 Typical artifacts:
 
 - `kpis.json`

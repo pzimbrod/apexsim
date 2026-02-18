@@ -137,6 +137,6 @@ The comparison example uses this calibration before running the point-mass model
 ## 9. Example
 
 - Point-mass standalone usage:
-  `examples/spa_lap_point_mass.py`
+  `examples/spa/spa_lap_point_mass.py`
 - Side-by-side comparison against single-track model:
-  `examples/spa_model_comparison.py`
+  `examples/spa/spa_model_comparison.py`

@@ -38,17 +38,19 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -e '.[dev]'
 pytest
-python examples/spa_lap_single_track.py
-python examples/spa_lap_point_mass.py
-python examples/spa_model_comparison.py
+python examples/spa/spa_lap_single_track.py
+python examples/spa/spa_lap_point_mass.py
+python examples/spa/spa_model_comparison.py
+python examples/spa/spa_performance_envelope.py
 python examples/synthetic_track_scenarios.py
 ```
 
 ## Example Scripts
 
-- `examples/spa_lap_single_track.py`: Single-track model end-to-end run with KPI/plot export.
-- `examples/spa_lap_point_mass.py`: Point-mass model end-to-end run with KPI/plot export.
-- `examples/spa_model_comparison.py`: Side-by-side single-track vs calibrated point-mass comparison with KPI deltas and speed-trace overlay.
+- `examples/spa/spa_lap_single_track.py`: Single-track model end-to-end run with KPI/plot export.
+- `examples/spa/spa_lap_point_mass.py`: Point-mass model end-to-end run with KPI/plot export.
+- `examples/spa/spa_model_comparison.py`: Side-by-side single-track vs calibrated point-mass comparison with KPI deltas and speed-trace overlay.
+- `examples/spa/spa_performance_envelope.py`: Velocity-dependent envelope generation and export (NumPy + optional CSV).
 - `examples/synthetic_track_scenarios.py`: Straight, circle, and figure-eight benchmark runs for physical-consistency inspection.
 - `examples/backend_benchmarks.py`: Quantitative timing comparison for NumPy, Numba, and Torch backends.
 

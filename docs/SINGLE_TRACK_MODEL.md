@@ -181,6 +181,6 @@ analysis diagnostics (e.g., yaw-moment traces).
 ## 8. Example
 
 - Single-track standalone usage:
-  `examples/spa_lap_single_track.py`
+  `examples/spa/spa_lap_single_track.py`
 - Side-by-side comparison against point-mass model:
-  `examples/spa_model_comparison.py`
+  `examples/spa/spa_model_comparison.py`

@@ -9,6 +9,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from common import example_vehicle_parameters, spa_output_root, spa_track_path
 
 from pylapsim.analysis import compute_kpis, export_standard_plots
 from pylapsim.analysis.export import export_kpi_json
@@ -17,43 +18,13 @@ from pylapsim.simulation.runner import LapResult
 from pylapsim.tire import default_axle_tire_parameters
 from pylapsim.track import load_track_csv
 from pylapsim.utils import configure_logging
-from pylapsim.utils.constants import STANDARD_AIR_DENSITY
 from pylapsim.vehicle import (
     PointMassPhysics,
     SingleTrackPhysics,
-    VehicleParameters,
     build_point_mass_model,
     build_single_track_model,
     calibrate_point_mass_friction_to_single_track,
 )
-
-
-def _example_vehicle_parameters() -> VehicleParameters:
-    """Create explicit vehicle parameters used by the Spa examples.
-
-    Returns:
-        Vehicle parameter set for the example runs.
-    """
-    return VehicleParameters(
-        mass=798.0,
-        yaw_inertia=1120.0,
-        cg_height=0.31,
-        wheelbase=3.60,
-        front_track=1.60,
-        rear_track=1.55,
-        front_weight_fraction=0.46,
-        cop_position=0.10,
-        lift_coefficient=3.20,
-        drag_coefficient=0.90,
-        frontal_area=1.50,
-        roll_rate=4200.0,
-        front_spring_rate=180000.0,
-        rear_spring_rate=165000.0,
-        front_arb_distribution=0.55,
-        front_ride_height=0.030,
-        rear_ride_height=0.050,
-        air_density=STANDARD_AIR_DENSITY,
-    )
 
 
 def _export_speed_comparison_plot(
@@ -126,12 +97,11 @@ def main() -> None:
     configure_logging(logging.INFO)
     logger = logging.getLogger("spa_model_comparison")
 
-    project_root = Path(__file__).resolve().parents[1]
-    output_dir = project_root / "examples" / "output" / "comparison"
+    output_dir = spa_output_root() / "comparison"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    track = load_track_csv(project_root / "data" / "spa_francorchamps.csv")
-    vehicle = _example_vehicle_parameters()
+    track = load_track_csv(spa_track_path())
+    vehicle = example_vehicle_parameters()
     config = build_simulation_config()
     tires = default_axle_tire_parameters()
     single_track_physics = SingleTrackPhysics()

@@ -292,5 +292,5 @@ Before using results for decisions:
 
 1. Read [Synthetic Track Walkthrough](EXAMPLES_SYNTHETIC.md).
 2. Run [Spa Walkthrough](EXAMPLES_SPA.md).
-3. Compare model complexity with `examples/spa_model_comparison.py`.
+3. Compare model complexity with `examples/spa/spa_model_comparison.py`.
 4. Move from default tire/model settings to identified vehicle data.

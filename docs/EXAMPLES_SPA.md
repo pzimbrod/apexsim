@@ -12,9 +12,10 @@ Use this after the synthetic-track tutorial.
 - Build a reproducible model-comparison workflow.
 - Interpret outputs within the limits of a quasi-steady solver.
 
-## 1. Shared workflow across all Spa scripts
+## 1. Shared workflow across Spa lap scripts
 
-Each script follows the same structure:
+The lap-focused scripts (`spa_lap_single_track.py`, `spa_lap_point_mass.py`,
+`spa_model_comparison.py`) follow the same structure:
 
 1. Load Spa track CSV.
 2. Create vehicle/model inputs.
@@ -22,9 +23,10 @@ Each script follows the same structure:
 4. Run `simulate_lap(...)`.
 5. Export plots and KPI JSON.
 
-Only the vehicle-model backend differs.
+The performance-envelope script builds on the same vehicle setup but performs
+envelope sampling instead of lap solving.
 
-## 2. `examples/spa_lap_single_track.py` (single-track baseline)
+## 2. `examples/spa/spa_lap_single_track.py` (single-track baseline)
 
 ### 2.1 Why start here?
 
@@ -36,13 +38,13 @@ standard pipeline.
 - Load track:
 
 ```python
-track = load_track_csv(project_root / "data" / "spa_francorchamps.csv")
+track = load_track_csv(spa_track_path())
 ```
 
 - Build inputs:
 
 ```python
-vehicle = _example_vehicle_parameters()
+vehicle = example_vehicle_parameters()
 tires = default_axle_tire_parameters()
 model = build_single_track_model(vehicle=vehicle, tires=tires, physics=SingleTrackPhysics())
 ```
@@ -75,7 +77,7 @@ export_kpi_json(kpis, output_dir / "kpis.json")
 - advanced powertrain/energy strategy effects,
 - full multi-body suspension compliance.
 
-## 3. `examples/spa_lap_point_mass.py` (fast baseline)
+## 3. `examples/spa/spa_lap_point_mass.py` (fast baseline)
 
 ### 3.1 Purpose
 
@@ -102,7 +104,7 @@ model = build_point_mass_model(
 - no yaw-state dynamics,
 - yaw moment reported as zero by construction.
 
-## 4. `examples/spa_model_comparison.py` (tradeoff study)
+## 4. `examples/spa/spa_model_comparison.py` (tradeoff study)
 
 ### 4.1 Why this script matters
 
@@ -121,7 +123,26 @@ It demonstrates how to quantify value added by model complexity, not just compar
 - `speed_trace_comparison.png`
 - per-model KPI JSON and plots under comparison folders.
 
-## 5. Parameter tuning order for a new vehicle
+## 5. `examples/spa/spa_performance_envelope.py` (speed-dependent G-G families)
+
+### 5.1 Why this script matters
+
+It demonstrates the new Performance-Envelope API on realistic vehicle setups:
+
+1. Build single-track model.
+2. Calibrate a point-mass model against single-track lateral limits.
+3. Compute speed-dependent G-G envelopes for both models.
+4. Export array-based and optional tabular artifacts.
+
+### 5.2 Key outputs to inspect
+
+- `single_track_envelope.npz`
+- `point_mass_envelope.npz`
+- `envelope_family_comparison.png`
+- optional CSV exports (if pandas is installed)
+- `summary.json`
+
+## 6. Parameter tuning order for a new vehicle
 
 Recommended order:
 
@@ -132,14 +153,14 @@ Recommended order:
 
 This minimizes risk of hiding physical mis-modeling behind numerical tuning.
 
-## 6. How to read Spa results correctly
+## 7. How to read Spa results correctly
 
 1. Lap time alone is not enough; inspect speed trace shape and acceleration envelopes.
 2. Compare where models differ along track distance, not only global KPIs.
 3. Treat yaw-moment plots only as meaningful for models that represent yaw dynamics.
 4. Validate magnitude ranges against known class-level expectations.
 
-## 7. Practical limitations to keep in mind
+## 8. Practical limitations to keep in mind
 
 Even with single-track model, this remains a quasi-steady solver workflow.
 Use caution when drawing conclusions about:
@@ -148,17 +169,19 @@ Use caution when drawing conclusions about:
 - fine control-system behavior,
 - sub-second event details.
 
-## 8. Suggested study workflow
+## 9. Suggested study workflow
 
-1. Start from `spa_lap_single_track.py`.
-2. Run `spa_lap_point_mass.py`.
-3. Run `spa_model_comparison.py`.
-4. Calibrate/adjust parameters and rerun all three for consistency.
+1. Start from `spa/spa_lap_single_track.py`.
+2. Run `spa/spa_lap_point_mass.py`.
+3. Run `spa/spa_model_comparison.py`.
+4. Run `spa/spa_performance_envelope.py`.
+5. Calibrate/adjust parameters and rerun for consistency.
 
 ## Run commands
 
 ```bash
-python examples/spa_lap_single_track.py
-python examples/spa_lap_point_mass.py
-python examples/spa_model_comparison.py
+python examples/spa/spa_lap_single_track.py
+python examples/spa/spa_lap_point_mass.py
+python examples/spa/spa_model_comparison.py
+python examples/spa/spa_performance_envelope.py
 ```
