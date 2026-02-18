@@ -1,3 +1,3 @@
 # Vehicle
 
-::: pylapsim.vehicle
+::: apexsim.vehicle

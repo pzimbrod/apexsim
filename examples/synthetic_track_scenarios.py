@@ -9,19 +9,19 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 
-from pylapsim.analysis import compute_kpis, export_standard_plots
-from pylapsim.analysis.export import export_kpi_json
-from pylapsim.simulation import build_simulation_config, simulate_lap
-from pylapsim.simulation.runner import LapResult
-from pylapsim.tire import default_axle_tire_parameters
-from pylapsim.track import (
+from apexsim.analysis import compute_kpis, export_standard_plots
+from apexsim.analysis.export import export_kpi_json
+from apexsim.simulation import build_simulation_config, simulate_lap
+from apexsim.simulation.runner import LapResult
+from apexsim.tire import default_axle_tire_parameters
+from apexsim.track import (
     build_circular_track,
     build_figure_eight_track,
     build_straight_track,
 )
-from pylapsim.utils import configure_logging
-from pylapsim.utils.constants import STANDARD_AIR_DENSITY
-from pylapsim.vehicle import (
+from apexsim.utils import configure_logging
+from apexsim.utils.constants import STANDARD_AIR_DENSITY
+from apexsim.vehicle import (
     SingleTrackPhysics,
     VehicleParameters,
     build_single_track_model,

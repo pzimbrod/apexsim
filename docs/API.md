@@ -8,7 +8,7 @@ If you are new to the package, start with [How to Use](HOW_TO_USE.md).
 
 ### Load measured/real track data
 
-- `pylapsim.track.load_track_csv(path) -> TrackData`
+- `apexsim.track.load_track_csv(path) -> TrackData`
 
 Required CSV columns:
 
@@ -19,26 +19,26 @@ Required CSV columns:
 
 ### Generate synthetic validation tracks
 
-- `pylapsim.track.build_straight_track(...) -> TrackData`
-- `pylapsim.track.build_circular_track(...) -> TrackData`
-- `pylapsim.track.build_figure_eight_track(...) -> TrackData`
+- `apexsim.track.build_straight_track(...) -> TrackData`
+- `apexsim.track.build_circular_track(...) -> TrackData`
+- `apexsim.track.build_figure_eight_track(...) -> TrackData`
 
 ## 2. Vehicle and tire models
 
 ### Shared physical vehicle parameters
 
-- `pylapsim.vehicle.VehicleParameters`
+- `apexsim.vehicle.VehicleParameters`
 
 ### Tire parameters
 
-- `pylapsim.tire.default_axle_tire_parameters() -> AxleTireParameters`
+- `apexsim.tire.default_axle_tire_parameters() -> AxleTireParameters`
 
 ### Single-track backend
 
-- `pylapsim.vehicle.SingleTrackModel(vehicle, tires, physics, numerics)`
-- `pylapsim.vehicle.SingleTrackPhysics`
-- `pylapsim.vehicle.SingleTrackNumerics`
-- `pylapsim.vehicle.build_single_track_model(vehicle, tires, physics=None, numerics=None)`
+- `apexsim.vehicle.SingleTrackModel(vehicle, tires, physics, numerics)`
+- `apexsim.vehicle.SingleTrackPhysics`
+- `apexsim.vehicle.SingleTrackNumerics`
+- `apexsim.vehicle.build_single_track_model(vehicle, tires, physics=None, numerics=None)`
 
 Terminology note:
 
@@ -46,18 +46,18 @@ Terminology note:
 
 ### Point-mass backend
 
-- `pylapsim.vehicle.PointMassModel(vehicle, physics)`
-- `pylapsim.vehicle.PointMassPhysics`
-- `pylapsim.vehicle.build_point_mass_model(vehicle, physics=None)`
-- `pylapsim.vehicle.calibrate_point_mass_friction_to_single_track(vehicle, tires, ...)`
+- `apexsim.vehicle.PointMassModel(vehicle, physics)`
+- `apexsim.vehicle.PointMassPhysics`
+- `apexsim.vehicle.build_point_mass_model(vehicle, physics=None)`
+- `apexsim.vehicle.calibrate_point_mass_friction_to_single_track(vehicle, tires, ...)`
 
 ## 3. Simulation setup and run
 
-- `pylapsim.simulation.RuntimeConfig`
-- `pylapsim.simulation.NumericsConfig`
-- `pylapsim.simulation.SimulationConfig`
-- `pylapsim.simulation.build_simulation_config(...)`
-- `pylapsim.simulation.simulate_lap(track, model, config) -> LapResult`
+- `apexsim.simulation.RuntimeConfig`
+- `apexsim.simulation.NumericsConfig`
+- `apexsim.simulation.SimulationConfig`
+- `apexsim.simulation.build_simulation_config(...)`
+- `apexsim.simulation.simulate_lap(track, model, config) -> LapResult`
 
 Backend runtime controls:
 
@@ -77,14 +77,14 @@ Vehicle-model solver contract:
 
 ## 4. Postprocessing
 
-- `pylapsim.analysis.compute_kpis(result) -> KpiSummary`
-- `pylapsim.analysis.export_standard_plots(result, output_dir)`
-- `pylapsim.analysis.export.export_kpi_json(kpis, path)`
-- `pylapsim.analysis.compute_performance_envelope(model, ...) -> PerformanceEnvelopeResult`
-- `pylapsim.analysis.PerformanceEnvelopePhysics`
-- `pylapsim.analysis.PerformanceEnvelopeNumerics`
-- `pylapsim.analysis.PerformanceEnvelopeRuntime`
-- `pylapsim.analysis.build_performance_envelope_config(...) -> PerformanceEnvelopeConfig`
+- `apexsim.analysis.compute_kpis(result) -> KpiSummary`
+- `apexsim.analysis.export_standard_plots(result, output_dir)`
+- `apexsim.analysis.export.export_kpi_json(kpis, path)`
+- `apexsim.analysis.compute_performance_envelope(model, ...) -> PerformanceEnvelopeResult`
+- `apexsim.analysis.PerformanceEnvelopePhysics`
+- `apexsim.analysis.PerformanceEnvelopeNumerics`
+- `apexsim.analysis.PerformanceEnvelopeRuntime`
+- `apexsim.analysis.build_performance_envelope_config(...) -> PerformanceEnvelopeConfig`
 
 `LapResult` provides:
 

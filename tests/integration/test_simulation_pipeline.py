@@ -8,17 +8,17 @@ from pathlib import Path
 
 import numpy as np
 
-from pylapsim.analysis.kpi import compute_kpis
-from pylapsim.simulation.config import (
+from apexsim.analysis.kpi import compute_kpis
+from apexsim.simulation.config import (
     NumericsConfig,
     RuntimeConfig,
     SimulationConfig,
     build_simulation_config,
 )
-from pylapsim.simulation.runner import simulate_lap
-from pylapsim.tire.models import default_axle_tire_parameters
-from pylapsim.track.io import load_track_csv
-from pylapsim.vehicle import SingleTrackModel, SingleTrackNumerics, SingleTrackPhysics
+from apexsim.simulation.runner import simulate_lap
+from apexsim.tire.models import default_axle_tire_parameters
+from apexsim.track.io import load_track_csv
+from apexsim.vehicle import SingleTrackModel, SingleTrackNumerics, SingleTrackPhysics
 from tests.helpers import sample_vehicle_parameters
 
 NUMBA_AVAILABLE = importlib.util.find_spec("numba") is not None

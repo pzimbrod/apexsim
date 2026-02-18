@@ -4,15 +4,15 @@ from __future__ import annotations
 
 import unittest
 
-from pylapsim.tire import default_axle_tire_parameters
-from pylapsim.utils.constants import GRAVITY
-from pylapsim.vehicle.aero import aero_forces
-from pylapsim.vehicle.single_track.dynamics import (
+from apexsim.tire import default_axle_tire_parameters
+from apexsim.utils.constants import GRAVITY
+from apexsim.vehicle.aero import aero_forces
+from apexsim.vehicle.single_track.dynamics import (
     ControlInput,
     SingleTrackDynamicsModel,
     VehicleState,
 )
-from pylapsim.vehicle.single_track.load_transfer import estimate_normal_loads
+from apexsim.vehicle.single_track.load_transfer import estimate_normal_loads
 from tests.helpers import sample_vehicle_parameters
 
 

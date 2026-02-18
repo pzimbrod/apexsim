@@ -6,13 +6,13 @@ import unittest
 
 import numpy as np
 
-from pylapsim.simulation import build_simulation_config, simulate_lap
-from pylapsim.track import (
+from apexsim.simulation import build_simulation_config, simulate_lap
+from apexsim.track import (
     build_circular_track,
     build_figure_eight_track,
     build_straight_track,
 )
-from pylapsim.vehicle import PointMassPhysics, build_point_mass_model
+from apexsim.vehicle import PointMassPhysics, build_point_mass_model
 from tests.helpers import sample_vehicle_parameters
 
 INTERIOR_TRIM = 30

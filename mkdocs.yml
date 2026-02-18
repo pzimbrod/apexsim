@@ -1,11 +1,13 @@
-site_name: PyLapSim
+site_name: ApexSim
 site_description: Lap time simulation library with interchangeable vehicle models
-site_url: https://pzimbrod.github.io/pylapsim/
-repo_url: https://github.com/pzimbrod/pylapsim
-repo_name: pzimbrod/pylapsim
+site_url: https://pzimbrod.github.io/apexsim/
+repo_url: https://github.com/pzimbrod/apexsim
+repo_name: pzimbrod/apexsim
 
 theme:
   name: material
+  logo: assets/icon.svg
+  favicon: assets/icon.svg
   palette:
     - media: "(prefers-color-scheme)"
       toggle:
@@ -71,7 +73,7 @@ nav:
       - Single-Track Model: SINGLE_TRACK_MODEL.md
       - Point-Mass Model: POINT_MASS_MODEL.md
   - API Reference:
-      - Package: reference/pylapsim.md
+      - Package: reference/apexsim.md
       - Simulation: reference/simulation.md
       - Vehicle: reference/vehicle.md
       - Tire: reference/tire.md

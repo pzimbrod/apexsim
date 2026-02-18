@@ -10,17 +10,17 @@ from unittest.mock import patch
 
 import numpy as np
 
-from pylapsim.simulation import numba_profile, torch_profile
-from pylapsim.simulation.config import build_simulation_config
-from pylapsim.simulation.numba_profile import (
+from apexsim.simulation import numba_profile, torch_profile
+from apexsim.simulation.config import build_simulation_config
+from apexsim.simulation.numba_profile import (
     _compiled_numba_kernel,
     _compiled_single_track_numba_kernel,
     _point_mass_speed_profile_kernel,
     _single_track_speed_profile_kernel,
     solve_speed_profile_numba,
 )
-from pylapsim.track.io import load_track_csv
-from pylapsim.utils.exceptions import ConfigurationError
+from apexsim.track.io import load_track_csv
+from apexsim.utils.exceptions import ConfigurationError
 
 NUMBA_AVAILABLE = importlib.util.find_spec("numba") is not None
 

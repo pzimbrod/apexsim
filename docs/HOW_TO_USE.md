@@ -1,12 +1,12 @@
-# How to Use PyLapSim
+# How to Use ApexSim
 
 This guide is a practical, engineer-oriented walkthrough of the complete workflow.
 It is written for race engineers and Students who may have strong dynamics knowledge
 but limited software background.
 
-## What PyLapSim is designed to do
+## What ApexSim is designed to do
 
-PyLapSim is optimized for fast, physically grounded lap-time studies with modular
+ApexSim is optimized for fast, physically grounded lap-time studies with modular
 vehicle models.
 
 Main strengths:
@@ -17,7 +17,7 @@ Main strengths:
 - Reproducible engineering outputs (KPIs + standardized plots).
 - Fast iteration loops for setup changes and what-if studies.
 
-## What PyLapSim does not do (yet)
+## What ApexSim does not do (yet)
 
 Current model boundaries are important for correct interpretation:
 
@@ -29,7 +29,7 @@ Current model boundaries are important for correct interpretation:
 
 Interpretation rule:
 
-- Use PyLapSim for comparative setup studies and first-order lap-time sensitivity,
+- Use ApexSim for comparative setup studies and first-order lap-time sensitivity,
   not as final truth for every transient detail.
 
 ## The 6-step workflow (always the same)
@@ -48,13 +48,13 @@ This pattern is identical across all examples.
 ```python
 from pathlib import Path
 
-from pylapsim.analysis import compute_kpis, export_standard_plots
-from pylapsim.analysis.export import export_kpi_json
-from pylapsim.simulation import build_simulation_config, simulate_lap
-from pylapsim.tire import default_axle_tire_parameters
-from pylapsim.track import load_track_csv
-from pylapsim.utils.constants import STANDARD_AIR_DENSITY
-from pylapsim.vehicle import SingleTrackPhysics, VehicleParameters, build_single_track_model
+from apexsim.analysis import compute_kpis, export_standard_plots
+from apexsim.analysis.export import export_kpi_json
+from apexsim.simulation import build_simulation_config, simulate_lap
+from apexsim.tire import default_axle_tire_parameters
+from apexsim.track import load_track_csv
+from apexsim.utils.constants import STANDARD_AIR_DENSITY
+from apexsim.vehicle import SingleTrackPhysics, VehicleParameters, build_single_track_model
 ```
 
 How to read these imports as an engineer:
@@ -119,7 +119,7 @@ model = build_single_track_model(
 Point-mass model:
 
 ```python
-from pylapsim.vehicle import PointMassPhysics, build_point_mass_model
+from apexsim.vehicle import PointMassPhysics, build_point_mass_model
 
 model = build_point_mass_model(
     vehicle=vehicle,
@@ -148,12 +148,12 @@ Required columns:
 - `elevation`
 - `banking`
 
-Internally, PyLapSim derives arc length, heading, curvature, and grade.
+Internally, ApexSim derives arc length, heading, curvature, and grade.
 
 ### Option B: Synthetic validation tracks
 
 ```python
-from pylapsim.track import build_straight_track, build_circular_track, build_figure_eight_track
+from apexsim.track import build_straight_track, build_circular_track, build_figure_eight_track
 
 straight = build_straight_track(length=1000.0)
 circle = build_circular_track(radius=50.0)
@@ -176,7 +176,7 @@ config = build_simulation_config(max_speed=115.0)
 Explicit setup:
 
 ```python
-from pylapsim.simulation import NumericsConfig, RuntimeConfig, SimulationConfig
+from apexsim.simulation import NumericsConfig, RuntimeConfig, SimulationConfig
 
 config = SimulationConfig(
     runtime=RuntimeConfig(max_speed=115.0),
@@ -246,7 +246,7 @@ export_kpi_json(kpis, output_dir / "kpis.json")
 Optional: generate a speed-dependent performance envelope (G-G map family):
 
 ```python
-from pylapsim.analysis import (
+from apexsim.analysis import (
     PerformanceEnvelopeNumerics,
     PerformanceEnvelopePhysics,
     compute_performance_envelope,

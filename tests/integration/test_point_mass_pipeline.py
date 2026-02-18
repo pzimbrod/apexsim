@@ -8,10 +8,10 @@ from pathlib import Path
 
 import numpy as np
 
-from pylapsim.analysis.kpi import compute_kpis
-from pylapsim.simulation import build_simulation_config, simulate_lap
-from pylapsim.track.io import load_track_csv
-from pylapsim.vehicle import PointMassPhysics, build_point_mass_model
+from apexsim.analysis.kpi import compute_kpis
+from apexsim.simulation import build_simulation_config, simulate_lap
+from apexsim.track.io import load_track_csv
+from apexsim.vehicle import PointMassPhysics, build_point_mass_model
 from tests.helpers import sample_vehicle_parameters
 
 TORCH_AVAILABLE = importlib.util.find_spec("torch") is not None

@@ -6,14 +6,14 @@ import importlib.util
 import unittest
 from pathlib import Path
 
-from pylapsim.simulation.config import NumericsConfig, RuntimeConfig, SimulationConfig
-from pylapsim.simulation.numba_profile import solve_speed_profile_numba
-from pylapsim.simulation.profile import solve_speed_profile
-from pylapsim.simulation.torch_profile import solve_speed_profile_torch
-from pylapsim.tire.models import default_axle_tire_parameters
-from pylapsim.track.io import load_track_csv
-from pylapsim.utils.exceptions import ConfigurationError
-from pylapsim.vehicle import SingleTrackModel, SingleTrackNumerics, SingleTrackPhysics
+from apexsim.simulation.config import NumericsConfig, RuntimeConfig, SimulationConfig
+from apexsim.simulation.numba_profile import solve_speed_profile_numba
+from apexsim.simulation.profile import solve_speed_profile
+from apexsim.simulation.torch_profile import solve_speed_profile_torch
+from apexsim.tire.models import default_axle_tire_parameters
+from apexsim.track.io import load_track_csv
+from apexsim.utils.exceptions import ConfigurationError
+from apexsim.vehicle import SingleTrackModel, SingleTrackNumerics, SingleTrackPhysics
 from tests.helpers import sample_vehicle_parameters
 
 NUMBA_AVAILABLE = importlib.util.find_spec("numba") is not None

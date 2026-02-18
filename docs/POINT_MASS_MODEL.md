@@ -1,7 +1,7 @@
 # Point-Mass Model
 
 This document defines the implemented point-mass backend in
-`src/pylapsim/vehicle/point_mass_model.py`.
+`src/apexsim/vehicle/point_mass_model.py`.
 
 ## 1. Scope
 

@@ -10,10 +10,10 @@ import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from pylapsim.simulation import build_simulation_config, simulate_lap
-from pylapsim.track.io import load_track_csv
-from pylapsim.utils.constants import STANDARD_AIR_DENSITY
-from pylapsim.vehicle import PointMassPhysics, VehicleParameters, build_point_mass_model
+from apexsim.simulation import build_simulation_config, simulate_lap
+from apexsim.track.io import load_track_csv
+from apexsim.utils.constants import STANDARD_AIR_DENSITY
+from apexsim.vehicle import PointMassPhysics, VehicleParameters, build_point_mass_model
 
 DEFAULT_WARMUP_RUNS = 5
 DEFAULT_TIMED_RUNS = 20

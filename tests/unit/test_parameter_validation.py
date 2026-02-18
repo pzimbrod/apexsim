@@ -6,10 +6,10 @@ import unittest
 
 import numpy as np
 
-from pylapsim.tire.models import PacejkaParameters
-from pylapsim.track.models import TrackData
-from pylapsim.utils.exceptions import ConfigurationError, TrackDataError
-from pylapsim.vehicle.params import VehicleParameters
+from apexsim.tire.models import PacejkaParameters
+from apexsim.track.models import TrackData
+from apexsim.utils.exceptions import ConfigurationError, TrackDataError
+from apexsim.vehicle.params import VehicleParameters
 
 
 class ParameterValidationTests(unittest.TestCase):

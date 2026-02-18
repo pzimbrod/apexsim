@@ -1,8 +1,12 @@
-# PyLapSim
+# ApexSim
 
-[![CI](https://github.com/pzimbrod/pylapsim/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/pzimbrod/pylapsim/actions/workflows/ci.yml)
-[![Docs Dev](https://img.shields.io/badge/docs-dev-1f6feb)](https://pzimbrod.github.io/pylapsim/dev/)
-[![Docs Stable](https://img.shields.io/badge/docs-stable-2ea043)](https://pzimbrod.github.io/pylapsim/stable/)
+<p align="center">
+  <img src="assets/icon.svg" alt="ApexSim icon" width="120">
+</p>
+
+[![CI](https://github.com/pzimbrod/apexsim/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/pzimbrod/apexsim/actions/workflows/ci.yml)
+[![Docs Dev](https://img.shields.io/badge/docs-dev-1f6feb)](https://pzimbrod.github.io/apexsim/dev/)
+[![Docs Stable](https://img.shields.io/badge/docs-stable-2ea043)](https://pzimbrod.github.io/apexsim/stable/)
 
 A modular lap time simulation library for race cars with interchangeable vehicle models.
 
@@ -24,11 +28,11 @@ Terminology note:
 
 ## Project Layout
 
-- `src/pylapsim/vehicle`: Vehicle dynamics, aero, load transfer
-- `src/pylapsim/tire`: Tire models
-- `src/pylapsim/track`: Track parsing and geometry
-- `src/pylapsim/simulation`: Integrators and lap simulation
-- `src/pylapsim/analysis`: KPIs and visualizations
+- `src/apexsim/vehicle`: Vehicle dynamics, aero, load transfer
+- `src/apexsim/tire`: Tire models
+- `src/apexsim/track`: Track parsing and geometry
+- `src/apexsim/simulation`: Integrators and lap simulation
+- `src/apexsim/analysis`: KPIs and visualizations
 - `tests`: Unit, integration, and validation tests
 
 ## Quick Start

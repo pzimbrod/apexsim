@@ -10,16 +10,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 from common import example_vehicle_parameters, spa_output_root
 
-from pylapsim.analysis import (
+from apexsim.analysis import (
     PerformanceEnvelopeNumerics,
     PerformanceEnvelopePhysics,
     PerformanceEnvelopeResult,
     compute_performance_envelope,
 )
-from pylapsim.tire import default_axle_tire_parameters
-from pylapsim.utils import configure_logging
-from pylapsim.utils.exceptions import ConfigurationError
-from pylapsim.vehicle import (
+from apexsim.tire import default_axle_tire_parameters
+from apexsim.utils import configure_logging
+from apexsim.utils.exceptions import ConfigurationError
+from apexsim.vehicle import (
     PointMassPhysics,
     SingleTrackPhysics,
     build_point_mass_model,

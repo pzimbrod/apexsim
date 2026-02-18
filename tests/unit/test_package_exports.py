@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import unittest
 
-import pylapsim.analysis as analysis_pkg
-import pylapsim.simulation as simulation_pkg
-import pylapsim.track as track_pkg
-import pylapsim.vehicle as vehicle_pkg
+import apexsim.analysis as analysis_pkg
+import apexsim.simulation as simulation_pkg
+import apexsim.track as track_pkg
+import apexsim.vehicle as vehicle_pkg
 
 
 class PackageExportTests(unittest.TestCase):

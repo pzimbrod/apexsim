@@ -93,7 +93,7 @@ export_standard_plots(result, scenario_dir)
 export_kpi_json(kpis, scenario_dir / "kpis.json")
 ```
 
-This is the canonical PyLapSim pattern and can be reused for custom studies.
+This is the canonical ApexSim pattern and can be reused for custom studies.
 
 ## 5. Cross-scenario comparison output
 

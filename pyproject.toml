@@ -3,7 +3,7 @@ requires = ["hatchling>=1.25"]
 build-backend = "hatchling.build"
 
 [project]
-name = "pylapsim"
+name = "apexsim"
 version = "0.1.0"
 description = "Lap time simulation library with interchangeable bicycle and point-mass models"
 readme = "README.md"
@@ -40,7 +40,7 @@ numba = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-q --cov=pylapsim --cov-report=term-missing --cov-fail-under=95"
+addopts = "-q --cov=apexsim --cov-report=term-missing --cov-fail-under=95"
 testpaths = ["tests"]
 
 [tool.ruff]
@@ -64,5 +64,5 @@ show_error_codes = true
 mypy_path = ["src"]
 
 [tool.coverage.run]
-source = ["pylapsim"]
+source = ["apexsim"]
 branch = true

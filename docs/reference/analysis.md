@@ -1,3 +1,3 @@
 # Analysis
 
-::: pylapsim.analysis
+::: apexsim.analysis

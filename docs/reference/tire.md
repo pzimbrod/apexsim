@@ -1,3 +1,3 @@
 # Tire
 
-::: pylapsim.tire
+::: apexsim.tire

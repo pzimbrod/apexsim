@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from pylapsim.utils.constants import STANDARD_AIR_DENSITY
-from pylapsim.vehicle.params import VehicleParameters
+from apexsim.utils.constants import STANDARD_AIR_DENSITY
+from apexsim.vehicle.params import VehicleParameters
 
 
 def sample_vehicle_parameters() -> VehicleParameters:

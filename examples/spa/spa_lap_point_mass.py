@@ -6,12 +6,12 @@ import logging
 
 from common import example_vehicle_parameters, spa_output_root, spa_track_path
 
-from pylapsim.analysis import compute_kpis, export_standard_plots
-from pylapsim.analysis.export import export_kpi_json
-from pylapsim.simulation import build_simulation_config, simulate_lap
-from pylapsim.track import load_track_csv
-from pylapsim.utils import configure_logging
-from pylapsim.vehicle import PointMassPhysics, build_point_mass_model
+from apexsim.analysis import compute_kpis, export_standard_plots
+from apexsim.analysis.export import export_kpi_json
+from apexsim.simulation import build_simulation_config, simulate_lap
+from apexsim.track import load_track_csv
+from apexsim.utils import configure_logging
+from apexsim.vehicle import PointMassPhysics, build_point_mass_model
 
 
 def main() -> None:

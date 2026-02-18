@@ -8,15 +8,15 @@ from unittest.mock import patch
 
 import numpy as np
 
-from pylapsim.tire.models import default_axle_tire_parameters
-from pylapsim.utils.exceptions import ConfigurationError
-from pylapsim.vehicle import (
+from apexsim.tire.models import default_axle_tire_parameters
+from apexsim.utils.exceptions import ConfigurationError
+from apexsim.vehicle import (
     PointMassModel,
     PointMassPhysics,
     build_point_mass_model,
     calibrate_point_mass_friction_to_single_track,
 )
-from pylapsim.vehicle.single_track_model import SingleTrackModel
+from apexsim.vehicle.single_track_model import SingleTrackModel
 from tests.helpers import sample_vehicle_parameters
 
 TORCH_AVAILABLE = importlib.util.find_spec("torch") is not None

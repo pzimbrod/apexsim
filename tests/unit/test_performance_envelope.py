@@ -10,8 +10,8 @@ from unittest.mock import patch
 
 import numpy as np
 
-import pylapsim.analysis.performance_envelope as envelope_module
-from pylapsim.analysis.performance_envelope import (
+import apexsim.analysis.performance_envelope as envelope_module
+from apexsim.analysis.performance_envelope import (
     PerformanceEnvelopeNumerics,
     PerformanceEnvelopePhysics,
     PerformanceEnvelopeResult,
@@ -19,8 +19,8 @@ from pylapsim.analysis.performance_envelope import (
     build_performance_envelope_config,
     compute_performance_envelope,
 )
-from pylapsim.utils.exceptions import ConfigurationError
-from pylapsim.vehicle import PointMassModel, PointMassPhysics
+from apexsim.utils.exceptions import ConfigurationError
+from apexsim.vehicle import PointMassModel, PointMassPhysics
 from tests.helpers import sample_vehicle_parameters
 
 TORCH_AVAILABLE = importlib.util.find_spec("torch") is not None

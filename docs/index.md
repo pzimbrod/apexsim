@@ -1,6 +1,8 @@
-# PyLapSim Documentation
+# ApexSim Documentation
 
-PyLapSim is a modular lap-time simulation library for race cars with
+<img src="assets/icon.svg" alt="ApexSim icon" width="120">
+
+ApexSim is a modular lap-time simulation library for race cars with
 interchangeable vehicle models.
 
 ## Documentation Structure

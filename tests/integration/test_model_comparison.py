@@ -7,10 +7,10 @@ from pathlib import Path
 
 import numpy as np
 
-from pylapsim.simulation import build_simulation_config, simulate_lap
-from pylapsim.tire import default_axle_tire_parameters
-from pylapsim.track import load_track_csv
-from pylapsim.vehicle import (
+from apexsim.simulation import build_simulation_config, simulate_lap
+from apexsim.tire import default_axle_tire_parameters
+from apexsim.track import load_track_csv
+from apexsim.vehicle import (
     PointMassPhysics,
     SingleTrackPhysics,
     build_point_mass_model,

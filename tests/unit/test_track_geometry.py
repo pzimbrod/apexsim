@@ -9,9 +9,9 @@ from pathlib import Path
 
 import numpy as np
 
-from pylapsim.track.geometry import build_track_data
-from pylapsim.track.io import load_track_csv
-from pylapsim.utils.exceptions import TrackDataError
+from apexsim.track.geometry import build_track_data
+from apexsim.track.io import load_track_csv
+from apexsim.utils.exceptions import TrackDataError
 
 
 class TrackGeometryTests(unittest.TestCase):

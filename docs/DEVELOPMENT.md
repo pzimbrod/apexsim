@@ -95,10 +95,10 @@ Defaulting guidance:
 
 The solver contract is represented at two levels:
 
-- `VehicleModel` (Protocol) in `src/pylapsim/simulation/model_api.py`
+- `VehicleModel` (Protocol) in `src/apexsim/simulation/model_api.py`
   keeps the simulation pipeline structurally open for external backends.
 - `VehicleModelBase` plus
-  `EnvelopeVehicleModel` in `src/pylapsim/vehicle/_model_base.py`
+  `EnvelopeVehicleModel` in `src/apexsim/vehicle/_model_base.py`
   provides inheritance-based code organization for built-in backends.
 
 Built-in models (`SingleTrackModel`, `PointMassModel`) inherit the same base class
@@ -108,16 +108,16 @@ drag/grade-corrected longitudinal limits.
 For backend-enabled models, keep backend adapters out of the physics layer:
 
 - `PointMassModel` composes private mixins from
-  `src/pylapsim/vehicle/_point_mass_physics.py` and
-  `src/pylapsim/vehicle/_point_mass_backends.py`.
+  `src/apexsim/vehicle/_point_mass_physics.py` and
+  `src/apexsim/vehicle/_point_mass_backends.py`.
 - Physics equations stay backend-agnostic.
 - Backend-specific methods (`numba`, `torch`) stay isolated in adapter mixins.
-- `SingleTrackModel` composes `src/pylapsim/vehicle/_single_track_physics.py`,
+- `SingleTrackModel` composes `src/apexsim/vehicle/_single_track_physics.py`,
   which extends `PointMassPhysicalMixin` to reuse the shared physical core.
-- Single-track backend adapters live in `src/pylapsim/vehicle/_single_track_backends.py`
+- Single-track backend adapters live in `src/apexsim/vehicle/_single_track_backends.py`
   and mirror the point-mass backend adapter structure.
 - Single-track-specific dynamics/supporting components live in
-  `src/pylapsim/vehicle/single_track/` (for example `dynamics.py`,
+  `src/apexsim/vehicle/single_track/` (for example `dynamics.py`,
   `load_transfer.py`) to keep model-specific code grouped together.
 
 ## Refreshing Spa Data

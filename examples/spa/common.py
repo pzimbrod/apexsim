@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from pylapsim.utils.constants import STANDARD_AIR_DENSITY
-from pylapsim.vehicle import VehicleParameters
+from apexsim.utils.constants import STANDARD_AIR_DENSITY
+from apexsim.vehicle import VehicleParameters
 
 
 def example_vehicle_parameters() -> VehicleParameters:

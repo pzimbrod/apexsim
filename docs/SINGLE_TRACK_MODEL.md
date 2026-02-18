@@ -1,8 +1,8 @@
 # Single-Track Model
 
 This document defines the implemented single-track backend in
-`src/pylapsim/vehicle/single_track_model.py` and
-`src/pylapsim/vehicle/_single_track_physics.py`.
+`src/apexsim/vehicle/single_track_model.py` and
+`src/apexsim/vehicle/_single_track_physics.py`.
 
 Terminology note:
 

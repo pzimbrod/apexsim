@@ -9,16 +9,16 @@ from unittest.mock import patch
 
 import numpy as np
 
-import pylapsim.simulation as simulation_module
-from pylapsim.simulation.config import (
+import apexsim.simulation as simulation_module
+from apexsim.simulation.config import (
     NumericsConfig,
     RuntimeConfig,
     SimulationConfig,
     build_simulation_config,
 )
-from pylapsim.simulation.envelope import lateral_speed_limit
-from pylapsim.simulation.integrator import rk4_step
-from pylapsim.utils.exceptions import ConfigurationError
+from apexsim.simulation.envelope import lateral_speed_limit
+from apexsim.simulation.integrator import rk4_step
+from apexsim.utils.exceptions import ConfigurationError
 
 NUMBA_AVAILABLE = importlib.util.find_spec("numba") is not None
 TORCH_AVAILABLE = importlib.util.find_spec("torch") is not None

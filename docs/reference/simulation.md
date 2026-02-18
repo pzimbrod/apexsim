@@ -1,3 +1,3 @@
 # Simulation
 
-::: pylapsim.simulation
+::: apexsim.simulation

@@ -6,9 +6,9 @@ import unittest
 
 import numpy as np
 
-from pylapsim.tire.models import PacejkaParameters, default_axle_tire_parameters
-from pylapsim.tire.pacejka import axle_lateral_forces, magic_formula_lateral
-from pylapsim.utils.exceptions import ConfigurationError
+from apexsim.tire.models import PacejkaParameters, default_axle_tire_parameters
+from apexsim.tire.pacejka import axle_lateral_forces, magic_formula_lateral
+from apexsim.utils.exceptions import ConfigurationError
 
 
 class TireModelTests(unittest.TestCase):

@@ -6,9 +6,9 @@ import unittest
 
 import numpy as np
 
-from pylapsim.tire.models import default_axle_tire_parameters
-from pylapsim.utils.exceptions import ConfigurationError
-from pylapsim.vehicle import (
+from apexsim.tire.models import default_axle_tire_parameters
+from apexsim.utils.exceptions import ConfigurationError
+from apexsim.vehicle import (
     SingleTrackModel,
     SingleTrackNumerics,
     SingleTrackPhysics,

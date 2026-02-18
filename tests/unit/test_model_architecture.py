@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import unittest
 
-from pylapsim.simulation.model_api import VehicleModelBase
-from pylapsim.tire.models import default_axle_tire_parameters
-from pylapsim.vehicle._model_base import EnvelopeVehicleModel
-from pylapsim.vehicle._point_mass_physics import PointMassPhysicalMixin
-from pylapsim.vehicle._single_track_physics import SingleTrackPhysicalMixin
-from pylapsim.vehicle.point_mass_model import PointMassModel, PointMassPhysics
-from pylapsim.vehicle.single_track_model import (
+from apexsim.simulation.model_api import VehicleModelBase
+from apexsim.tire.models import default_axle_tire_parameters
+from apexsim.vehicle._model_base import EnvelopeVehicleModel
+from apexsim.vehicle._point_mass_physics import PointMassPhysicalMixin
+from apexsim.vehicle._single_track_physics import SingleTrackPhysicalMixin
+from apexsim.vehicle.point_mass_model import PointMassModel, PointMassPhysics
+from apexsim.vehicle.single_track_model import (
     SingleTrackModel,
     SingleTrackNumerics,
     SingleTrackPhysics,

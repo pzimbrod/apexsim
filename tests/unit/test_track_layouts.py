@@ -6,12 +6,12 @@ import unittest
 
 import numpy as np
 
-from pylapsim.track import (
+from apexsim.track import (
     build_circular_track,
     build_figure_eight_track,
     build_straight_track,
 )
-from pylapsim.utils.exceptions import TrackDataError
+from apexsim.utils.exceptions import TrackDataError
 
 
 class TrackLayoutBuilderTests(unittest.TestCase):

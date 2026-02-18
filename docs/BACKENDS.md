@@ -1,6 +1,6 @@
 # Compute Backends
 
-PyLapSim separates physical modeling from numerical execution backends.
+ApexSim separates physical modeling from numerical execution backends.
 This page helps you choose the right backend for your study.
 
 ## Backend policy
@@ -53,7 +53,7 @@ Use this practical rule-set:
 ### NumPy (CPU reference)
 
 ```python
-from pylapsim.simulation import build_simulation_config
+from apexsim.simulation import build_simulation_config
 
 config = build_simulation_config(
     compute_backend="numpy",
@@ -64,7 +64,7 @@ config = build_simulation_config(
 ### Numba (CPU-optimized)
 
 ```python
-from pylapsim.simulation import build_simulation_config
+from apexsim.simulation import build_simulation_config
 
 config = build_simulation_config(
     compute_backend="numba",
@@ -75,7 +75,7 @@ config = build_simulation_config(
 ### Torch (CPU or GPU)
 
 ```python
-from pylapsim.simulation import build_simulation_config
+from apexsim.simulation import build_simulation_config
 
 # CPU
 config_cpu = build_simulation_config(
