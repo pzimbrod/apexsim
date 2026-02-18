@@ -19,11 +19,17 @@ class PackageExportTests(unittest.TestCase):
         self.assertIsNotNone(simulation_pkg.VehicleModel)
         self.assertIsNotNone(simulation_pkg.ModelDiagnostics)
         self.assertIsNotNone(simulation_pkg.LapResult)
+        self.assertIsNotNone(simulation_pkg.TransientProfileResult)
+        self.assertIsNotNone(simulation_pkg.TorchTransientProfileResult)
         self.assertIsNotNone(simulation_pkg.TorchSpeedProfileResult)
         self.assertIsNotNone(simulation_pkg.simulate_lap)
+        self.assertIsNotNone(simulation_pkg.solve_transient_lap_torch)
         self.assertIsNotNone(simulation_pkg.solve_speed_profile_torch)
         self.assertIsNotNone(simulation_pkg.RuntimeConfig)
         self.assertIsNotNone(simulation_pkg.NumericsConfig)
+        self.assertIsNotNone(simulation_pkg.TransientConfig)
+        self.assertIsNotNone(simulation_pkg.TransientNumericsConfig)
+        self.assertIsNotNone(simulation_pkg.TransientRuntimeConfig)
         self.assertIsNotNone(simulation_pkg.build_simulation_config)
 
     def test_track_exports_resolve(self) -> None:
