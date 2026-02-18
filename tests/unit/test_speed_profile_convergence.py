@@ -6,12 +6,18 @@ import importlib.util
 import unittest
 from pathlib import Path
 
+import numpy as np
+
 from apexsim.simulation.config import NumericsConfig, RuntimeConfig, SimulationConfig
 from apexsim.simulation.numba_profile import solve_speed_profile_numba
 from apexsim.simulation.profile import solve_speed_profile
-from apexsim.simulation.torch_profile import solve_speed_profile_torch
+from apexsim.simulation.torch_profile import (
+    solve_speed_profile_torch,
+    solve_speed_profile_torch_autodiff,
+)
 from apexsim.tire.models import default_axle_tire_parameters
 from apexsim.track.io import load_track_csv
+from apexsim.track.layouts import build_straight_track
 from apexsim.utils.exceptions import ConfigurationError
 from apexsim.vehicle import SingleTrackModel, SingleTrackNumerics, SingleTrackPhysics
 from tests.helpers import sample_vehicle_parameters
@@ -81,6 +87,43 @@ class SpeedProfileConvergenceTests(unittest.TestCase):
             config.numerics.lateral_envelope_max_iterations,
         )
 
+    def test_initial_speed_overrides_legacy_start_speed(self) -> None:
+        """Use explicit initial speed at first sample when configured."""
+        straight_track = build_straight_track(length=300.0, sample_count=151)
+
+        config_with_initial_speed = SimulationConfig(
+            runtime=RuntimeConfig(
+                max_speed=60.0,
+                initial_speed=20.0,
+                enable_transient_refinement=False,
+            ),
+            numerics=NumericsConfig(),
+        )
+        config_without_initial_speed = SimulationConfig(
+            runtime=RuntimeConfig(
+                max_speed=60.0,
+                enable_transient_refinement=False,
+            ),
+            numerics=NumericsConfig(),
+        )
+
+        result_with_initial_speed = solve_speed_profile(
+            straight_track,
+            self.model,
+            config_with_initial_speed,
+        )
+        result_without_initial_speed = solve_speed_profile(
+            straight_track,
+            self.model,
+            config_without_initial_speed,
+        )
+
+        self.assertAlmostEqual(float(result_with_initial_speed.speed[0]), 20.0, places=10)
+        self.assertGreater(
+            float(result_without_initial_speed.speed[0]),
+            float(result_with_initial_speed.speed[0]) + 5.0,
+        )
+
     def test_torch_profile_rejects_non_torch_backend(self) -> None:
         """Reject torch-profile calls when backend is not set to torch."""
         config = SimulationConfig(
@@ -137,6 +180,50 @@ class SpeedProfileConvergenceTests(unittest.TestCase):
         result = solve_speed_profile_torch(track=self.track, model=self.model, config=config)
         self.assertEqual(result.speed.shape, self.track.arc_length.shape)
         self.assertGreater(result.lap_time, 0.0)
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_torch_autodiff_profile_rejects_torch_compile(self) -> None:
+        """Reject autodiff profile solve when torch_compile is enabled."""
+        config = SimulationConfig(
+            runtime=RuntimeConfig(
+                max_speed=115.0,
+                enable_transient_refinement=False,
+                compute_backend="torch",
+                torch_device="cpu",
+                torch_compile=True,
+            ),
+            numerics=NumericsConfig(),
+        )
+        with self.assertRaises(ConfigurationError):
+            solve_speed_profile_torch_autodiff(track=self.track, model=self.model, config=config)
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_torch_autodiff_profile_returns_tensors(self) -> None:
+        """Return tensor-valued profile outputs for autodiff workflows."""
+        import torch
+
+        config = SimulationConfig(
+            runtime=RuntimeConfig(
+                max_speed=115.0,
+                enable_transient_refinement=False,
+                compute_backend="torch",
+                torch_device="cpu",
+                torch_compile=False,
+            ),
+            numerics=NumericsConfig(),
+        )
+
+        result = solve_speed_profile_torch_autodiff(
+            track=self.track,
+            model=self.model,
+            config=config,
+        )
+        self.assertIsInstance(result.speed, torch.Tensor)
+        self.assertIsInstance(result.longitudinal_accel, torch.Tensor)
+        self.assertIsInstance(result.lateral_accel, torch.Tensor)
+        self.assertIsInstance(result.lap_time, torch.Tensor)
+        self.assertEqual(tuple(result.speed.shape), tuple(np.shape(self.track.arc_length)))
+        self.assertGreater(float(result.lap_time.item()), 0.0)
 
 
 if __name__ == "__main__":

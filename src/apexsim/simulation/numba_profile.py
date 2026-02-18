@@ -96,6 +96,7 @@ def _point_mass_speed_profile_kernel(
     max_drive_accel: float,
     max_brake_accel: float,
     max_speed: float,
+    initial_speed: float,
     min_speed: float,
     lateral_iterations_limit: int,
     lateral_convergence_tolerance: float,
@@ -116,6 +117,7 @@ def _point_mass_speed_profile_kernel(
         max_drive_accel: Maximum drive acceleration limit [m/s^2].
         max_brake_accel: Maximum braking deceleration magnitude [m/s^2].
         max_speed: Global speed cap [m/s].
+        initial_speed: Initial speed at first track sample [m/s].
         min_speed: Numerical speed floor [m/s].
         lateral_iterations_limit: Maximum lateral-envelope fixed-point iterations.
         lateral_convergence_tolerance: Convergence tolerance for lateral
@@ -170,7 +172,7 @@ def _point_mass_speed_profile_kernel(
             break
 
     v_forward = v_lat.copy()
-    v_forward[0] = min(v_forward[0], max_speed)
+    v_forward[0] = min(v_forward[0], initial_speed, max_speed)
 
     for idx in range(n - 1):
         speed_value = v_forward[idx]
@@ -282,6 +284,7 @@ def _single_track_speed_profile_kernel(
     rear_load_sensitivity: float,
     rear_min_mu_scale: float,
     max_speed: float,
+    initial_speed: float,
     min_speed: float,
     lateral_envelope_iterations_limit: int,
     lateral_envelope_convergence_tolerance: float,
@@ -321,6 +324,7 @@ def _single_track_speed_profile_kernel(
         rear_load_sensitivity: Rear friction load-sensitivity slope [-].
         rear_min_mu_scale: Rear lower bound for friction scaling [-].
         max_speed: Global speed cap [m/s].
+        initial_speed: Initial speed at first track sample [m/s].
         min_speed: Numerical speed floor [m/s].
         lateral_envelope_iterations_limit: Maximum outer lateral-envelope
             fixed-point iterations.
@@ -426,7 +430,7 @@ def _single_track_speed_profile_kernel(
             break
 
     v_forward = v_lat.copy()
-    v_forward[0] = min(v_forward[0], max_speed)
+    v_forward[0] = min(v_forward[0], initial_speed, max_speed)
 
     for idx in range(n - 1):
         speed_value = v_forward[idx]
@@ -670,6 +674,11 @@ def solve_speed_profile_numba(
 
     params = cast(tuple[float | int, ...], param_method())
     param_count = len(params)
+    start_speed = (
+        float(config.runtime.max_speed)
+        if config.runtime.initial_speed is None
+        else float(config.runtime.initial_speed)
+    )
 
     if param_count == POINT_MASS_PARAMETER_COUNT:
         (
@@ -693,6 +702,7 @@ def solve_speed_profile_numba(
             float(max_drive_accel),
             float(max_brake_accel),
             float(config.runtime.max_speed),
+            start_speed,
             float(config.numerics.min_speed),
             int(config.numerics.lateral_envelope_max_iterations),
             float(config.numerics.lateral_envelope_convergence_tolerance),
@@ -757,6 +767,7 @@ def solve_speed_profile_numba(
             float(rear_load_sensitivity),
             float(rear_min_mu_scale),
             float(config.runtime.max_speed),
+            start_speed,
             float(config.numerics.min_speed),
             int(config.numerics.lateral_envelope_max_iterations),
             float(config.numerics.lateral_envelope_convergence_tolerance),

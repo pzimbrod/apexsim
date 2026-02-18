@@ -73,6 +73,7 @@ class SimulationHelpersTests(unittest.TestCase):
         config = build_simulation_config(max_speed=115.0)
         self.assertEqual(config.numerics, NumericsConfig())
         self.assertFalse(config.runtime.enable_transient_refinement)
+        self.assertIsNone(config.runtime.initial_speed)
 
         with self.assertRaises(ConfigurationError):
             SimulationConfig(
@@ -127,6 +128,13 @@ class SimulationHelpersTests(unittest.TestCase):
                 numerics=NumericsConfig(),
             ).validate()
 
+    def test_runtime_config_rejects_initial_speed_outside_bounds(self) -> None:
+        """Reject initial-speed selections outside [min_speed, max_speed]."""
+        with self.assertRaises(ConfigurationError):
+            build_simulation_config(max_speed=115.0, initial_speed=5.0)
+        with self.assertRaises(ConfigurationError):
+            build_simulation_config(max_speed=115.0, initial_speed=120.0)
+
     def test_build_simulation_config_supports_torch_backend(self) -> None:
         """Build a validated configuration that selects the torch backend."""
         config = build_simulation_config(max_speed=115.0, compute_backend="torch")
@@ -140,6 +148,11 @@ class SimulationHelpersTests(unittest.TestCase):
             torch_compile=True,
         )
         self.assertTrue(compiled.runtime.torch_compile)
+
+    def test_build_simulation_config_supports_initial_speed(self) -> None:
+        """Build a validated configuration with explicit initial speed."""
+        config = build_simulation_config(max_speed=115.0, initial_speed=20.0)
+        self.assertEqual(config.runtime.initial_speed, 20.0)
 
     @unittest.skipUnless(NUMBA_AVAILABLE, "Numba not installed")
     def test_build_simulation_config_supports_numba_backend(self) -> None:

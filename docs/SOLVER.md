@@ -78,6 +78,15 @@ $$
 v_{i+1}^2 = v_i^2 + 2 a_{x,\text{net},i} \Delta s_i.
 $$
 
+Initial-condition rule:
+$$
+v_0 = \min\left(v_{\text{lat},0}, v_{\max}, v_{\text{init}}\right),
+$$
+where $v_{\text{init}}$ is:
+
+- `RuntimeConfig.initial_speed`, if provided.
+- otherwise the legacy fallback $v_{\max}$.
+
 Net acceleration model:
 $$
 a_{x,\text{net},i} =
@@ -190,3 +199,17 @@ The same solver routine can be used with different backends implementing
 - Vehicle-model API contract consumed by the solver:
   - `src/apexsim/simulation/model_api.py` (`VehicleModel`)
   - `src/apexsim/simulation/profile.py` (`solve_speed_profile`, calls on `model`)
+
+## 10. Differentiable Torch Solver API
+
+For gradient-based workflows (e.g. autodiff sensitivities), ApexSim exposes:
+
+- `apexsim.simulation.solve_speed_profile_torch_autodiff(track, model, config)`
+
+This API returns tensor-valued outputs (`TorchSpeedProfileResult`) and keeps the
+autograd graph intact for downstream `backward()` calls.
+
+Current constraint:
+
+- `RuntimeConfig.torch_compile` must be `False` for
+  `solve_speed_profile_torch_autodiff`.

@@ -179,7 +179,7 @@ Explicit setup:
 from apexsim.simulation import NumericsConfig, RuntimeConfig, SimulationConfig
 
 config = SimulationConfig(
-    runtime=RuntimeConfig(max_speed=115.0),
+    runtime=RuntimeConfig(max_speed=115.0, initial_speed=20.0),
     numerics=NumericsConfig(
         min_speed=8.0,
         lateral_envelope_max_iterations=20,
@@ -216,6 +216,10 @@ Critical distinction:
 - Numerical parameters control solver stability and convergence.
 
 Do not compensate wrong physics by over-tuning numerics.
+
+`initial_speed` is optional. If omitted (`None`), the solver keeps the legacy
+start behavior. Set it explicitly when you need controlled acceleration phases
+from the first sample (for example, straight-line bottleneck studies).
 
 ## Step 5: Run the lap simulation
 
@@ -282,6 +286,23 @@ sens = compute_sensitivities(
     ],
     runtime=SensitivityRuntime(method="finite_difference"),
 )
+```
+
+Optional: run the public differentiable torch speed-profile API directly
+for custom gradient workflows:
+
+```python
+from apexsim.simulation import build_simulation_config, solve_speed_profile_torch_autodiff
+
+torch_config = build_simulation_config(
+    compute_backend="torch",
+    torch_device="cpu",
+    torch_compile=False,  # required for solve_speed_profile_torch_autodiff
+    max_speed=115.0,
+    initial_speed=20.0,
+)
+torch_result = solve_speed_profile_torch_autodiff(track=track, model=model, config=torch_config)
+lap_time_tensor = torch_result.lap_time
 ```
 
 Minimum review set:

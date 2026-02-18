@@ -18,9 +18,11 @@ if TYPE_CHECKING:
         VehicleModelBase,
     )
     from apexsim.simulation.runner import LapResult
+    from apexsim.simulation.torch_profile import TorchSpeedProfileResult
 
 __all__ = [
     "LapResult",
+    "TorchSpeedProfileResult",
     "VehicleModelBase",
     "VehicleModel",
     "NumericsConfig",
@@ -29,6 +31,7 @@ __all__ = [
     "ModelDiagnostics",
     "build_simulation_config",
     "simulate_lap",
+    "solve_speed_profile_torch_autodiff",
 ]
 
 
@@ -64,5 +67,13 @@ def __getattr__(name: str) -> Any:
         from apexsim.simulation.runner import simulate_lap
 
         return simulate_lap
+    if name == "TorchSpeedProfileResult":
+        from apexsim.simulation.torch_profile import TorchSpeedProfileResult
+
+        return TorchSpeedProfileResult
+    if name == "solve_speed_profile_torch_autodiff":
+        from apexsim.simulation.torch_profile import solve_speed_profile_torch_autodiff
+
+        return solve_speed_profile_torch_autodiff
     msg = f"module {__name__!r} has no attribute {name!r}"
     raise AttributeError(msg)
