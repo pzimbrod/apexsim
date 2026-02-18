@@ -1117,13 +1117,23 @@ def _build_lap_study_objective(
             )
             raise ConfigurationError(msg) from exc
 
-        from apexsim.simulation.torch_profile import solve_speed_profile_torch
+        profile: Any
+        if simulation_config.runtime.solver_mode == "transient_oc":
+            from apexsim.simulation.transient_torch import solve_transient_lap_torch
 
-        profile = solve_speed_profile_torch(
-            track=track,
-            model=model,
-            config=simulation_config,
-        )
+            profile = solve_transient_lap_torch(
+                track=track,
+                model=model,
+                config=simulation_config,
+            )
+        else:
+            from apexsim.simulation.torch_profile import solve_speed_profile_torch
+
+            profile = solve_speed_profile_torch(
+                track=track,
+                model=model,
+                config=simulation_config,
+            )
 
         if objective == "lap_time_s":
             return profile.lap_time
