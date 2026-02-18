@@ -1463,21 +1463,19 @@ and lost relative to single-track.</p>
 <h2 id="theoretical-foundation">Theoretical foundation<a class="headerlink" href="#theoretical-foundation" title="Permanent link">&para;</a></h2>
 <p>The point-mass model uses an isotropic acceleration envelope with aero coupling.
 Typical relations are:</p>
-<ul>
-<li>normal-acceleration budget:
-  $$
-  a_n(v) = g + \frac{F_{\mathrm{down}}(v)}{m}
-  $$</li>
-<li>lateral limit (flat road simplification):
-  $$
-  a_{y,\mathrm{lim}}(v) = \mu \, a_n(v)
-  $$</li>
-<li>friction-circle coupling:
-  $$
-  a_{x,\mathrm{avail}} =
-  a_{x,\max}\sqrt{1 - \left(\frac{a_{y,\mathrm{req}}}{a_{y,\mathrm{lim}}}\right)^2}
-  $$</li>
-</ul>
+<p>Normal-acceleration budget:
+$$
+a_n(v) = g + \frac{F_{\mathrm{down}}(v)}{m}
+$$</p>
+<p>Lateral limit (flat road simplification):
+$$
+a_{y,\mathrm{lim}}(v) = \mu \, a_n(v)
+$$</p>
+<p>Friction-circle coupling:
+$$
+a_{x,\mathrm{avail}} =
+a_{x,\max}\sqrt{1 - \left(\frac{a_{y,\mathrm{req}}}{a_{y,\mathrm{lim}}}\right)^2}
+$$</p>
 <p>This structure is intentionally compact and efficient for fast sweeps.</p>
 <h2 id="assumptions-and-limits">Assumptions and limits<a class="headerlink" href="#assumptions-and-limits" title="Permanent link">&para;</a></h2>
 <ol>
