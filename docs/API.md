@@ -99,10 +99,9 @@ Vehicle-model solver contract:
 - `apexsim.analysis.SensitivityConfig`
 - `apexsim.analysis.build_sensitivity_config(...) -> SensitivityConfig`
 - `apexsim.analysis.compute_sensitivities(objective, parameters, ...) -> SensitivityResult`
-- `apexsim.analysis.SensitivityStudyModel`
 - `apexsim.analysis.SensitivityStudyParameter`
 - `apexsim.analysis.SensitivityStudyResult`
-- `apexsim.analysis.build_sensitivity_study_model(...) -> SensitivityStudyModel`
+- `apexsim.analysis.register_sensitivity_model_adapter(...) -> None`
 - `apexsim.analysis.run_lap_sensitivity_study(...) -> SensitivityStudyResult`
 
 `LapResult` provides:

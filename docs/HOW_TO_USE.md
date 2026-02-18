@@ -270,19 +270,18 @@ Optional: run a local lap-sensitivity study (AD default on torch backend):
 ```python
 from apexsim.analysis import (
     SensitivityStudyParameter,
-    build_sensitivity_study_model,
     SensitivityRuntime,
     run_lap_sensitivity_study,
 )
 
-study_model = build_sensitivity_study_model(
-    model_factory=build_single_track_model,
-    model_inputs={"vehicle": vehicle, "tires": tires, "physics": SingleTrackPhysics()},
-    label="Spa single-track",
+model = build_single_track_model(
+    vehicle=vehicle,
+    tires=tires,
+    physics=SingleTrackPhysics(),
 )
 study = run_lap_sensitivity_study(
     track=track,
-    study_model=study_model,
+    model=model,
     simulation_config=config_torch,
     parameters=[
         SensitivityStudyParameter(name="mass", target="vehicle.mass", label="Vehicle mass"),
@@ -292,6 +291,7 @@ study = run_lap_sensitivity_study(
             label="Drag coefficient",
         ),
     ],
+    label="Spa single-track",
 )
 long_table = study.to_dataframe()
 pivot_table = study.to_pivot()
@@ -302,10 +302,27 @@ To force finite differences (for regression checks), pass:
 ```python
 study_fd = run_lap_sensitivity_study(
     track=track,
-    study_model=study_model,
+    model=model,
     simulation_config=config_torch,
     parameters=[SensitivityStudyParameter(name="mass", target="vehicle.mass")],
     runtime=SensitivityRuntime(method="finite_difference"),
+)
+```
+
+To support custom model classes, register an adapter once:
+
+```python
+from apexsim.analysis import register_sensitivity_model_adapter
+
+register_sensitivity_model_adapter(
+    model_type=TwinTrackModel,
+    model_factory=build_twin_track_model,
+    model_inputs_getter=lambda model: {
+        "vehicle": model.vehicle,
+        "tires": model.tires,
+        "physics": model.physics,
+        "numerics": model.numerics,
+    },
 )
 ```
 

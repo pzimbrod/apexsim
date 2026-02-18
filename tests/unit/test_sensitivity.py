@@ -6,7 +6,7 @@ import builtins
 import importlib.util
 import unittest
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 from unittest.mock import patch
 
 import numpy as np
@@ -20,8 +20,8 @@ from apexsim.analysis.sensitivity import (
     SensitivityRuntime,
     SensitivityStudyParameter,
     build_sensitivity_config,
-    build_sensitivity_study_model,
     compute_sensitivities,
+    register_sensitivity_model_adapter,
     run_lap_sensitivity_study,
 )
 from apexsim.simulation import build_simulation_config, solve_speed_profile_torch
@@ -451,46 +451,75 @@ class SensitivityStudyApiTests(unittest.TestCase):
     """Validate high-level lap sensitivity study helpers."""
 
     @staticmethod
-    def _single_track_study_inputs() -> dict[str, Any]:
-        """Return baseline model inputs for generic study API tests.
+    def _single_track_model() -> Any:
+        """Build baseline single-track model for study API tests.
 
         Returns:
-            Keyword-argument mapping used by ``build_single_track_model``.
+            Single-track model instance.
         """
-        return {
-            "vehicle": sample_vehicle_parameters(),
-            "tires": default_axle_tire_parameters(),
-            "physics": SingleTrackPhysics(),
-        }
+        return build_single_track_model(
+            vehicle=sample_vehicle_parameters(),
+            tires=default_axle_tire_parameters(),
+            physics=SingleTrackPhysics(),
+        )
 
     @staticmethod
-    def _point_mass_study_inputs() -> dict[str, Any]:
-        """Return baseline model inputs for point-mass study API tests.
+    def _point_mass_model() -> Any:
+        """Build baseline point-mass model for study API tests.
 
         Returns:
-            Keyword-argument mapping used by ``build_point_mass_model``.
+            Point-mass model instance.
         """
-        return {
-            "vehicle": sample_vehicle_parameters(),
-            "physics": PointMassPhysics(),
-        }
+        return build_point_mass_model(
+            vehicle=sample_vehicle_parameters(),
+            physics=PointMassPhysics(),
+        )
 
-    def test_build_sensitivity_study_model_rejects_invalid_inputs(self) -> None:
-        """Reject malformed study-model factory definitions."""
+    def test_register_sensitivity_model_adapter_rejects_invalid_inputs(self) -> None:
+        """Reject malformed model-adapter registration inputs."""
+        model = self._single_track_model()
+        original_adapters = dict(sensitivity_module._SENSITIVITY_MODEL_ADAPTERS)
+        try:
+            with self.assertRaises(ConfigurationError):
+                register_sensitivity_model_adapter(
+                    model_type=cast(Any, 42),
+                    model_factory=build_single_track_model,
+                    model_inputs_getter=lambda _: {"vehicle": sample_vehicle_parameters()},
+                )
+            with self.assertRaises(ConfigurationError):
+                register_sensitivity_model_adapter(
+                    model_type=type(model),
+                    model_factory=42,  # type: ignore[arg-type]
+                    model_inputs_getter=lambda _: {"vehicle": sample_vehicle_parameters()},
+                )
+            with self.assertRaises(ConfigurationError):
+                register_sensitivity_model_adapter(
+                    model_type=type(model),
+                    model_factory=build_single_track_model,
+                    model_inputs_getter=42,  # type: ignore[arg-type]
+                )
+        finally:
+            sensitivity_module._SENSITIVITY_MODEL_ADAPTERS.clear()
+            sensitivity_module._SENSITIVITY_MODEL_ADAPTERS.update(original_adapters)
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_run_lap_sensitivity_study_rejects_blank_label(self) -> None:
+        """Reject blank study labels in model-first study API."""
+        track = build_straight_track(length=250.0, sample_count=101)
+        model = self._single_track_model()
+        config = build_simulation_config(
+            compute_backend="torch",
+            torch_device="cpu",
+            torch_compile=False,
+            max_speed=55.0,
+            initial_speed=0.0,
+        )
         with self.assertRaises(ConfigurationError):
-            build_sensitivity_study_model(
-                model_factory=42,  # type: ignore[arg-type]
-                model_inputs={"vehicle": sample_vehicle_parameters()},
-            )
-        with self.assertRaises(ConfigurationError):
-            build_sensitivity_study_model(
-                model_factory=build_single_track_model,
-                model_inputs={},
-            )
-        with self.assertRaises(ConfigurationError):
-            build_sensitivity_study_model(
-                model_factory=build_single_track_model,
-                model_inputs={"vehicle": sample_vehicle_parameters()},
+            run_lap_sensitivity_study(
+                track=track,
+                model=model,
+                simulation_config=config,
+                parameters=[SensitivityStudyParameter(name="mass", target="vehicle.mass")],
                 label="   ",
             )
 
@@ -631,6 +660,67 @@ class SensitivityStudyApiTests(unittest.TestCase):
                 parameter_values={},
             )
 
+    def test_private_model_adapter_helpers_cover_branches(self) -> None:
+        """Exercise adapter-helper branches for mapping extraction and MRO lookup."""
+        original_adapters = dict(sensitivity_module._SENSITIVITY_MODEL_ADAPTERS)
+        original_registered = sensitivity_module._DEFAULT_MODEL_ADAPTERS_REGISTERED
+
+        class _BaseModel:
+            def __init__(self) -> None:
+                self.value = 1.0
+
+        class _DerivedModel(_BaseModel):
+            pass
+
+        try:
+            sensitivity_module._SENSITIVITY_MODEL_ADAPTERS.clear()
+            sensitivity_module._DEFAULT_MODEL_ADAPTERS_REGISTERED = True
+            register_sensitivity_model_adapter(
+                model_type=_BaseModel,
+                model_factory=lambda **kwargs: kwargs,
+                model_inputs_getter=lambda model: {"value": model.value},
+            )
+            adapter = sensitivity_module._resolve_sensitivity_model_adapter(_DerivedModel())
+            self.assertIsNotNone(adapter)
+            self.assertEqual(
+                sensitivity_module._extract_model_attributes(
+                    model=_DerivedModel(),
+                    required_fields=("value",),
+                )["value"],
+                1.0,
+            )
+            with self.assertRaises(ConfigurationError):
+                sensitivity_module._extract_model_attributes(
+                    model=_DerivedModel(),
+                    required_fields=("missing",),
+                )
+        finally:
+            sensitivity_module._SENSITIVITY_MODEL_ADAPTERS.clear()
+            sensitivity_module._SENSITIVITY_MODEL_ADAPTERS.update(original_adapters)
+            sensitivity_module._DEFAULT_MODEL_ADAPTERS_REGISTERED = original_registered
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_run_lap_sensitivity_study_rejects_autodiff_torch_device_mismatch(self) -> None:
+        """Reject mismatch between simulation torch device and autodiff runtime device."""
+        track = build_straight_track(length=250.0, sample_count=101)
+        model = self._single_track_model()
+        config = build_simulation_config(
+            compute_backend="torch",
+            torch_device="cpu",
+            torch_compile=False,
+            max_speed=55.0,
+            initial_speed=0.0,
+        )
+
+        with self.assertRaises(ConfigurationError):
+            run_lap_sensitivity_study(
+                track=track,
+                model=model,
+                simulation_config=config,
+                parameters=[SensitivityStudyParameter(name="mass", target="vehicle.mass")],
+                runtime=SensitivityRuntime(method="autodiff", torch_device="cpu:0"),
+            )
+
     @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
     def test_private_energy_helper_rejects_missing_or_bad_power_shapes(self) -> None:
         """Reject invalid model power hooks and shape mismatches for energy objective."""
@@ -689,17 +779,13 @@ class SensitivityStudyApiTests(unittest.TestCase):
     def test_run_lap_sensitivity_study_returns_expected_table_columns(self) -> None:
         """Build long-form and pivot outputs with expected schemas."""
         track = build_straight_track(length=300.0, sample_count=151)
+        model = self._single_track_model()
         config = build_simulation_config(
             compute_backend="torch",
             torch_device="cpu",
             torch_compile=False,
             max_speed=65.0,
             initial_speed=0.0,
-        )
-        study_model = build_sensitivity_study_model(
-            model_factory=build_single_track_model,
-            model_inputs=self._single_track_study_inputs(),
-            label="unit-test-study",
         )
         parameters = [
             SensitivityStudyParameter(
@@ -715,9 +801,10 @@ class SensitivityStudyApiTests(unittest.TestCase):
         ]
         study = run_lap_sensitivity_study(
             track=track,
-            study_model=study_model,
+            model=model,
             simulation_config=config,
             parameters=parameters,
+            label="unit-test-study",
         )
 
         long_table = study.to_dataframe()
@@ -753,6 +840,7 @@ class SensitivityStudyApiTests(unittest.TestCase):
     def test_run_lap_sensitivity_study_rejects_invalid_target(self) -> None:
         """Reject unresolved parameter target paths in study setup."""
         track = build_straight_track(length=250.0, sample_count=101)
+        model = self._single_track_model()
         config = build_simulation_config(
             compute_backend="torch",
             torch_device="cpu",
@@ -760,15 +848,11 @@ class SensitivityStudyApiTests(unittest.TestCase):
             max_speed=55.0,
             initial_speed=0.0,
         )
-        study_model = build_sensitivity_study_model(
-            model_factory=build_single_track_model,
-            model_inputs=self._single_track_study_inputs(),
-        )
 
         with self.assertRaises(ConfigurationError):
             run_lap_sensitivity_study(
                 track=track,
-                study_model=study_model,
+                model=model,
                 simulation_config=config,
                 parameters=[
                     SensitivityStudyParameter(
@@ -779,30 +863,8 @@ class SensitivityStudyApiTests(unittest.TestCase):
             )
 
     @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
-    def test_run_lap_sensitivity_study_rejects_non_torch_backend(self) -> None:
-        """Require torch simulation backend for AD-first lap study API."""
-        track = build_straight_track(length=250.0, sample_count=101)
-        numpy_config = build_simulation_config(
-            compute_backend="numpy",
-            max_speed=55.0,
-            initial_speed=0.0,
-        )
-        study_model = build_sensitivity_study_model(
-            model_factory=build_single_track_model,
-            model_inputs=self._single_track_study_inputs(),
-        )
-
-        with self.assertRaises(ConfigurationError):
-            run_lap_sensitivity_study(
-                track=track,
-                study_model=study_model,
-                simulation_config=numpy_config,
-                parameters=[SensitivityStudyParameter(name="mass", target="vehicle.mass")],
-            )
-
-    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
-    def test_run_lap_sensitivity_study_rejects_unknown_objective(self) -> None:
-        """Reject objective identifiers outside the supported lap-study set."""
+    def test_run_lap_sensitivity_study_rejects_unregistered_model_type(self) -> None:
+        """Reject sensitivity studies for model types without registered adapters."""
         track = build_straight_track(length=250.0, sample_count=101)
         config = build_simulation_config(
             compute_backend="torch",
@@ -811,15 +873,159 @@ class SensitivityStudyApiTests(unittest.TestCase):
             max_speed=55.0,
             initial_speed=0.0,
         )
-        study_model = build_sensitivity_study_model(
-            model_factory=build_single_track_model,
-            model_inputs=self._single_track_study_inputs(),
+
+        class _UnsupportedModel:
+            """Model without registered sensitivity adapter."""
+
+        with self.assertRaisesRegex(ConfigurationError, "register_sensitivity_model_adapter"):
+            run_lap_sensitivity_study(
+                track=track,
+                model=_UnsupportedModel(),
+                simulation_config=config,
+                parameters=[SensitivityStudyParameter(name="mass", target="vehicle.mass")],
+            )
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_run_lap_sensitivity_study_rejects_invalid_adapter_payload(self) -> None:
+        """Reject adapters whose input getters do not return mappings."""
+        track = build_straight_track(length=250.0, sample_count=101)
+        config = build_simulation_config(
+            compute_backend="torch",
+            torch_device="cpu",
+            torch_compile=False,
+            max_speed=55.0,
+            initial_speed=0.0,
+        )
+        original_adapters = dict(sensitivity_module._SENSITIVITY_MODEL_ADAPTERS)
+        original_registered = sensitivity_module._DEFAULT_MODEL_ADAPTERS_REGISTERED
+
+        class _DummyModel:
+            """Dummy model type for adapter payload validation tests."""
+
+        try:
+            register_sensitivity_model_adapter(
+                model_type=_DummyModel,
+                model_factory=lambda **_: object(),
+                model_inputs_getter=lambda _: cast(Any, []),
+            )
+            with self.assertRaisesRegex(ConfigurationError, "must return a mapping"):
+                run_lap_sensitivity_study(
+                    track=track,
+                    model=_DummyModel(),
+                    simulation_config=config,
+                    parameters=[SensitivityStudyParameter(name="mass", target="vehicle.mass")],
+                )
+        finally:
+            sensitivity_module._SENSITIVITY_MODEL_ADAPTERS.clear()
+            sensitivity_module._SENSITIVITY_MODEL_ADAPTERS.update(original_adapters)
+            sensitivity_module._DEFAULT_MODEL_ADAPTERS_REGISTERED = original_registered
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_run_lap_sensitivity_study_rejects_empty_adapter_payload(self) -> None:
+        """Reject adapters whose input getters return empty mappings."""
+        track = build_straight_track(length=250.0, sample_count=101)
+        config = build_simulation_config(
+            compute_backend="torch",
+            torch_device="cpu",
+            torch_compile=False,
+            max_speed=55.0,
+            initial_speed=0.0,
+        )
+        original_adapters = dict(sensitivity_module._SENSITIVITY_MODEL_ADAPTERS)
+        original_registered = sensitivity_module._DEFAULT_MODEL_ADAPTERS_REGISTERED
+
+        class _DummyModel:
+            """Dummy model type for adapter payload validation tests."""
+
+        try:
+            register_sensitivity_model_adapter(
+                model_type=_DummyModel,
+                model_factory=lambda **_: object(),
+                model_inputs_getter=lambda _: {},
+            )
+            with self.assertRaisesRegex(ConfigurationError, "non-empty mapping"):
+                run_lap_sensitivity_study(
+                    track=track,
+                    model=_DummyModel(),
+                    simulation_config=config,
+                    parameters=[SensitivityStudyParameter(name="mass", target="vehicle.mass")],
+                )
+        finally:
+            sensitivity_module._SENSITIVITY_MODEL_ADAPTERS.clear()
+            sensitivity_module._SENSITIVITY_MODEL_ADAPTERS.update(original_adapters)
+            sensitivity_module._DEFAULT_MODEL_ADAPTERS_REGISTERED = original_registered
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_run_lap_sensitivity_study_wraps_model_factory_type_error(self) -> None:
+        """Wrap model-factory signature errors with a study-level configuration error."""
+        track = build_straight_track(length=250.0, sample_count=101)
+        config = build_simulation_config(
+            compute_backend="torch",
+            torch_device="cpu",
+            torch_compile=False,
+            max_speed=55.0,
+            initial_speed=0.0,
+        )
+        original_adapters = dict(sensitivity_module._SENSITIVITY_MODEL_ADAPTERS)
+        original_registered = sensitivity_module._DEFAULT_MODEL_ADAPTERS_REGISTERED
+
+        class _DummyModel:
+            """Dummy model type with custom adapter."""
+
+        try:
+            register_sensitivity_model_adapter(
+                model_type=_DummyModel,
+                model_factory=lambda: object(),
+                model_inputs_getter=lambda _: {"value": 1.0},
+            )
+            with self.assertRaisesRegex(ConfigurationError, "failed to build model"):
+                run_lap_sensitivity_study(
+                    track=track,
+                    model=_DummyModel(),
+                    simulation_config=config,
+                    parameters=[SensitivityStudyParameter(name="value", target="value")],
+                )
+        finally:
+            sensitivity_module._SENSITIVITY_MODEL_ADAPTERS.clear()
+            sensitivity_module._SENSITIVITY_MODEL_ADAPTERS.update(original_adapters)
+            sensitivity_module._DEFAULT_MODEL_ADAPTERS_REGISTERED = original_registered
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_run_lap_sensitivity_study_rejects_non_torch_backend(self) -> None:
+        """Require torch simulation backend for AD-first lap study API."""
+        track = build_straight_track(length=250.0, sample_count=101)
+        model = self._single_track_model()
+        numpy_config = build_simulation_config(
+            compute_backend="numpy",
+            max_speed=55.0,
+            initial_speed=0.0,
         )
 
         with self.assertRaises(ConfigurationError):
             run_lap_sensitivity_study(
                 track=track,
-                study_model=study_model,
+                model=model,
+                simulation_config=numpy_config,
+                parameters=[SensitivityStudyParameter(name="mass", target="vehicle.mass")],
+            )
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_run_lap_sensitivity_study_rejects_unknown_objective(self) -> None:
+        """Reject objective identifiers outside the supported lap-study set."""
+        track = build_straight_track(length=250.0, sample_count=101)
+        model = self._single_track_model()
+        config = build_simulation_config(
+            compute_backend="torch",
+            torch_device="cpu",
+            torch_compile=False,
+            max_speed=55.0,
+            initial_speed=0.0,
+        )
+
+        with self.assertRaises(ConfigurationError):
+            run_lap_sensitivity_study(
+                track=track,
+                model=model,
                 simulation_config=config,
                 parameters=[SensitivityStudyParameter(name="mass", target="vehicle.mass")],
                 objectives=("lap_time_s", "unknown"),
@@ -829,16 +1035,13 @@ class SensitivityStudyApiTests(unittest.TestCase):
     def test_run_lap_sensitivity_study_matches_fd_for_lap_time(self) -> None:
         """Keep FD and AD derivatives consistent for a real lap-time study objective."""
         track = build_straight_track(length=350.0, sample_count=181)
+        model = self._single_track_model()
         config = build_simulation_config(
             compute_backend="torch",
             torch_device="cpu",
             torch_compile=False,
             max_speed=70.0,
             initial_speed=0.0,
-        )
-        study_model = build_sensitivity_study_model(
-            model_factory=build_single_track_model,
-            model_inputs=self._single_track_study_inputs(),
         )
         parameters = [
             SensitivityStudyParameter(name="mass", target="vehicle.mass"),
@@ -847,14 +1050,14 @@ class SensitivityStudyApiTests(unittest.TestCase):
 
         autodiff = run_lap_sensitivity_study(
             track=track,
-            study_model=study_model,
+            model=model,
             simulation_config=config,
             parameters=parameters,
             objectives=("lap_time_s",),
         )
         finite_difference = run_lap_sensitivity_study(
             track=track,
-            study_model=study_model,
+            model=model,
             simulation_config=config,
             parameters=parameters,
             objectives=("lap_time_s",),
@@ -886,6 +1089,7 @@ class SensitivityStudyApiTests(unittest.TestCase):
     def test_run_lap_sensitivity_study_energy_objective_is_autodiff(self) -> None:
         """Compute energy sensitivities through the AD-first lap study interface."""
         track = build_straight_track(length=300.0, sample_count=151)
+        model = self._single_track_model()
         config = build_simulation_config(
             compute_backend="torch",
             torch_device="cpu",
@@ -893,14 +1097,10 @@ class SensitivityStudyApiTests(unittest.TestCase):
             max_speed=65.0,
             initial_speed=0.0,
         )
-        study_model = build_sensitivity_study_model(
-            model_factory=build_single_track_model,
-            model_inputs=self._single_track_study_inputs(),
-        )
 
         study = run_lap_sensitivity_study(
             track=track,
-            study_model=study_model,
+            model=model,
             simulation_config=config,
             parameters=[
                 SensitivityStudyParameter(name="mass", target="vehicle.mass"),
@@ -922,6 +1122,7 @@ class SensitivityStudyApiTests(unittest.TestCase):
     def test_run_lap_sensitivity_study_supports_point_mass_model(self) -> None:
         """Run the high-level study API with a point-mass model and both objectives."""
         track = build_straight_track(length=320.0, sample_count=161)
+        model = self._point_mass_model()
         config = build_simulation_config(
             compute_backend="torch",
             torch_device="cpu",
@@ -929,15 +1130,10 @@ class SensitivityStudyApiTests(unittest.TestCase):
             max_speed=70.0,
             initial_speed=0.0,
         )
-        study_model = build_sensitivity_study_model(
-            model_factory=build_point_mass_model,
-            model_inputs=self._point_mass_study_inputs(),
-            label="point-mass-study",
-        )
 
         study = run_lap_sensitivity_study(
             track=track,
-            study_model=study_model,
+            model=model,
             simulation_config=config,
             parameters=[
                 SensitivityStudyParameter(name="mass", target="vehicle.mass"),
@@ -950,6 +1146,7 @@ class SensitivityStudyApiTests(unittest.TestCase):
                     target="physics.friction_coefficient",
                 ),
             ],
+            label="point-mass-study",
         )
 
         self.assertEqual(set(study.sensitivity_results.keys()), {"lap_time_s", "energy_kwh"})
@@ -969,16 +1166,13 @@ class SensitivityStudyApiTests(unittest.TestCase):
     def test_run_lap_sensitivity_study_point_mass_ad_matches_fd(self) -> None:
         """Match point-mass AD and FD sensitivities for a real lap-time study objective."""
         track = build_straight_track(length=280.0, sample_count=141)
+        model = self._point_mass_model()
         config = build_simulation_config(
             compute_backend="torch",
             torch_device="cpu",
             torch_compile=False,
             max_speed=62.0,
             initial_speed=0.0,
-        )
-        study_model = build_sensitivity_study_model(
-            model_factory=build_point_mass_model,
-            model_inputs=self._point_mass_study_inputs(),
         )
         parameters = [
             SensitivityStudyParameter(name="mass", target="vehicle.mass"),
@@ -987,7 +1181,7 @@ class SensitivityStudyApiTests(unittest.TestCase):
 
         autodiff = run_lap_sensitivity_study(
             track=track,
-            study_model=study_model,
+            model=model,
             simulation_config=config,
             parameters=parameters,
             objectives=("lap_time_s",),
@@ -995,7 +1189,7 @@ class SensitivityStudyApiTests(unittest.TestCase):
 
         finite_difference = run_lap_sensitivity_study(
             track=track,
-            study_model=study_model,
+            model=model,
             simulation_config=config,
             parameters=parameters,
             objectives=("lap_time_s",),

@@ -9,7 +9,6 @@ import pandas as pd
 
 from apexsim.analysis import (
     SensitivityStudyParameter,
-    build_sensitivity_study_model,
     run_lap_sensitivity_study,
 )
 from apexsim.simulation import build_simulation_config
@@ -127,21 +126,18 @@ def run_single_track_sensitivity_study(
         max_speed=max_speed,
     )
 
-    study_model = build_sensitivity_study_model(
-        model_factory=build_single_track_model,
-        model_inputs={
-            "vehicle": vehicle,
-            "tires": tires,
-            "physics": physics,
-        },
-        label=track_label,
+    model = build_single_track_model(
+        vehicle=vehicle,
+        tires=tires,
+        physics=physics,
     )
 
     study_result = run_lap_sensitivity_study(
         track=track,
-        study_model=study_model,
+        model=model,
         simulation_config=simulation_config,
         parameters=DEFAULT_STUDY_PARAMETERS,
+        label=track_label,
     )
 
     long_table = study_result.to_dataframe().sort_values(

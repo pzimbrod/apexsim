@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from copy import copy
 from dataclasses import dataclass, field, is_dataclass, replace
 from typing import Any, Protocol, cast
@@ -46,24 +46,34 @@ class SensitivityObjective(Protocol):
         """
 
 
-class SensitivityStudyModelFactory(Protocol):
-    """Factory protocol used by high-level lap sensitivity studies."""
+SensitivityModelFactory = Callable[..., Any]
 
-    def __call__(self, **model_inputs: Any) -> Any:
-        """Build a vehicle model from keyword inputs.
+
+class SensitivityModelInputsGetter(Protocol):
+    """Protocol for extracting reconstructable model inputs from an instance."""
+
+    def __call__(self, model: Any) -> Mapping[str, Any]:
+        """Extract baseline model inputs from a model instance.
 
         Args:
-            **model_inputs: Keyword arguments consumed by the concrete model
-                factory implementation.
+            model: Vehicle model instance.
 
         Returns:
-            Solver-compatible vehicle model instance.
+            Mapping consumed by a registered model factory.
         """
 
 
 @dataclass(frozen=True)
-class SensitivityStudyModel:
-    """Model-construction bundle used by lap sensitivity studies.
+class _SensitivityModelAdapter:
+    """Registered model adapter for model reconstruction."""
+
+    model_factory: SensitivityModelFactory
+    model_inputs_getter: SensitivityModelInputsGetter
+
+
+@dataclass(frozen=True)
+class _ResolvedStudyModelSpec:
+    """Internal resolved model specification used by lap sensitivity studies.
 
     Args:
         model_factory: Callable that builds a solver-compatible vehicle model.
@@ -71,12 +81,12 @@ class SensitivityStudyModel:
         label: Optional study label included in tabular outputs.
     """
 
-    model_factory: SensitivityStudyModelFactory
+    model_factory: SensitivityModelFactory
     model_inputs: Mapping[str, Any]
     label: str | None = None
 
     def validate(self) -> None:
-        """Validate study-model construction settings.
+        """Validate resolved model-spec construction settings.
 
         Raises:
             apexsim.utils.exceptions.ConfigurationError: If model factory or
@@ -96,14 +106,18 @@ class SensitivityStudyModel:
             raise ConfigurationError(msg)
 
 
+_SENSITIVITY_MODEL_ADAPTERS: dict[type[Any], _SensitivityModelAdapter] = {}
+_DEFAULT_MODEL_ADAPTERS_REGISTERED = False
+
+
 @dataclass(frozen=True)
 class SensitivityStudyParameter:
     """Parameter specification for high-level lap sensitivity studies.
 
     Args:
         name: Parameter identifier used in exported sensitivity tables.
-        target: Dot-path in ``SensitivityStudyModel.model_inputs`` to the
-            scalar value to be perturbed (for example ``vehicle.mass``).
+        target: Dot-path in the reconstructed model input mapping to the scalar
+            value to be perturbed (for example ``vehicle.mass``).
         label: Optional human-readable label for plots/tables.
         kind: Conceptual parameter category (``physical`` or ``numerical``).
         relative_variation: Relative variation used for local +/- prediction
@@ -638,55 +652,69 @@ def compute_sensitivities(
     )
 
 
-def build_sensitivity_study_model(
+def register_sensitivity_model_adapter(
     *,
-    model_factory: SensitivityStudyModelFactory,
-    model_inputs: Mapping[str, Any],
-    label: str | None = None,
-) -> SensitivityStudyModel:
-    """Build a validated high-level lap sensitivity study model.
+    model_type: type[Any],
+    model_factory: SensitivityModelFactory,
+    model_inputs_getter: SensitivityModelInputsGetter,
+) -> None:
+    """Register model reconstruction adapter for lap sensitivity studies.
+
+    Registered adapters enable :func:`run_lap_sensitivity_study` to rebuild a
+    model for each parameter perturbation without mutating the passed model.
 
     Args:
-        model_factory: Callable that builds a vehicle model from keyword args.
-        model_inputs: Baseline keyword arguments passed to ``model_factory``.
-        label: Optional study label used in exported tabular outputs.
+        model_type: Model class handled by the adapter.
+        model_factory: Callable rebuilding model instances from keyword inputs.
+        model_inputs_getter: Callable extracting reconstructable baseline model
+            inputs from an existing model instance.
 
-    Returns:
-        Validated study model definition.
+    Raises:
+        apexsim.utils.exceptions.ConfigurationError: If adapter inputs are
+            malformed.
     """
-    study_model = SensitivityStudyModel(
+    if not isinstance(model_type, type):
+        msg = "model_type must be a class type"
+        raise ConfigurationError(msg)
+    if not callable(model_factory):
+        msg = "model_factory must be callable"
+        raise ConfigurationError(msg)
+    if not callable(model_inputs_getter):
+        msg = "model_inputs_getter must be callable"
+        raise ConfigurationError(msg)
+
+    _SENSITIVITY_MODEL_ADAPTERS[model_type] = _SensitivityModelAdapter(
         model_factory=model_factory,
-        model_inputs=dict(model_inputs),
-        label=label,
+        model_inputs_getter=model_inputs_getter,
     )
-    study_model.validate()
-    return study_model
 
 
 def run_lap_sensitivity_study(
     *,
     track: TrackData,
-    study_model: SensitivityStudyModel,
+    model: Any,
     simulation_config: SimulationConfig,
     parameters: Sequence[SensitivityStudyParameter],
     objectives: Sequence[str] = DEFAULT_LAP_SENSITIVITY_OBJECTIVES,
+    label: str | None = None,
     config: SensitivityConfig | None = None,
     numerics: SensitivityNumerics | None = None,
     runtime: SensitivityRuntime | None = None,
 ) -> SensitivityStudyResult:
     """Run a local lap-KPI sensitivity study over selected scalar parameters.
 
-    The study API is model-agnostic. The model is rebuilt via ``study_model``
-    for each parameter perturbation and objective evaluation.
+    The study API is model-agnostic. The model is rebuilt from the provided
+    model instance for each parameter perturbation and objective evaluation.
 
     Args:
         track: Track used for speed-profile evaluation.
-        study_model: Model-factory and baseline input bundle.
+        model: Baseline model instance used for adapter-based reconstruction.
         simulation_config: Simulation setup. Must use ``compute_backend='torch'``.
-        parameters: Parameter definitions with dot-path targets into
-            ``study_model.model_inputs``.
+        parameters: Parameter definitions with dot-path targets into the model
+            input map reconstructed by the registered adapter.
         objectives: Objective identifiers. Supported values are
             ``lap_time_s`` and ``energy_kwh``.
+        label: Optional study label used in exported tabular outputs.
         config: Optional full sensitivity config.
         numerics: Optional sensitivity numerics (used if ``config`` is omitted).
         runtime: Optional sensitivity runtime (used if ``config`` is omitted).
@@ -695,13 +723,16 @@ def run_lap_sensitivity_study(
         Multi-objective sensitivity-study result with tabular conversion helpers.
 
     Raises:
-        apexsim.utils.exceptions.ConfigurationError: If objective names are
-            unsupported, parameter targets are invalid, or backend requirements
-            are not satisfied.
+        apexsim.utils.exceptions.ConfigurationError: If objective names are unsupported,
+            parameter targets are invalid, or backend requirements are not satisfied.
     """
-    study_model.validate()
     simulation_config.validate()
     track.validate()
+    resolved_study_model = _resolve_lap_study_model(
+        model=model,
+        label=label,
+    )
+    resolved_study_model.validate()
 
     if simulation_config.runtime.compute_backend != "torch":
         msg = (
@@ -712,7 +743,7 @@ def run_lap_sensitivity_study(
     objective_names = _normalize_lap_sensitivity_objectives(objectives)
     normalized_study_parameters = _normalize_study_parameters(
         parameters=parameters,
-        model_inputs=study_model.model_inputs,
+        model_inputs=resolved_study_model.model_inputs,
     )
     resolved_config = _resolve_lap_study_sensitivity_config(
         config=config,
@@ -736,7 +767,7 @@ def run_lap_sensitivity_study(
         SensitivityParameter(
             name=parameter.name,
             value=_resolve_study_parameter_baseline_value(
-                model_inputs=study_model.model_inputs,
+                model_inputs=resolved_study_model.model_inputs,
                 target=parameter.target,
                 parameter_name=parameter.name,
             ),
@@ -751,7 +782,7 @@ def run_lap_sensitivity_study(
     for objective_name in objective_names:
         objective = _build_lap_study_objective(
             objective=objective_name,
-            study_model=study_model,
+            study_model=resolved_study_model,
             track=track,
             simulation_config=simulation_config,
             parameters=normalized_study_parameters,
@@ -763,7 +794,7 @@ def run_lap_sensitivity_study(
         )
 
     return SensitivityStudyResult(
-        study_label=study_model.label,
+        study_label=resolved_study_model.label,
         objective_order=tuple(objective_names),
         objective_units={
             name: LAP_SENSITIVITY_OBJECTIVE_UNITS[name] for name in objective_names
@@ -771,6 +802,147 @@ def run_lap_sensitivity_study(
         parameters=tuple(normalized_study_parameters),
         sensitivity_results=sensitivity_results,
     )
+
+
+def _resolve_lap_study_model(
+    *,
+    model: Any,
+    label: str | None,
+) -> _ResolvedStudyModelSpec:
+    """Resolve model reconstruction spec from a model instance.
+
+    Args:
+        model: Baseline model instance for the sensitivity study.
+        label: Optional study label for exported results.
+
+    Returns:
+        Resolved internal model spec.
+    """
+    if label is not None and not label.strip():
+        msg = "label must be a non-empty string when provided"
+        raise ConfigurationError(msg)
+
+    adapter = _resolve_sensitivity_model_adapter(model)
+    model_inputs = adapter.model_inputs_getter(model)
+    if not isinstance(model_inputs, Mapping):
+        msg = "model_inputs_getter must return a mapping"
+        raise ConfigurationError(msg)
+    if not model_inputs:
+        msg = "model_inputs_getter must return a non-empty mapping"
+        raise ConfigurationError(msg)
+
+    resolved = _ResolvedStudyModelSpec(
+        model_factory=adapter.model_factory,
+        model_inputs=dict(model_inputs),
+        label=label,
+    )
+    resolved.validate()
+    return resolved
+
+
+def _resolve_sensitivity_model_adapter(model: Any) -> _SensitivityModelAdapter:
+    """Resolve registered adapter for a model instance via MRO lookup.
+
+    Args:
+        model: Model instance used for lookup.
+
+    Returns:
+        Registered model adapter for the model type.
+    """
+    _ensure_default_sensitivity_model_adapters()
+
+    for model_cls in type(model).__mro__:
+        adapter = _SENSITIVITY_MODEL_ADAPTERS.get(model_cls)
+        if adapter is not None:
+            return adapter
+
+    msg = (
+        "No sensitivity model adapter registered for model type "
+        f"{type(model)!r}. Register one via "
+        "`register_sensitivity_model_adapter(model_type=..., "
+        "model_factory=..., model_inputs_getter=...)`."
+    )
+    raise ConfigurationError(msg)
+
+
+def _ensure_default_sensitivity_model_adapters() -> None:
+    """Register built-in model adapters once."""
+    global _DEFAULT_MODEL_ADAPTERS_REGISTERED
+    if _DEFAULT_MODEL_ADAPTERS_REGISTERED:
+        return
+
+    from apexsim.vehicle.point_mass_model import PointMassModel, build_point_mass_model
+    from apexsim.vehicle.single_track_model import SingleTrackModel, build_single_track_model
+
+    register_sensitivity_model_adapter(
+        model_type=SingleTrackModel,
+        model_factory=build_single_track_model,
+        model_inputs_getter=_single_track_model_inputs_getter,
+    )
+    register_sensitivity_model_adapter(
+        model_type=PointMassModel,
+        model_factory=build_point_mass_model,
+        model_inputs_getter=_point_mass_model_inputs_getter,
+    )
+    _DEFAULT_MODEL_ADAPTERS_REGISTERED = True
+
+
+def _single_track_model_inputs_getter(model: Any) -> Mapping[str, Any]:
+    """Extract reconstructable inputs from single-track model instances.
+
+    Args:
+        model: Single-track model instance.
+
+    Returns:
+        Mapping consumed by ``build_single_track_model``.
+    """
+    return _extract_model_attributes(
+        model=model,
+        required_fields=("vehicle", "tires", "physics", "numerics"),
+    )
+
+
+def _point_mass_model_inputs_getter(model: Any) -> Mapping[str, Any]:
+    """Extract reconstructable inputs from point-mass model instances.
+
+    Args:
+        model: Point-mass model instance.
+
+    Returns:
+        Mapping consumed by ``build_point_mass_model``.
+    """
+    return _extract_model_attributes(
+        model=model,
+        required_fields=("vehicle", "physics"),
+    )
+
+
+def _extract_model_attributes(
+    *,
+    model: Any,
+    required_fields: Sequence[str],
+) -> Mapping[str, Any]:
+    """Extract required model attributes into a mapping.
+
+    Args:
+        model: Model instance.
+        required_fields: Required attribute names.
+
+    Returns:
+        Mapping with extracted attribute values.
+    """
+    values: dict[str, Any] = {}
+    missing = [name for name in required_fields if not hasattr(model, name)]
+    if missing:
+        msg = (
+            f"Model type {type(model)!r} is missing required attributes for "
+            f"sensitivity reconstruction: {missing}"
+        )
+        raise ConfigurationError(msg)
+
+    for name in required_fields:
+        values[name] = getattr(model, name)
+    return values
 
 
 def _resolve_lap_study_sensitivity_config(
@@ -904,7 +1076,7 @@ def _resolve_study_parameter_baseline_value(
 def _build_lap_study_objective(
     *,
     objective: str,
-    study_model: SensitivityStudyModel,
+    study_model: _ResolvedStudyModelSpec,
     track: TrackData,
     simulation_config: SimulationConfig,
     parameters: Sequence[SensitivityStudyParameter],
@@ -913,7 +1085,7 @@ def _build_lap_study_objective(
 
     Args:
         objective: Objective identifier.
-        study_model: Study-model bundle with factory and baseline inputs.
+        study_model: Resolved study-model bundle with factory and baseline inputs.
         track: Track used for lap simulation.
         simulation_config: Torch simulation config used for objective solves.
         parameters: Study parameter definitions.
@@ -936,7 +1108,14 @@ def _build_lap_study_objective(
             parameters=parameter_map,
             parameter_values=parameter_values,
         )
-        model = study_model.model_factory(**updated_inputs)
+        try:
+            model = study_model.model_factory(**updated_inputs)
+        except TypeError as exc:
+            msg = (
+                "Registered sensitivity model_factory failed to build model "
+                "from extracted inputs."
+            )
+            raise ConfigurationError(msg) from exc
 
         from apexsim.simulation.torch_profile import solve_speed_profile_torch
 
