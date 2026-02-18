@@ -10,31 +10,31 @@
       
       
       
-        <link rel="canonical" href="https://pzimbrod.github.io/apexsim/0.1.0/ASSUMPTIONS/">
+        <link rel="canonical" href="https://pzimbrod.github.io/apexsim/0.1.0/examples/spa/point_mass_lap/">
       
       
-        <link rel="prev" href="../SOLVER/">
+        <link rel="prev" href="../single_track_lap/">
       
       
-        <link rel="next" href="../DEVELOPMENT/">
+        <link rel="next" href="../model_comparison/">
       
       
         
       
       
-      <link rel="icon" href="../assets/icon.svg">
+      <link rel="icon" href="../../../assets/icon.svg">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
       
-        <title>Assumptions - ApexSim</title>
+        <title>Point-Mass Lap - ApexSim</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -53,9 +53,9 @@
       
     
     
-      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#assumptions-and-limitations" class="md-skip">
+        <a href="#spa-point-mass-lap" class="md-skip">
           Skip to content
         </a>
       
@@ -100,9 +100,9 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="ApexSim" class="md-header__button md-logo" aria-label="ApexSim" data-md-component="logo">
+    <a href="../../.." title="ApexSim" class="md-header__button md-logo" aria-label="ApexSim" data-md-component="logo">
       
-  <img src="../assets/icon.svg" alt="logo">
+  <img src="../../../assets/icon.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -119,7 +119,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Assumptions
+              Point-Mass Lap
             
           </span>
         </div>
@@ -245,9 +245,9 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="ApexSim" class="md-nav__button md-logo" aria-label="ApexSim" data-md-component="logo">
+    <a href="../../.." title="ApexSim" class="md-nav__button md-logo" aria-label="ApexSim" data-md-component="logo">
       
-  <img src="../assets/icon.svg" alt="logo">
+  <img src="../../../assets/icon.svg" alt="logo">
 
     </a>
     ApexSim
@@ -274,7 +274,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -298,20 +298,18 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
@@ -332,7 +330,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -350,7 +348,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../HOW_TO_USE/" class="md-nav__link">
+      <a href="../../../HOW_TO_USE/" class="md-nav__link">
         
   
   
@@ -378,7 +376,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../BACKENDS/" class="md-nav__link">
+      <a href="../../../BACKENDS/" class="md-nav__link">
         
   
   
@@ -406,7 +404,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../API/" class="md-nav__link">
+      <a href="../../../API/" class="md-nav__link">
         
   
   
@@ -434,7 +432,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../SOLVER/" class="md-nav__link">
+      <a href="../../../SOLVER/" class="md-nav__link">
         
   
   
@@ -459,19 +457,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../../ASSUMPTIONS/" class="md-nav__link">
         
   
   
@@ -487,7 +476,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -500,7 +488,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../DEVELOPMENT/" class="md-nav__link">
+      <a href="../../../DEVELOPMENT/" class="md-nav__link">
         
   
   
@@ -532,18 +520,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -564,7 +554,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -582,7 +572,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../EXAMPLES/" class="md-nav__link">
+      <a href="../../../EXAMPLES/" class="md-nav__link">
         
   
   
@@ -610,7 +600,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../EXAMPLES_SYNTHETIC/" class="md-nav__link">
+      <a href="../../../EXAMPLES_SYNTHETIC/" class="md-nav__link">
         
   
   
@@ -635,18 +625,20 @@
                 
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" checked>
         
           
           <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
@@ -667,7 +659,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -685,7 +677,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/spa/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
@@ -713,7 +705,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/spa/single_track_lap/" class="md-nav__link">
+      <a href="../single_track_lap/" class="md-nav__link">
         
   
   
@@ -738,10 +730,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../examples/spa/point_mass_lap/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Point-Mass Lap
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -757,6 +776,114 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#learning-goal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning goal
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-changes-vs-single-track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What changes vs. single-track
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-this-model-is-useful" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why this model is useful
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-this-model-cannot-represent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What this model cannot represent
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outputs-to-inspect-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Outputs to inspect first
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#theoretical-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Theoretical foundation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assumptions-and-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assumptions and limits
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#potential-learnings-from-the-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Potential learnings from the data
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -769,7 +896,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/spa/model_comparison/" class="md-nav__link">
+      <a href="../model_comparison/" class="md-nav__link">
         
   
   
@@ -797,7 +924,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/spa/performance_envelope/" class="md-nav__link">
+      <a href="../performance_envelope/" class="md-nav__link">
         
   
   
@@ -887,7 +1014,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../SINGLE_TRACK_MODEL/" class="md-nav__link">
+      <a href="../../../SINGLE_TRACK_MODEL/" class="md-nav__link">
         
   
   
@@ -915,7 +1042,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../POINT_MASS_MODEL/" class="md-nav__link">
+      <a href="../../../POINT_MASS_MODEL/" class="md-nav__link">
         
   
   
@@ -997,7 +1124,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/apexsim/" class="md-nav__link">
+      <a href="../../../reference/apexsim/" class="md-nav__link">
         
   
   
@@ -1025,7 +1152,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/simulation/" class="md-nav__link">
+      <a href="../../../reference/simulation/" class="md-nav__link">
         
   
   
@@ -1053,7 +1180,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/vehicle/" class="md-nav__link">
+      <a href="../../../reference/vehicle/" class="md-nav__link">
         
   
   
@@ -1081,7 +1208,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/tire/" class="md-nav__link">
+      <a href="../../../reference/tire/" class="md-nav__link">
         
   
   
@@ -1109,7 +1236,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/track/" class="md-nav__link">
+      <a href="../../../reference/track/" class="md-nav__link">
         
   
   
@@ -1137,7 +1264,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/analysis/" class="md-nav__link">
+      <a href="../../../reference/analysis/" class="md-nav__link">
         
   
   
@@ -1185,6 +1312,102 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#learning-goal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learning goal
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-changes-vs-single-track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What changes vs. single-track
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-this-model-is-useful" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why this model is useful
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-this-model-cannot-represent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What this model cannot represent
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outputs-to-inspect-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Outputs to inspect first
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#theoretical-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Theoretical foundation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assumptions-and-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assumptions and limits
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#potential-learnings-from-the-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Potential learnings from the data
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1203,26 +1426,64 @@
   
 
 
-<h1 id="assumptions-and-limitations">Assumptions and Limitations<a class="headerlink" href="#assumptions-and-limitations" title="Permanent link">&para;</a></h1>
+<h1 id="spa-point-mass-lap">Spa: Point-Mass Lap<a class="headerlink" href="#spa-point-mass-lap" title="Permanent link">&para;</a></h1>
+<p>This page explains <code>examples/spa/spa_lap_point_mass.py</code>.</p>
+<h2 id="learning-goal">Learning goal<a class="headerlink" href="#learning-goal" title="Permanent link">&para;</a></h2>
+<p>Run a faster, lower-complexity baseline model and understand what is gained
+and lost relative to single-track.</p>
+<h2 id="what-changes-vs-single-track">What changes vs. single-track<a class="headerlink" href="#what-changes-vs-single-track" title="Permanent link">&para;</a></h2>
+<p>The script keeps track and vehicle setup style identical, but swaps model backend:</p>
+<div class="highlight"><pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">build_point_mass_model</span><span class="p">(</span>
+    <span class="n">vehicle</span><span class="o">=</span><span class="n">vehicle</span><span class="p">,</span>
+    <span class="n">physics</span><span class="o">=</span><span class="n">PointMassPhysics</span><span class="p">(</span>
+        <span class="n">max_drive_accel</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span>
+        <span class="n">max_brake_accel</span><span class="o">=</span><span class="mf">16.0</span><span class="p">,</span>
+        <span class="n">friction_coefficient</span><span class="o">=</span><span class="mf">1.7</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<h2 id="why-this-model-is-useful">Why this model is useful<a class="headerlink" href="#why-this-model-is-useful" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Base vehicle dynamics are 3-DOF (<code>vx</code>, <code>vy</code>, <code>yaw_rate</code>) with single-track abstraction.</li>
-<li>Point-mass backend is available as an alternative model and assumes zero yaw moment
-  in diagnostics by construction.</li>
-<li>Tire model implements Pacejka-style lateral force only in this phase.</li>
-<li>Longitudinal force limits are represented by configurable accel/brake envelopes.</li>
-<li>Point-mass backend uses an isotropic friction-circle with speed-dependent normal
-  load from aerodynamic downforce.</li>
-<li>Lateral speed envelope is solved as a fixed-point iteration with configurable
-  tolerance and iteration cap in <code>SimulationConfig</code>.</li>
-<li>Aero model uses constant coefficients (<code>c_l</code>, <code>c_d</code>) and rigid ride height.</li>
-<li>The lap-time solver is decoupled from specific vehicle equations and only
-  depends on the <code>VehicleModel</code> API contract.</li>
-<li>Track data expects closed-loop CSV with columns: <code>x</code>, <code>y</code>, <code>elevation</code>, <code>banking</code>.</li>
-<li>Current Spa import uses real centerline coordinates, while <code>elevation</code> and <code>banking</code> are
-  set to <code>0.0</code> until higher-fidelity telemetry/map layers are integrated.</li>
+<li>Fast parameter sweeps and sensitivity studies.</li>
+<li>Clean baseline for comparing model complexity.</li>
+<li>Lower numerical and conceptual overhead for first experiments.</li>
 </ul>
-<p>These simplifications are intentional to keep the architecture extensible for future modules:
-full vehicle, powertrain, and energy management.</p>
+<h2 id="what-this-model-cannot-represent">What this model cannot represent<a class="headerlink" href="#what-this-model-cannot-represent" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Yaw-state dynamics are not modeled.</li>
+<li>Yaw moment is zero by model structure.</li>
+<li>Tire behavior is represented as isotropic envelope simplification.</li>
+</ul>
+<h2 id="outputs-to-inspect-first">Outputs to inspect first<a class="headerlink" href="#outputs-to-inspect-first" title="Permanent link">&para;</a></h2>
+<ol>
+<li><code>examples/output/spa/point_mass/kpis.json</code></li>
+<li><code>examples/output/spa/point_mass/speed_trace.png</code></li>
+<li><code>examples/output/spa/point_mass/gg_diagram.png</code></li>
+</ol>
+<h2 id="theoretical-foundation">Theoretical foundation<a class="headerlink" href="#theoretical-foundation" title="Permanent link">&para;</a></h2>
+<p>The point-mass model uses an isotropic acceleration envelope with aero coupling.
+Typical relations are:</p>
+<ul>
+<li>normal-acceleration budget:
+  <code>a_n(v) = g + F_down(v) / m</code></li>
+<li>lateral limit (flat road simplification):
+  <code>a_y,lim(v) = mu * a_n(v)</code></li>
+<li>friction-circle coupling:
+  <code>a_x,avail = a_x,max * sqrt(1 - (a_y,req / a_y,lim)^2)</code></li>
+</ul>
+<p>This structure is intentionally compact and efficient for fast sweeps.</p>
+<h2 id="assumptions-and-limits">Assumptions and limits<a class="headerlink" href="#assumptions-and-limits" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Yaw dynamics and axle-specific tire behavior are not represented.</li>
+<li>Tire behavior is condensed into scalar friction/envelope parameters.</li>
+<li>Model fidelity is lower, but computational throughput is high.</li>
+</ol>
+<h2 id="potential-learnings-from-the-data">Potential learnings from the data<a class="headerlink" href="#potential-learnings-from-the-data" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Use this model for baseline trends and wide parameter scans.</li>
+<li>Compare against single-track before drawing conclusions on yaw-sensitive effects.</li>
+<li>Separate differences caused by calibration (<code>mu</code>) from structural model differences.</li>
+</ol>
 
 
 
@@ -1272,12 +1533,12 @@ full vehicle, powertrain, and energy management.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
-        <script src="../javascripts/mathjax.js"></script>
+        <script src="../../../javascripts/mathjax.js"></script>
       
         <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
