@@ -160,37 +160,47 @@ def run_single_track_sensitivity_study(
 
 
 def _plot_sensitivity_bars(long_table: pd.DataFrame, path: Path) -> None:
-    """Create a bar-chart view for lap-time and energy sensitivities.
+    """Create bar charts for absolute KPI deltas at a fixed parameter variation.
 
     Args:
         long_table: Long-form table returned by
             :func:`run_single_track_sensitivity_study`.
         path: Output image file path.
     """
+    plus_variation_pct = float(long_table["variation_plus_pct"].iloc[0])
     plot_table = long_table[
-        ["parameter_label", "objective", "sensitivity_pct_per_pct"]
+        [
+            "parameter_label",
+            "objective",
+            "objective_value",
+            "predicted_objective_plus",
+        ]
     ].copy()
-    pivot = plot_table.pivot(
-        index="parameter_label",
-        columns="objective",
-        values="sensitivity_pct_per_pct",
+    plot_table["absolute_delta_plus"] = (
+        plot_table["predicted_objective_plus"] - plot_table["objective_value"]
     )
 
-    labels = pivot.index.astype(str).tolist()
+    pivot_delta = plot_table.pivot(
+        index="parameter_label",
+        columns="objective",
+        values="absolute_delta_plus",
+    )
+
+    labels = pivot_delta.index.astype(str).tolist()
     x_positions = list(range(len(labels)))
-    lap_values = pivot["lap_time_s"].astype(float).tolist()
-    energy_values = pivot["energy_kwh"].astype(float).tolist()
+    lap_values = pivot_delta["lap_time_s"].astype(float).tolist()
+    energy_values_wh = (pivot_delta["energy_kwh"].astype(float) * 1000.0).tolist()
 
     fig, axes = plt.subplots(1, 2, figsize=(12.0, 4.5), constrained_layout=True)
     axes[0].bar(x_positions, lap_values, color="#1565c0")
-    axes[0].set_title("Lap-time sensitivity")
-    axes[0].set_ylabel("Relative output change / relative input change")
+    axes[0].set_title(f"Lap-time delta for +{plus_variation_pct:.0f}% parameter variation")
+    axes[0].set_ylabel("Delta lap time [s]")
     axes[0].set_xticks(x_positions, labels, rotation=20, ha="right")
     axes[0].grid(alpha=0.25, axis="y")
 
-    axes[1].bar(x_positions, energy_values, color="#2e7d32")
-    axes[1].set_title("Energy sensitivity")
-    axes[1].set_ylabel("Relative output change / relative input change")
+    axes[1].bar(x_positions, energy_values_wh, color="#2e7d32")
+    axes[1].set_title(f"Energy delta for +{plus_variation_pct:.0f}% parameter variation")
+    axes[1].set_ylabel("Delta energy [Wh]")
     axes[1].set_xticks(x_positions, labels, rotation=20, ha="right")
     axes[1].grid(alpha=0.25, axis="y")
 
