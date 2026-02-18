@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/icon.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
@@ -609,6 +609,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#10-differentiable-torch-solver-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Differentiable Torch Solver API
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -958,6 +969,145 @@
     
   
     Performance Envelope
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensitivity
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Sensitivity
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/sensitivity/synthetic_single_track_sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synthetic Single-Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/sensitivity/spa_single_track_sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spa Single-Track
   
 
     
@@ -1460,6 +1610,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#10-differentiable-torch-solver-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Differentiable Torch Solver API
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1547,6 +1708,15 @@ $$</p>
 $$
 v_{i+1}^2 = v_i^2 + 2 a_{x,\text{net},i} \Delta s_i.
 $$</p>
+<p>Initial-condition rule:
+$$
+v_0 = \min\left(v_{\text{lat},0}, v_{\max}, v_{\text{init}}\right),
+$$
+where <span class="arithmatex">\(v_{\text{init}}\)</span> is:</p>
+<ul>
+<li><code>RuntimeConfig.initial_speed</code>, if provided.</li>
+<li>otherwise the legacy fallback <span class="arithmatex">\(v_{\max}\)</span>.</li>
+</ul>
 <p>Net acceleration model:
 $$
 a_{x,\text{net},i} =
@@ -1643,6 +1813,18 @@ for lap-time studies.</p>
 <li>Vehicle-model API contract consumed by the solver:</li>
 <li><code>src/apexsim/simulation/model_api.py</code> (<code>VehicleModel</code>)</li>
 <li><code>src/apexsim/simulation/profile.py</code> (<code>solve_speed_profile</code>, calls on <code>model</code>)</li>
+</ul>
+<h2 id="10-differentiable-torch-solver-api">10. Differentiable Torch Solver API<a class="headerlink" href="#10-differentiable-torch-solver-api" title="Permanent link">&para;</a></h2>
+<p>For gradient-based workflows (e.g. autodiff sensitivities), ApexSim exposes:</p>
+<ul>
+<li><code>apexsim.simulation.solve_speed_profile_torch(track, model, config)</code></li>
+</ul>
+<p>This API returns tensor-valued outputs (<code>TorchSpeedProfileResult</code>) and keeps the
+autograd graph intact for downstream <code>backward()</code> calls.</p>
+<p>Current constraint:</p>
+<ul>
+<li><code>RuntimeConfig.torch_compile</code> must be <code>False</code> for
+  <code>solve_speed_profile_torch</code>.</li>
 </ul>
 
 

@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/icon.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
@@ -996,6 +996,145 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensitivity
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Sensitivity
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/sensitivity/synthetic_single_track_sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synthetic Single-Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/sensitivity/spa_single_track_sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spa Single-Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1527,7 +1666,8 @@ This page helps you choose the right backend for your study.</p>
 <p>The runtime validator enforces this policy:</p>
 <ul>
 <li><code>numpy</code> and <code>numba</code> require <code>torch_device="cpu"</code>.</li>
-<li><code>torch_compile=True</code> is only valid with <code>compute_backend="torch"</code>.</li>
+<li><code>compute_backend="torch"</code> currently requires <code>torch_compile=False</code> so the
+  solver path remains AD-compatible by default.</li>
 </ul>
 <h2 id="current-model-support">Current model support<a class="headerlink" href="#current-model-support" title="Permanent link">&para;</a></h2>
 <p>Backend support is model-dependent:</p>
@@ -1625,8 +1765,6 @@ clear <code>ConfigurationError</code> describing the missing model-side methods.
 <li>"First Call" includes startup/JIT/compile effects.</li>
 <li>"Steady" values are from repeated post-warmup runs.</li>
 <li>Use your own machine data for final backend decisions.</li>
-<li>With some torch versions, <code>torch_compile=True</code> may print graph-break warnings
-  for scalar convergence checks; results remain valid, but timing includes this behavior.</li>
 </ul>
 <h2 id="benchmark-snapshot-february-17-2026">Benchmark snapshot (February 17, 2026)<a class="headerlink" href="#benchmark-snapshot-february-17-2026" title="Permanent link">&para;</a></h2>
 <p>Environment used for this snapshot:</p>
@@ -1669,29 +1807,19 @@ clear <code>ConfigurationError</code> describing the missing model-side methods.
 <td style="text-align: right;">337.44</td>
 <td style="text-align: right;">133.668234</td>
 </tr>
-<tr>
-<td><code>torch</code> (<code>cpu</code>, <code>compile=True</code>)</td>
-<td style="text-align: right;">5177.77</td>
-<td style="text-align: right;">230.14</td>
-<td style="text-align: right;">226.74</td>
-<td style="text-align: right;">133.668234</td>
-</tr>
 </tbody>
 </table>
 <p>Interpretation of this snapshot:</p>
 <ul>
 <li><code>numba</code> steady-state is about 21x faster than <code>numpy</code> after JIT warmup.</li>
 <li><code>torch</code> on CPU is slower than <code>numpy</code> for single-lap workflows in this setup.</li>
-<li><code>torch_compile</code> improved torch steady-state by about 1.5x, but remained slower
-  than <code>numpy</code> in this CPU-only environment.</li>
 <li>Identical lap times across backends confirm numerical consistency for this case.</li>
 </ul>
 <h2 id="reproducibility-tips">Reproducibility tips<a class="headerlink" href="#reproducibility-tips" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Run each benchmark at least twice and compare medians.</li>
 <li>Avoid other heavy processes during timing runs.</li>
-<li>For GPU evaluation, include both <code>torch_device="cuda:0"</code> and
-  <code>torch_compile=True/False</code> variants.</li>
+<li>For GPU evaluation, include <code>torch_device="cuda:0"</code> runs in addition to CPU runs.</li>
 <li>Save your benchmark JSON using <code>--output</code> and keep it with your project notes.</li>
 </ul>
 

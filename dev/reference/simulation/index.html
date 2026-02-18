@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/icon.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
@@ -814,6 +814,145 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensitivity
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Sensitivity
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/sensitivity/synthetic_single_track_sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synthetic Single-Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/sensitivity/spa_single_track_sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spa Single-Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1181,6 +1320,34 @@
     <span class="md-ellipsis">
       
         validate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#apexsim.simulation.TorchSpeedProfileResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TorchSpeedProfileResult
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="TorchSpeedProfileResult">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#apexsim.simulation.TorchSpeedProfileResult.to_numpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_numpy
       
     </span>
   </a>
@@ -1624,6 +1791,34 @@
     <span class="md-ellipsis">
       
         validate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#apexsim.simulation.TorchSpeedProfileResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TorchSpeedProfileResult
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="TorchSpeedProfileResult">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#apexsim.simulation.TorchSpeedProfileResult.to_numpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_numpy
       
     </span>
   </a>
@@ -2447,6 +2642,24 @@ configuration value violates its bound.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
+                <code>initial_speed</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional initial speed at the first track sample [m/s].
+If <code>None</code>, the solver keeps the legacy behavior and initializes
+from lateral/global speed limits.</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="apexsim.simulation.config.DEFAULT_INITIAL_SPEED">DEFAULT_INITIAL_SPEED</span></code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
                 <code>enable_transient_refinement</code>
             </td>
             <td>
@@ -2504,7 +2717,8 @@ CPU-only backends and therefore require <code>torch_device='cpu'</code>.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Enable <code>torch.compile</code> for the <code>torch</code> backend.</p>
+                <p>Reserved flag for future compile support in the <code>torch</code>
+backend. Must currently remain <code>False</code>.</p>
               </div>
             </td>
             <td>
@@ -2755,6 +2969,195 @@ are inconsistent with solver numerics or backend requirements.</p>
               <div class="doc-md-description">
                 <p>If runtime or
 numerical configuration values violate their bounds.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="apexsim.simulation.TorchSpeedProfileResult" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">TorchSpeedProfileResult</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#apexsim.simulation.TorchSpeedProfileResult" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Differentiable torch speed-profile output tensors.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>speed</code>
+            </td>
+            <td>
+                  <code><span title="typing.Any">Any</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Converged speed trace along track arc length [m/s].</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>longitudinal_accel</code>
+            </td>
+            <td>
+                  <code><span title="typing.Any">Any</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Net longitudinal acceleration trace [m/s^2].</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>lateral_accel</code>
+            </td>
+            <td>
+                  <code><span title="typing.Any">Any</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Lateral acceleration trace [m/s^2].</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>lateral_envelope_iterations</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of fixed-point iterations used for
+lateral envelope convergence.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>lap_time</code>
+            </td>
+            <td>
+                  <code><span title="typing.Any">Any</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Integrated lap time over one track traversal [s].</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="apexsim.simulation.TorchSpeedProfileResult.to_numpy" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">to_numpy</span>
+
+
+<a href="#apexsim.simulation.TorchSpeedProfileResult.to_numpy" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">to_numpy</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">SpeedProfileResult</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Convert torch tensor result to <code>SpeedProfileResult</code>.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="apexsim.simulation.profile.SpeedProfileResult">SpeedProfileResult</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>NumPy-based speed-profile result detached from autograd graph.</p>
               </div>
             </td>
           </tr>
@@ -4012,7 +4415,7 @@ violate required physical or numerical constraints.</p>
 
 
 <a href="#apexsim.simulation.build_simulation_config" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">build_simulation_config</span><span class="p">(</span><span class="n">max_speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_MAX_SPEED</span><span class="p">,</span> <span class="n">numerics</span><span class="p">:</span> <span class="n">NumericsConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">enable_transient_refinement</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">DEFAULT_ENABLE_TRANSIENT_REFINEMENT</span><span class="p">,</span> <span class="n">compute_backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_COMPUTE_BACKEND</span><span class="p">,</span> <span class="n">torch_device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_TORCH_DEVICE</span><span class="p">,</span> <span class="n">torch_compile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">DEFAULT_ENABLE_TORCH_COMPILE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationConfig</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">build_simulation_config</span><span class="p">(</span><span class="n">max_speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_MAX_SPEED</span><span class="p">,</span> <span class="n">initial_speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">DEFAULT_INITIAL_SPEED</span><span class="p">,</span> <span class="n">numerics</span><span class="p">:</span> <span class="n">NumericsConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">enable_transient_refinement</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">DEFAULT_ENABLE_TRANSIENT_REFINEMENT</span><span class="p">,</span> <span class="n">compute_backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_COMPUTE_BACKEND</span><span class="p">,</span> <span class="n">torch_device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_TORCH_DEVICE</span><span class="p">,</span> <span class="n">torch_compile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">DEFAULT_ENABLE_TORCH_COMPILE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationConfig</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4045,6 +4448,24 @@ violate required physical or numerical constraints.</p>
             </td>
             <td>
                   <code><span title="apexsim.simulation.config.DEFAULT_MAX_SPEED">DEFAULT_MAX_SPEED</span></code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>initial_speed</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional initial speed at the first track sample [m/s].
+If <code>None</code>, the solver keeps the legacy behavior and initializes
+from lateral/global speed limits.</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="apexsim.simulation.config.DEFAULT_INITIAL_SPEED">DEFAULT_INITIAL_SPEED</span></code>
             </td>
           </tr>
           <tr class="doc-section-item">
@@ -4127,7 +4548,8 @@ CPU-only backends and therefore require <code>torch_device='cpu'</code>.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Enable <code>torch.compile</code> for the <code>torch</code> backend.</p>
+                <p>Reserved flag for future compile support in the <code>torch</code>
+backend. Must currently remain <code>False</code>.</p>
               </div>
             </td>
             <td>
