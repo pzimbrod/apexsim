@@ -1,0 +1,1707 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Lap time simulation library with interchangeable vehicle models">
+      
+      
+      
+        <link rel="canonical" href="https://pzimbrod.github.io/apexsim/0.2.0/SOLVER/">
+      
+      
+        <link rel="prev" href="../API/">
+      
+      
+        <link rel="next" href="../ASSUMPTIONS/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/icon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Solver - ApexSim</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#solver-mathematics" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ApexSim" class="md-header__button md-logo" aria-label="ApexSim" data-md-component="logo">
+      
+  <img src="../assets/icon.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ApexSim
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Solver
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Use system theme"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Use system theme" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pzimbrod/apexsim" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pzimbrod/apexsim
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ApexSim" class="md-nav__button md-logo" aria-label="ApexSim" data-md-component="logo">
+      
+  <img src="../assets/icon.svg" alt="logo">
+
+    </a>
+    ApexSim
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pzimbrod/apexsim" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pzimbrod/apexsim
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../HOW_TO_USE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How to Use
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../BACKENDS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compute Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Solver
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Solver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-discretization-and-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Discretization and State
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-lateral-envelope-cornering-limit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Lateral Envelope (Cornering Limit)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Lateral Envelope (Cornering Limit)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-lateral-acceleration-capacity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Lateral Acceleration Capacity
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-longitudinal-coupling-via-friction-circle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Longitudinal Coupling via Friction Circle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-forward-pass-acceleration-limited" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Forward Pass (Acceleration-Limited)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-backward-pass-braking-limited" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Backward Pass (Braking-Limited)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-final-accelerations-and-lap-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Final Accelerations and Lap Time
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-numerical-convergence-controls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Numerical Convergence Controls
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-physical-scope-and-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Physical Scope and Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-equation-to-code-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Equation-to-Code Mapping
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ASSUMPTIONS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assumptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DEVELOPMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXAMPLES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXAMPLES_SYNTHETIC/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synthetic Tracks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spa
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Spa
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/spa/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/spa/single_track_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single-Track Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/spa/point_mass_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Point-Mass Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/spa/model_comparison/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/spa/performance_envelope/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance Envelope
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vehicle Models
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Vehicle Models
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../SINGLE_TRACK_MODEL/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single-Track Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../POINT_MASS_MODEL/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Point-Mass Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/apexsim/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/simulation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/vehicle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vehicle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/tire/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tire
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/track/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-discretization-and-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Discretization and State
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-lateral-envelope-cornering-limit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Lateral Envelope (Cornering Limit)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Lateral Envelope (Cornering Limit)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-lateral-acceleration-capacity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Lateral Acceleration Capacity
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-longitudinal-coupling-via-friction-circle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Longitudinal Coupling via Friction Circle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-forward-pass-acceleration-limited" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Forward Pass (Acceleration-Limited)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-backward-pass-braking-limited" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Backward Pass (Braking-Limited)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-final-accelerations-and-lap-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Final Accelerations and Lap Time
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-numerical-convergence-controls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Numerical Convergence Controls
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-physical-scope-and-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Physical Scope and Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-equation-to-code-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Equation-to-Code Mapping
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="solver-mathematics">Solver Mathematics<a class="headerlink" href="#solver-mathematics" title="Permanent link">&para;</a></h1>
+<p>This document explains how lap time is computed in the current quasi-steady solver
+implementation (<code>src/apexsim/simulation/profile.py</code>).</p>
+<h2 id="1-discretization-and-state">1. Discretization and State<a class="headerlink" href="#1-discretization-and-state" title="Permanent link">&para;</a></h2>
+<p>The track is represented in arc-length domain by points
+<span class="arithmatex">\(i = 0,\dots,N-1\)</span> with:</p>
+<ul>
+<li>position <span class="arithmatex">\((s_i)\)</span> [m]</li>
+<li>curvature <span class="arithmatex">\(\kappa_i\)</span> [1/m]</li>
+<li>grade <span class="arithmatex">\(\gamma_i = dz/ds\)</span> [-]</li>
+<li>banking angle <span class="arithmatex">\(\beta_i\)</span> [rad]</li>
+</ul>
+<p>Segment length:
+$$
+\Delta s_i = s_{i+1} - s_i, \quad i=0,\dots,N-2.
+$$</p>
+<p>The solver computes a speed profile <span class="arithmatex">\(v_i\)</span> [m/s], then derives:</p>
+<ul>
+<li>longitudinal acceleration <span class="arithmatex">\(a_{x,i}\)</span> [m/s²]</li>
+<li>lateral acceleration <span class="arithmatex">\(a_{y,i}\)</span> [m/s²]</li>
+<li>lap time <span class="arithmatex">\(T\)</span> [s]</li>
+</ul>
+<h2 id="2-lateral-envelope-cornering-limit">2. Lateral Envelope (Cornering Limit)<a class="headerlink" href="#2-lateral-envelope-cornering-limit" title="Permanent link">&para;</a></h2>
+<p>A lateral speed limit <span class="arithmatex">\(v_{\text{lat},i}\)</span> is computed at each point. Core relation:
+$$
+|a_{y,i}| = v_i^2 |\kappa_i|.
+$$</p>
+<p>Given lateral acceleration capacity <span class="arithmatex">\(a_{y,\text{lim},i}\)</span>:
+$$
+v_{\text{lat},i} =
+\begin{cases}
+\sqrt{a_{y,\text{lim},i}/|\kappa_i|}, &amp; |\kappa_i| &gt; \varepsilon \
+v_{\max}, &amp; |\kappa_i| \le \varepsilon
+\end{cases}
+$$
+with clipping to <span class="arithmatex">\([v_{\min}, v_{\max}]\)</span>.</p>
+<h3 id="21-lateral-acceleration-capacity">2.1 Lateral Acceleration Capacity<a class="headerlink" href="#21-lateral-acceleration-capacity" title="Permanent link">&para;</a></h3>
+<p><code>SingleTrackModel.lateral_accel_limit(...)</code> solves a fixed-point problem because tire force capacity depends
+on normal load, and normal load depends on lateral acceleration through load transfer.</p>
+<p>For fixed speed <span class="arithmatex">\(v\)</span>:</p>
+<ol>
+<li>Estimate axle loads from quasi-static vertical balance using current <span class="arithmatex">\(a_y\)</span> guess.</li>
+<li>Compute front/rear lateral tire forces at a representative peak slip angle
+   (Pacejka Magic Formula).</li>
+<li>Update lateral limit:
+$$
+a_{y,\text{next}} = \max\left(a_{y,\min}, \frac{F_{y,f}+F_{y,r}}{m} + g\sin\beta\right).
+$$</li>
+<li>Repeat until <span class="arithmatex">\(|a_{y,\text{next}}-a_{y,\text{current}}|\le\text{tol}\)</span> or max iterations.</li>
+</ol>
+<h2 id="3-longitudinal-coupling-via-friction-circle">3. Longitudinal Coupling via Friction Circle<a class="headerlink" href="#3-longitudinal-coupling-via-friction-circle" title="Permanent link">&para;</a></h2>
+<p>Available longitudinal capability is reduced by lateral usage:
+$$
+\lambda_i = \sqrt{\max\left(0, 1 - \left(\frac{|a_{y,\text{req},i}|}{a_{y,\text{lim},i}}\right)^2\right)},
+\quad
+|a_{y,\text{req},i}| = v_i^2 |\kappa_i|.
+$$</p>
+<ul>
+<li>Drive limit: <span class="arithmatex">\(a_{x,\text{drive},i} = a_{x,\text{drive,max}}\,\lambda_i\)</span></li>
+<li>Brake limit: <span class="arithmatex">\(a_{x,\text{brake},i} = a_{x,\text{brake,max}}\,\lambda_i\)</span></li>
+</ul>
+<p>This is a simplified isotropic friction-circle approximation.</p>
+<h2 id="4-forward-pass-acceleration-limited">4. Forward Pass (Acceleration-Limited)<a class="headerlink" href="#4-forward-pass-acceleration-limited" title="Permanent link">&para;</a></h2>
+<p>Starting from <span class="arithmatex">\(v_0\)</span>, propagate forward with kinematic relation:
+$$
+v_{i+1}^2 = v_i^2 + 2 a_{x,\text{net},i} \Delta s_i.
+$$</p>
+<p>Net acceleration model:
+$$
+a_{x,\text{net},i} =
+a_{x,\text{drive},i}
+- \frac{D(v_i)}{m}
+- g\,\gamma_i,
+$$
+where drag force is
+$$
+D(v) = \tfrac{1}{2}\rho c_d A v^2.
+$$</p>
+<p>Then enforce bounds:
+$$
+v_{i+1} \leftarrow \min(v_{i+1}, v_{\text{lat},i+1}, v_{\max}),
+\quad v_{i+1} \ge v_{\min}.
+$$</p>
+<h2 id="5-backward-pass-braking-limited">5. Backward Pass (Braking-Limited)<a class="headerlink" href="#5-backward-pass-braking-limited" title="Permanent link">&para;</a></h2>
+<p>From the end of the lap backwards, enforce braking feasibility:
+$$
+v_i^2 = v_{i+1}^2 + 2 a_{x,\text{decel,avail},i} \Delta s_i,
+$$
+with
+$$
+a_{x,\text{decel,avail},i} =
+a_{x,\text{brake},i}
++ \frac{D(v_{i+1})}{m}
++ g\,\gamma_{i+1}.
+$$</p>
+<p>Again clamp by lateral and global speed bounds.</p>
+<h2 id="6-final-accelerations-and-lap-time">6. Final Accelerations and Lap Time<a class="headerlink" href="#6-final-accelerations-and-lap-time" title="Permanent link">&para;</a></h2>
+<p>After forward/backward constraints, the final profile is <span class="arithmatex">\(v_i\)</span>. Longitudinal acceleration
+is reconstructed by finite differences:
+$$
+a_{x,i} = \frac{v_{i+1}^2 - v_i^2}{2\Delta s_i}, \quad i=0,\dots,N-2.
+$$</p>
+<p>Lateral acceleration:
+$$
+a_{y,i} = v_i^2\kappa_i.
+$$</p>
+<p>Segment time is approximated with average segment speed:
+$$
+\Delta t_i = \frac{\Delta s_i}{\max\left(\tfrac{v_i+v_{i+1}}{2}, \varepsilon_v\right)}.
+$$</p>
+<p>Total lap time:
+$$
+T = \sum_{i=0}^{N-2} \Delta t_i.
+$$</p>
+<h2 id="7-numerical-convergence-controls">7. Numerical Convergence Controls<a class="headerlink" href="#7-numerical-convergence-controls" title="Permanent link">&para;</a></h2>
+<p>Lateral envelope convergence in <code>solve_speed_profile(...)</code> is configurable via
+<code>SimulationConfig.numerics</code>:</p>
+<ul>
+<li><code>lateral_envelope_max_iterations</code></li>
+<li><code>lateral_envelope_convergence_tolerance</code></li>
+</ul>
+<p>Stop criterion:
+$$
+\max_i |v^{(k)}<em>{\text{lat},i} - v^{(k-1)}</em>{\text{lat},i}| \le \text{tol}_v.
+$$</p>
+<p>The actual number of iterations used is reported as
+<code>SpeedProfileResult.lateral_envelope_iterations</code>.</p>
+<h2 id="8-physical-scope-and-limitations">8. Physical Scope and Limitations<a class="headerlink" href="#8-physical-scope-and-limitations" title="Permanent link">&para;</a></h2>
+<p>Current solver is intentionally quasi-steady:</p>
+<ul>
+<li>No transient tire relaxation dynamics.</li>
+<li>No explicit driver/controller model in the speed-profile pass.</li>
+<li>Longitudinal limits are envelope-based constants (drive/brake maxima).</li>
+<li>Tire model uses fixed representative peak slip-angle for envelope estimation.</li>
+</ul>
+<p>These simplifications keep the solver fast and stable, while preserving core constraints
+for lap-time studies.</p>
+<p>The same solver routine can be used with different backends implementing
+<code>VehicleModel</code>, including the single-track and point-mass models.</p>
+<h2 id="9-equation-to-code-mapping">9. Equation-to-Code Mapping<a class="headerlink" href="#9-equation-to-code-mapping" title="Permanent link">&para;</a></h2>
+<ul>
+<li><span class="arithmatex">\(a_{y,i} = v_i^2\kappa_i\)</span>:</li>
+<li><code>src/apexsim/simulation/profile.py</code> (<code>solve_speed_profile</code>, <code>ay = ...</code>)</li>
+<li><span class="arithmatex">\(v_{\text{lat},i} = \sqrt{a_{y,\text{lim},i}/|\kappa_i|}\)</span> (with clipping):</li>
+<li><code>src/apexsim/simulation/envelope.py</code> (<code>lateral_speed_limit</code>)</li>
+<li><code>src/apexsim/simulation/profile.py</code> (<code>solve_speed_profile</code>, <code>v_lat[idx] = ...</code>)</li>
+<li>Friction-circle scaling <span class="arithmatex">\(\lambda_i\)</span> (vehicle-model dependent):</li>
+<li><code>src/apexsim/vehicle/single_track_model.py</code> (<code>_friction_circle_scale</code>)</li>
+<li>Forward pass <span class="arithmatex">\(v_{i+1}^2 = v_i^2 + 2a\Delta s\)</span>:</li>
+<li><code>src/apexsim/simulation/profile.py</code> (<code>solve_speed_profile</code>, <code>next_speed_sq = ...</code>)</li>
+<li>Backward pass braking feasibility:</li>
+<li><code>src/apexsim/simulation/profile.py</code> (<code>solve_speed_profile</code>, <code>entry_speed_sq = ...</code>)</li>
+<li>Lap-time accumulation <span class="arithmatex">\(T = \sum \Delta t_i\)</span>:</li>
+<li><code>src/apexsim/simulation/profile.py</code> (<code>lap_time += _segment_dt(...)</code>)</li>
+<li>Segment time model <span class="arithmatex">\(\Delta t_i = \Delta s_i / \bar v_i\)</span>:</li>
+<li><code>src/apexsim/simulation/profile.py</code> (<code>_segment_dt</code>)</li>
+<li>Lateral limit fixed-point update:</li>
+<li><code>src/apexsim/vehicle/single_track_model.py</code> (<code>lateral_accel_limit</code>)</li>
+<li>Lateral envelope fixed-point convergence in speed domain:</li>
+<li><code>src/apexsim/simulation/profile.py</code> (<code>for iteration_idx ...</code>, <code>max_delta_speed ...</code>)</li>
+<li>Vehicle-model API contract consumed by the solver:</li>
+<li><code>src/apexsim/simulation/model_api.py</code> (<code>VehicleModel</code>)</li>
+<li><code>src/apexsim/simulation/profile.py</code> (<code>solve_speed_profile</code>, calls on <code>model</code>)</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
