@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://pzimbrod.github.io/pylapsim/dev/POINT_MASS_MODEL/">
       
       
-        <link rel="prev" href="../BICYCLE_MODEL/">
+        <link rel="prev" href="../SINGLE_TRACK_MODEL/">
       
       
         <link rel="next" href="../reference/pylapsim/">
@@ -378,6 +378,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../BACKENDS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compute Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../API/" class="md-nav__link">
         
   
@@ -684,14 +712,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../BICYCLE_MODEL/" class="md-nav__link">
+      <a href="../SINGLE_TRACK_MODEL/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Bicycle Model
+    Single-Track Model
   
 
     
@@ -1343,22 +1371,22 @@ D(v)=\frac{1}{2}\rho C_D A v^2.
   <code>PointMassModel.diagnostics(...)</code></li>
 </ul>
 <h2 id="8-cross-model-calibration">8. Cross-Model Calibration<a class="headerlink" href="#8-cross-model-calibration" title="Permanent link">&para;</a></h2>
-<p>To align the point-mass model with the bicycle model's lateral envelope, the
+<p>To align the point-mass model with the single-track model's lateral envelope, the
 library provides:</p>
 <ul>
-<li><code>calibrate_point_mass_friction_to_bicycle(vehicle, tires, ...)</code></li>
+<li><code>calibrate_point_mass_friction_to_single_track(vehicle, tires, ...)</code></li>
 </ul>
 <p>This identifies an effective isotropic <span class="arithmatex">\(\mu\)</span> by least-squares fitting:</p>
 <div class="arithmatex">\[
-\mu^\star = \arg\min_\mu \sum_i \left(\mu a_n(v_i) - a_{y,\text{lim,bicycle}}(v_i)\right)^2.
+\mu^\star = \arg\min_\mu \sum_i \left(\mu a_n(v_i) - a_{y,\text{lim,single-track}}(v_i)\right)^2.
 \]</div>
 <p>The comparison example uses this calibration before running the point-mass model.</p>
 <h2 id="9-example">9. Example<a class="headerlink" href="#9-example" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Point-mass standalone usage:
-  <code>examples/spa_lap_point_mass.py</code></li>
-<li>Side-by-side comparison against bicycle model:
-  <code>examples/spa_model_comparison.py</code></li>
+  <code>examples/spa/spa_lap_point_mass.py</code></li>
+<li>Side-by-side comparison against single-track model:
+  <code>examples/spa/spa_model_comparison.py</code></li>
 </ul>
 
 

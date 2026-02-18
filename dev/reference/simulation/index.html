@@ -378,6 +378,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../BACKENDS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compute Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../API/" class="md-nav__link">
         
   
@@ -682,14 +710,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../BICYCLE_MODEL/" class="md-nav__link">
+      <a href="../../SINGLE_TRACK_MODEL/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Bicycle Model
+    Single-Track Model
   
 
     
@@ -2268,6 +2296,56 @@ configuration value violates its bound.</p>
                   <code><span title="pylapsim.simulation.config.DEFAULT_ENABLE_TRANSIENT_REFINEMENT">DEFAULT_ENABLE_TRANSIENT_REFINEMENT</span></code>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>compute_backend</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Numerical backend identifier (<code>numpy</code>, <code>numba</code>,
+or <code>torch</code>).</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="pylapsim.simulation.config.DEFAULT_COMPUTE_BACKEND">DEFAULT_COMPUTE_BACKEND</span></code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>torch_device</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Torch device identifier. <code>numpy</code> and <code>numba</code> are
+CPU-only backends and therefore require <code>torch_device='cpu'</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="pylapsim.simulation.config.DEFAULT_TORCH_DEVICE">DEFAULT_TORCH_DEVICE</span></code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>torch_compile</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Enable <code>torch.compile</code> for the <code>torch</code> backend.</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="pylapsim.simulation.config.DEFAULT_ENABLE_TORCH_COMPILE">DEFAULT_ENABLE_TORCH_COMPILE</span></code>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -2360,7 +2438,7 @@ configuration value violates its bound.</p>
             <td>
               <div class="doc-md-description">
                 <p>If runtime controls
-are inconsistent with solver numerics.</p>
+are inconsistent with solver numerics or backend requirements.</p>
               </div>
             </td>
           </tr>
@@ -2549,7 +2627,7 @@ numerical configuration values violate their bounds.</p>
 
 
         <p>Protocol required by the quasi-steady lap-time solver.</p>
-<p>Any vehicle model (bicycle, point-mass, twin-track, ...) can be used by the
+<p>Any vehicle model (single-track, point-mass, twin-track, ...) can be used by the
 simulation pipeline as long as it implements this interface.</p>
 
 
@@ -3769,7 +3847,7 @@ violate required physical or numerical constraints.</p>
 
 
 <a href="#pylapsim.simulation.build_simulation_config" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">build_simulation_config</span><span class="p">(</span><span class="n">max_speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_MAX_SPEED</span><span class="p">,</span> <span class="n">numerics</span><span class="p">:</span> <span class="n">NumericsConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">enable_transient_refinement</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">DEFAULT_ENABLE_TRANSIENT_REFINEMENT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationConfig</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">build_simulation_config</span><span class="p">(</span><span class="n">max_speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_MAX_SPEED</span><span class="p">,</span> <span class="n">numerics</span><span class="p">:</span> <span class="n">NumericsConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">enable_transient_refinement</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">DEFAULT_ENABLE_TRANSIENT_REFINEMENT</span><span class="p">,</span> <span class="n">compute_backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_COMPUTE_BACKEND</span><span class="p">,</span> <span class="n">torch_device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_TORCH_DEVICE</span><span class="p">,</span> <span class="n">torch_compile</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">DEFAULT_ENABLE_TORCH_COMPILE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationConfig</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3839,6 +3917,56 @@ violate required physical or numerical constraints.</p>
             </td>
             <td>
                   <code><span title="pylapsim.simulation.config.DEFAULT_ENABLE_TRANSIENT_REFINEMENT">DEFAULT_ENABLE_TRANSIENT_REFINEMENT</span></code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>compute_backend</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Numerical backend identifier (<code>numpy</code>, <code>numba</code>,
+or <code>torch</code>).</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="pylapsim.simulation.config.DEFAULT_COMPUTE_BACKEND">DEFAULT_COMPUTE_BACKEND</span></code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>torch_device</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Torch device identifier. <code>numpy</code> and <code>numba</code> are
+CPU-only backends and therefore require <code>torch_device='cpu'</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="pylapsim.simulation.config.DEFAULT_TORCH_DEVICE">DEFAULT_TORCH_DEVICE</span></code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>torch_compile</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Enable <code>torch.compile</code> for the <code>torch</code> backend.</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="pylapsim.simulation.config.DEFAULT_ENABLE_TORCH_COMPILE">DEFAULT_ENABLE_TORCH_COMPILE</span></code>
             </td>
           </tr>
       </tbody>

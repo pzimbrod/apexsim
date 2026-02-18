@@ -378,6 +378,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../BACKENDS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compute Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../API/" class="md-nav__link">
         
   
@@ -980,14 +1008,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../BICYCLE_MODEL/" class="md-nav__link">
+      <a href="../SINGLE_TRACK_MODEL/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Bicycle Model
+    Single-Track Model
   
 
     
@@ -1591,7 +1619,7 @@ If behavior is implausible here, Spa results are likely hard to trust.</p>
 <li>no explicit yaw state,</li>
 <li>yaw moment output is structurally zero by design.</li>
 </ul>
-<p>If your study requires yaw-moment dynamics, switch to bicycle model.</p>
+<p>If your study requires yaw-moment dynamics, switch to single-track model.</p>
 <h3 id="23-solver-setup">2.3 Solver setup<a class="headerlink" href="#23-solver-setup" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="n">config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span><span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">)</span>
 </code></pre></div>
@@ -1671,7 +1699,7 @@ Actual speed comes from force balance and constraints.</p>
 <h2 id="9-common-mistakes-and-fixes">9. Common mistakes and fixes<a class="headerlink" href="#9-common-mistakes-and-fixes" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Expecting nonzero yaw moment with point-mass model.</li>
-<li>Use bicycle model if yaw diagnostics are required.</li>
+<li>Use single-track model if yaw diagnostics are required.</li>
 <li>Treating seam points as steady-state evidence.</li>
 <li>trim boundary points before concluding.</li>
 <li>Assuming <code>max_speed</code> is always reached.</li>

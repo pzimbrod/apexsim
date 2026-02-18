@@ -378,6 +378,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../BACKENDS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compute Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../API/" class="md-nav__link">
         
   
@@ -808,14 +836,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../BICYCLE_MODEL/" class="md-nav__link">
+      <a href="../SINGLE_TRACK_MODEL/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Bicycle Model
+    Single-Track Model
   
 
     
@@ -1216,7 +1244,7 @@ It is designed for race engineers and Students who want practical onboarding.</p
 <p>After finishing all example pages, you should be able to:</p>
 <ul>
 <li>set up a complete lap-time run from scratch,</li>
-<li>choose between point-mass and bicycle model for a study goal,</li>
+<li>choose between point-mass and single-track model for a study goal,</li>
 <li>interpret key plots and KPI outputs correctly,</li>
 <li>understand where model assumptions limit interpretation.</li>
 </ul>
@@ -1234,12 +1262,16 @@ It is designed for race engineers and Students who want practical onboarding.</p
 <ul>
 <li><code>examples/synthetic_track_scenarios.py</code></li>
 <li>"Is my model setup physically consistent on canonical test geometries?"</li>
-<li><code>examples/spa_lap.py</code></li>
-<li>"What does the bicycle model predict on a realistic circuit?"</li>
-<li><code>examples/spa_lap_point_mass.py</code></li>
+<li><code>examples/spa/spa_lap_single_track.py</code></li>
+<li>"What does the single-track model predict on a realistic circuit?"</li>
+<li><code>examples/spa/spa_lap_point_mass.py</code></li>
 <li>"What is the low-complexity baseline on the same circuit?"</li>
-<li><code>examples/spa_model_comparison.py</code></li>
+<li><code>examples/spa/spa_model_comparison.py</code></li>
 <li>"What do I gain from additional model fidelity?"</li>
+<li><code>examples/spa/spa_performance_envelope.py</code></li>
+<li>"How does the speed-dependent G-G envelope differ by model complexity?"</li>
+<li><code>examples/backend_benchmarks.py</code></li>
+<li>"Which compute backend should I use for my workload?"</li>
 </ul>
 <h2 id="what-the-example-suite-covers-well">What the example suite covers well<a class="headerlink" href="#what-the-example-suite-covers-well" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1255,7 +1287,8 @@ It is designed for race engineers and Students who want practical onboarding.</p
 <li>It does not replace model-calibration work on real vehicle data.</li>
 </ul>
 <h2 id="output-structure">Output structure<a class="headerlink" href="#output-structure" title="Permanent link">&para;</a></h2>
-<p>All scripts export into <code>examples/output/</code> with consistent folder logic.
+<p>All scripts export into <code>examples/output/</code> with consistent folder logic
+(<code>examples/output/spa/</code> for Spa-specific workflows).
 Typical artifacts:</p>
 <ul>
 <li><code>kpis.json</code></li>

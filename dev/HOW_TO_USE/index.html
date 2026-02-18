@@ -16,7 +16,7 @@
         <link rel="prev" href="..">
       
       
-        <link rel="next" href="../API/">
+        <link rel="next" href="../BACKENDS/">
       
       
         
@@ -553,6 +553,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Step 4: Configure runtime and numerics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backend-selection-numerical-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend selection (numerical execution)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -614,6 +631,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../BACKENDS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compute Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -930,14 +975,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../BICYCLE_MODEL/" class="md-nav__link">
+      <a href="../SINGLE_TRACK_MODEL/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Bicycle Model
+    Single-Track Model
   
 
     
@@ -1376,6 +1421,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Step 4: Configure runtime and numerics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backend-selection-numerical-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend selection (numerical execution)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1501,7 +1563,7 @@ vehicle models.</p>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pylapsim.tire</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_axle_tire_parameters</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pylapsim.track</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_track_csv</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pylapsim.utils.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">STANDARD_AIR_DENSITY</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pylapsim.vehicle</span><span class="w"> </span><span class="kn">import</span> <span class="n">BicyclePhysics</span><span class="p">,</span> <span class="n">VehicleParameters</span><span class="p">,</span> <span class="n">build_bicycle_model</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pylapsim.vehicle</span><span class="w"> </span><span class="kn">import</span> <span class="n">SingleTrackPhysics</span><span class="p">,</span> <span class="n">VehicleParameters</span><span class="p">,</span> <span class="n">build_single_track_model</span>
 </code></pre></div>
 <p>How to read these imports as an engineer:</p>
 <ul>
@@ -1543,11 +1605,11 @@ vehicle models.</p>
 <li>Replace with identified tire parameters for decision-quality studies.</li>
 </ul>
 <h3 id="23-choose-model-complexity">2.3 Choose model complexity<a class="headerlink" href="#23-choose-model-complexity" title="Permanent link">&para;</a></h3>
-<p>Bicycle model:</p>
-<div class="highlight"><pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">build_bicycle_model</span><span class="p">(</span>
+<p>Single-track model:</p>
+<div class="highlight"><pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">build_single_track_model</span><span class="p">(</span>
     <span class="n">vehicle</span><span class="o">=</span><span class="n">vehicle</span><span class="p">,</span>
     <span class="n">tires</span><span class="o">=</span><span class="n">tires</span><span class="p">,</span>
-    <span class="n">physics</span><span class="o">=</span><span class="n">BicyclePhysics</span><span class="p">(),</span>
+    <span class="n">physics</span><span class="o">=</span><span class="n">SingleTrackPhysics</span><span class="p">(),</span>
 <span class="p">)</span>
 </code></pre></div>
 <p>Point-mass model:</p>
@@ -1560,7 +1622,7 @@ vehicle models.</p>
 </code></pre></div>
 <p>When to use which:</p>
 <ul>
-<li>Bicycle: better diagnostics (yaw moment, axle-load dynamics), better cornering interpretation.</li>
+<li>Single-track (bicycle): better diagnostics (yaw moment, axle-load dynamics), better cornering interpretation.</li>
 <li>Point-mass: fast baseline and sensitivity sweeps.</li>
 </ul>
 <h2 id="step-3-load-or-generate-track">Step 3: Load or generate track<a class="headerlink" href="#step-3-load-or-generate-track" title="Permanent link">&para;</a></h2>
@@ -1605,6 +1667,23 @@ vehicle models.</p>
     <span class="p">),</span>
 <span class="p">)</span>
 </code></pre></div>
+<h3 id="backend-selection-numerical-execution">Backend selection (numerical execution)<a class="headerlink" href="#backend-selection-numerical-execution" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">config_numpy</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span><span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;numpy&quot;</span><span class="p">,</span> <span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">)</span>
+<span class="n">config_numba</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span><span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;numba&quot;</span><span class="p">,</span> <span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">)</span>
+<span class="n">config_torch</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span>
+    <span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;torch&quot;</span><span class="p">,</span>
+    <span class="n">torch_device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>  <span class="c1"># or &quot;cuda:0&quot;</span>
+    <span class="n">torch_compile</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Selection rule:</p>
+<ul>
+<li><code>numpy</code>: robust baseline and easiest debugging.</li>
+<li><code>numba</code>: fastest CPU sweeps (currently with <code>PointMassModel</code> and <code>SingleTrackModel</code>).</li>
+<li><code>torch</code>: CPU/GPU execution and tensor-native workflows.</li>
+</ul>
+<p>For quantitative guidance, see <a href="../BACKENDS/">Compute Backends</a>.</p>
 <p>Critical distinction:</p>
 <ul>
 <li>Physical parameters represent the car/track reality.</li>
@@ -1630,6 +1709,20 @@ vehicle models.</p>
 <span class="n">output_dir</span> <span class="o">=</span> <span class="n">project_root</span> <span class="o">/</span> <span class="s2">&quot;examples&quot;</span> <span class="o">/</span> <span class="s2">&quot;output&quot;</span>
 <span class="n">export_standard_plots</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">)</span>
 <span class="n">export_kpi_json</span><span class="p">(</span><span class="n">kpis</span><span class="p">,</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;kpis.json&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Optional: generate a speed-dependent performance envelope (G-G map family):</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pylapsim.analysis</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PerformanceEnvelopeNumerics</span><span class="p">,</span>
+    <span class="n">PerformanceEnvelopePhysics</span><span class="p">,</span>
+    <span class="n">compute_performance_envelope</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">envelope</span> <span class="o">=</span> <span class="n">compute_performance_envelope</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">physics</span><span class="o">=</span><span class="n">PerformanceEnvelopePhysics</span><span class="p">(</span><span class="n">speed_min</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">speed_max</span><span class="o">=</span><span class="mf">90.0</span><span class="p">),</span>
+    <span class="n">numerics</span><span class="o">=</span><span class="n">PerformanceEnvelopeNumerics</span><span class="p">(</span><span class="n">speed_samples</span><span class="o">=</span><span class="mi">31</span><span class="p">,</span> <span class="n">lateral_accel_samples</span><span class="o">=</span><span class="mi">41</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">envelope_array</span> <span class="o">=</span> <span class="n">envelope</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
 </code></pre></div>
 <p>Minimum review set:</p>
 <ul>
@@ -1662,7 +1755,7 @@ vehicle models.</p>
 <ol>
 <li>Read <a href="../EXAMPLES_SYNTHETIC/">Synthetic Track Walkthrough</a>.</li>
 <li>Run <a href="../EXAMPLES_SPA/">Spa Walkthrough</a>.</li>
-<li>Compare model complexity with <code>examples/spa_model_comparison.py</code>.</li>
+<li>Compare model complexity with <code>examples/spa/spa_model_comparison.py</code>.</li>
 <li>Move from default tire/model settings to identified vehicle data.</li>
 </ol>
 

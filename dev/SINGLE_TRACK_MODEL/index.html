@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://pzimbrod.github.io/pylapsim/dev/BICYCLE_MODEL/">
+        <link rel="canonical" href="https://pzimbrod.github.io/pylapsim/dev/SINGLE_TRACK_MODEL/">
       
       
         <link rel="prev" href="../EXAMPLES_SPA/">
@@ -27,7 +27,7 @@
     
     
       
-        <title>Bicycle Model - PyLapSim</title>
+        <title>Single-Track Model - PyLapSim</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#bicycle-model" class="md-skip">
+        <a href="#single-track-model" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Bicycle Model
+              Single-Track Model
             
           </span>
         </div>
@@ -358,6 +358,34 @@
     
   
     How to Use
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../BACKENDS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compute Backends
   
 
     
@@ -700,7 +728,7 @@
   <span class="md-ellipsis">
     
   
-    Bicycle Model
+    Single-Track Model
   
 
     
@@ -718,7 +746,7 @@
   <span class="md-ellipsis">
     
   
-    Bicycle Model
+    Single-Track Model
   
 
     
@@ -1231,11 +1259,20 @@
   
 
 
-<h1 id="bicycle-model">Bicycle Model<a class="headerlink" href="#bicycle-model" title="Permanent link">&para;</a></h1>
-<p>This document defines the implemented bicycle backend in
-<code>src/pylapsim/vehicle/bicycle_model.py</code>.</p>
+<h1 id="single-track-model">Single-Track Model<a class="headerlink" href="#single-track-model" title="Permanent link">&para;</a></h1>
+<p>This document defines the implemented single-track backend in
+<code>src/pylapsim/vehicle/single_track_model.py</code> and
+<code>src/pylapsim/vehicle/_single_track_physics.py</code>.</p>
+<p>Terminology note:</p>
+<ul>
+<li><code>SingleTrack</code> in this package corresponds to the "bicycle model" terminology
+  frequently used in vehicle-dynamics literature.</li>
+</ul>
+<p>The single-track backend is implemented as a physical extension of the
+point-mass physical core (<code>PointMassPhysicalMixin</code>), with single-track-specific
+lateral force and diagnostic equations layered on top.</p>
 <h2 id="1-scope">1. Scope<a class="headerlink" href="#1-scope" title="Permanent link">&para;</a></h2>
-<p>The bicycle model keeps the solver API contract and adds axle-level lateral
+<p>The single-track model keeps the solver API contract and adds axle-level lateral
 tire force modeling, quasi-static load transfer, and yaw-moment diagnostics.</p>
 <p>State assumptions in the lap-time solver context:</p>
 <ul>
@@ -1332,7 +1369,7 @@ D(v)=\tfrac{1}{2}\rho C_D A v^2.
 <h2 id="6-diagnostics">6. Diagnostics<a class="headerlink" href="#6-diagnostics" title="Permanent link">&para;</a></h2>
 <p>The backend reports at each operating point:</p>
 <ul>
-<li>yaw moment from 3-DOF bicycle force balance,</li>
+<li>yaw moment from 3-DOF single-track force balance,</li>
 <li>front and rear axle normal loads,</li>
 <li>tractive power:</li>
 </ul>
@@ -1340,12 +1377,12 @@ D(v)=\tfrac{1}{2}\rho C_D A v^2.
 P = \left(m a_x + D(v)\right)v.
 \]</div>
 <p>The solver uses quasi-steady envelopes for speed profile generation; the
-3-DOF bicycle dynamics model is used primarily for physically meaningful
+3-DOF single-track dynamics model is used primarily for physically meaningful
 analysis diagnostics (e.g., yaw-moment traces).</p>
 <h2 id="7-equation-to-code-mapping">7. Equation-to-Code Mapping<a class="headerlink" href="#7-equation-to-code-mapping" title="Permanent link">&para;</a></h2>
 <ul>
 <li>lateral limit fixed-point:
-  <code>BicycleModel.lateral_accel_limit(...)</code></li>
+  <code>SingleTrackModel.lateral_accel_limit(...)</code></li>
 <li>Pacejka lateral force:
   <code>magic_formula_lateral(...)</code></li>
 <li>normal-load estimation:
@@ -1353,17 +1390,17 @@ analysis diagnostics (e.g., yaw-moment traces).</p>
 <li>friction-circle scaling:
   <code>EnvelopeVehicleModel._friction_circle_scale(...)</code></li>
 <li>longitudinal accel/decel:
-  <code>BicycleModel.max_longitudinal_accel(...)</code>,
-  <code>BicycleModel.max_longitudinal_decel(...)</code></li>
+  <code>SingleTrackModel.max_longitudinal_accel(...)</code>,
+  <code>SingleTrackModel.max_longitudinal_decel(...)</code></li>
 <li>diagnostics:
-  <code>BicycleModel.diagnostics(...)</code>, <code>BicycleDynamicsModel.force_balance(...)</code></li>
+  <code>SingleTrackModel.diagnostics(...)</code>, <code>SingleTrackDynamicsModel.force_balance(...)</code></li>
 </ul>
 <h2 id="8-example">8. Example<a class="headerlink" href="#8-example" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Bicycle standalone usage:
-  <code>examples/spa_lap.py</code></li>
+<li>Single-track standalone usage:
+  <code>examples/spa/spa_lap_single_track.py</code></li>
 <li>Side-by-side comparison against point-mass model:
-  <code>examples/spa_model_comparison.py</code></li>
+  <code>examples/spa/spa_model_comparison.py</code></li>
 </ul>
 
 

@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://pzimbrod.github.io/pylapsim/dev/API/">
       
       
-        <link rel="prev" href="../HOW_TO_USE/">
+        <link rel="prev" href="../BACKENDS/">
       
       
         <link rel="next" href="../SOLVER/">
@@ -377,6 +377,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../BACKENDS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compute Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -513,10 +541,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bicycle-backend" class="md-nav__link">
+  <a href="#single-track-backend" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Bicycle backend
+        Single-track backend
       
     </span>
   </a>
@@ -875,14 +903,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../BICYCLE_MODEL/" class="md-nav__link">
+      <a href="../SINGLE_TRACK_MODEL/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Bicycle Model
+    Single-Track Model
   
 
     
@@ -1253,10 +1281,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bicycle-backend" class="md-nav__link">
+  <a href="#single-track-backend" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Bicycle backend
+        Single-track backend
       
     </span>
   </a>
@@ -1373,19 +1401,23 @@
 <ul>
 <li><code>pylapsim.tire.default_axle_tire_parameters() -&gt; AxleTireParameters</code></li>
 </ul>
-<h3 id="bicycle-backend">Bicycle backend<a class="headerlink" href="#bicycle-backend" title="Permanent link">&para;</a></h3>
+<h3 id="single-track-backend">Single-track backend<a class="headerlink" href="#single-track-backend" title="Permanent link">&para;</a></h3>
 <ul>
-<li><code>pylapsim.vehicle.BicycleModel(vehicle, tires, physics, numerics)</code></li>
-<li><code>pylapsim.vehicle.BicyclePhysics</code></li>
-<li><code>pylapsim.vehicle.BicycleNumerics</code></li>
-<li><code>pylapsim.vehicle.build_bicycle_model(vehicle, tires, physics=None, numerics=None)</code></li>
+<li><code>pylapsim.vehicle.SingleTrackModel(vehicle, tires, physics, numerics)</code></li>
+<li><code>pylapsim.vehicle.SingleTrackPhysics</code></li>
+<li><code>pylapsim.vehicle.SingleTrackNumerics</code></li>
+<li><code>pylapsim.vehicle.build_single_track_model(vehicle, tires, physics=None, numerics=None)</code></li>
+</ul>
+<p>Terminology note:</p>
+<ul>
+<li><code>SingleTrack</code> corresponds to the "bicycle model" terminology commonly used in literature.</li>
 </ul>
 <h3 id="point-mass-backend">Point-mass backend<a class="headerlink" href="#point-mass-backend" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>pylapsim.vehicle.PointMassModel(vehicle, physics)</code></li>
 <li><code>pylapsim.vehicle.PointMassPhysics</code></li>
 <li><code>pylapsim.vehicle.build_point_mass_model(vehicle, physics=None)</code></li>
-<li><code>pylapsim.vehicle.calibrate_point_mass_friction_to_bicycle(vehicle, tires, ...)</code></li>
+<li><code>pylapsim.vehicle.calibrate_point_mass_friction_to_single_track(vehicle, tires, ...)</code></li>
 </ul>
 <h2 id="3-simulation-setup-and-run">3. Simulation setup and run<a class="headerlink" href="#3-simulation-setup-and-run" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1395,6 +1427,13 @@
 <li><code>pylapsim.simulation.build_simulation_config(...)</code></li>
 <li><code>pylapsim.simulation.simulate_lap(track, model, config) -&gt; LapResult</code></li>
 </ul>
+<p>Backend runtime controls:</p>
+<ul>
+<li><code>RuntimeConfig.compute_backend</code>: <code>"numpy"</code>, <code>"numba"</code>, or <code>"torch"</code></li>
+<li><code>RuntimeConfig.torch_device</code>: keep <code>"cpu"</code> for <code>numpy</code>/<code>numba</code>; use <code>"cpu"</code> or <code>"cuda:0"</code> for <code>torch</code></li>
+<li><code>RuntimeConfig.torch_compile</code>: optional compile acceleration for <code>torch</code> only</li>
+</ul>
+<p>See <a href="../BACKENDS/">Compute Backends</a> for selection guidance and benchmarks.</p>
 <p>Vehicle-model solver contract:</p>
 <ul>
 <li><code>validate()</code></li>
@@ -1408,6 +1447,11 @@
 <li><code>pylapsim.analysis.compute_kpis(result) -&gt; KpiSummary</code></li>
 <li><code>pylapsim.analysis.export_standard_plots(result, output_dir)</code></li>
 <li><code>pylapsim.analysis.export.export_kpi_json(kpis, path)</code></li>
+<li><code>pylapsim.analysis.compute_performance_envelope(model, ...) -&gt; PerformanceEnvelopeResult</code></li>
+<li><code>pylapsim.analysis.PerformanceEnvelopePhysics</code></li>
+<li><code>pylapsim.analysis.PerformanceEnvelopeNumerics</code></li>
+<li><code>pylapsim.analysis.PerformanceEnvelopeRuntime</code></li>
+<li><code>pylapsim.analysis.build_performance_envelope_config(...) -&gt; PerformanceEnvelopeConfig</code></li>
 </ul>
 <p><code>LapResult</code> provides:</p>
 <ul>
@@ -1417,9 +1461,17 @@
 <li>front/rear axle loads</li>
 <li>power and energy</li>
 </ul>
+<p><code>PerformanceEnvelopeResult</code> provides:</p>
+<ul>
+<li>speed support points</li>
+<li>lateral-acceleration limits per speed</li>
+<li>sampled lateral-acceleration grid</li>
+<li>max/min longitudinal acceleration grid</li>
+<li>optional <code>.to_dataframe()</code> conversion for tabular studies</li>
+</ul>
 <h2 id="5-minimal-usage-pattern">5. Minimal usage pattern<a class="headerlink" href="#5-minimal-usage-pattern" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">track</span> <span class="o">=</span> <span class="n">load_track_csv</span><span class="p">(</span><span class="s2">&quot;data/spa_francorchamps.csv&quot;</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">build_bicycle_model</span><span class="p">(</span><span class="n">vehicle</span><span class="o">=</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">tires</span><span class="o">=</span><span class="n">tires</span><span class="p">,</span> <span class="n">physics</span><span class="o">=</span><span class="n">BicyclePhysics</span><span class="p">())</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">build_single_track_model</span><span class="p">(</span><span class="n">vehicle</span><span class="o">=</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">tires</span><span class="o">=</span><span class="n">tires</span><span class="p">,</span> <span class="n">physics</span><span class="o">=</span><span class="n">SingleTrackPhysics</span><span class="p">())</span>
 <span class="n">config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span><span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">)</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">simulate_lap</span><span class="p">(</span><span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
 <span class="n">kpis</span> <span class="o">=</span> <span class="n">compute_kpis</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
@@ -1429,7 +1481,7 @@
 <li><a href="../HOW_TO_USE/">How to Use</a></li>
 <li><a href="../EXAMPLES/">Examples Overview</a></li>
 <li><a href="../SOLVER/">Solver</a></li>
-<li><a href="../BICYCLE_MODEL/">Bicycle Model</a></li>
+<li><a href="../SINGLE_TRACK_MODEL/">Single-Track Model</a></li>
 <li><a href="../POINT_MASS_MODEL/">Point-Mass Model</a></li>
 </ul>
 
