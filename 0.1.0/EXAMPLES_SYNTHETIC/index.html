@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://pzimbrod.github.io/pylapsim/0.1.0/API/">
+        <link rel="canonical" href="https://pzimbrod.github.io/pylapsim/0.1.0/EXAMPLES_SYNTHETIC/">
       
       
-        <link rel="prev" href="../BACKENDS/">
+        <link rel="prev" href="../EXAMPLES/">
       
       
-        <link rel="next" href="../SOLVER/">
+        <link rel="next" href="../EXAMPLES_SPA/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>API Overview - PyLapSim</title>
+        <title>Synthetic Tracks - PyLapSim</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#api-overview" class="md-skip">
+        <a href="#synthetic-track-walkthrough" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              API Overview
+              Synthetic Tracks
             
           </span>
         </div>
@@ -300,20 +300,18 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
@@ -334,7 +332,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -405,37 +403,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Overview
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../API/" class="md-nav__link">
         
   
   
@@ -451,170 +422,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-track-inputs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Track inputs
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1. Track inputs">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#load-measuredreal-track-data" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Load measured/real track data
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#generate-synthetic-validation-tracks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Generate synthetic validation tracks
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-vehicle-and-tire-models" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Vehicle and tire models
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Vehicle and tire models">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#shared-physical-vehicle-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Shared physical vehicle parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#tire-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tire parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#single-track-backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Single-track backend
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#point-mass-backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Point-mass backend
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-simulation-setup-and-run" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Simulation setup and run
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-postprocessing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Postprocessing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-minimal-usage-pattern" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Minimal usage pattern
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-related-guides" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Related guides
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -715,18 +522,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -747,7 +556,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -790,10 +599,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../EXAMPLES_SYNTHETIC/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synthetic Tracks
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -809,6 +645,275 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-this-tutorial-is-important" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why this tutorial is important
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-imports-map-code-to-engineering-blocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Imports: map code to engineering blocks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-define-vehicle-and-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Define vehicle and model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Define vehicle and model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-vehicle-parameter-block" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Vehicle parameter block
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-model-choice-point-mass" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Model choice: point-mass
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-solver-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Solver setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-build-three-benchmark-tracks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Build three benchmark tracks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Build three benchmark tracks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-straight-1-km" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Straight (1 km)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-circle-50-m-radius" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Circle (50 m radius)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-figure-eight" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Figure-eight
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-run-simulation-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Run simulation loop
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-cross-scenario-comparison-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Cross-scenario comparison output
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-how-to-interpret-each-scenario" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. How to interpret each scenario
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. How to interpret each scenario">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#straight-straight_1km" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Straight (straight_1km)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#circle-circle_r50" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Circle (circle_r50)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#figure-eight-figure_eight" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Figure-eight (figure_eight)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-what-this-tutorial-validates-well" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. What this tutorial validates well
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-what-this-tutorial-does-not-validate-alone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. What this tutorial does not validate alone
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-common-mistakes-and-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Common mistakes and fixes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-suggested-next-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Suggested next step
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run command
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1208,22 +1313,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-track-inputs" class="md-nav__link">
+  <a href="#why-this-tutorial-is-important" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Track inputs
+        Why this tutorial is important
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. Track inputs">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-imports-map-code-to-engineering-blocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Imports: map code to engineering blocks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-define-vehicle-and-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Define vehicle and model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Define vehicle and model">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#load-measuredreal-track-data" class="md-nav__link">
+  <a href="#21-vehicle-parameter-block" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Load measured/real track data
+        2.1 Vehicle parameter block
       
     </span>
   </a>
@@ -1231,10 +1358,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#generate-synthetic-validation-tracks" class="md-nav__link">
+  <a href="#22-model-choice-point-mass" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Generate synthetic validation tracks
+        2.2 Model choice: point-mass
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-solver-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Solver setup
       
     </span>
   </a>
@@ -1247,22 +1385,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-vehicle-and-tire-models" class="md-nav__link">
+  <a href="#3-build-three-benchmark-tracks" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Vehicle and tire models
+        3. Build three benchmark tracks
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. Vehicle and tire models">
+    <nav class="md-nav" aria-label="3. Build three benchmark tracks">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#shared-physical-vehicle-parameters" class="md-nav__link">
+  <a href="#31-straight-1-km" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Shared physical vehicle parameters
+        3.1 Straight (1 km)
       
     </span>
   </a>
@@ -1270,10 +1408,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tire-parameters" class="md-nav__link">
+  <a href="#32-circle-50-m-radius" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tire parameters
+        3.2 Circle (50 m radius)
       
     </span>
   </a>
@@ -1281,21 +1419,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#single-track-backend" class="md-nav__link">
+  <a href="#33-figure-eight" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Single-track backend
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#point-mass-backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Point-mass backend
+        3.3 Figure-eight
       
     </span>
   </a>
@@ -1308,10 +1435,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-simulation-setup-and-run" class="md-nav__link">
+  <a href="#4-run-simulation-loop" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Simulation setup and run
+        4. Run simulation loop
       
     </span>
   </a>
@@ -1319,10 +1446,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-postprocessing" class="md-nav__link">
+  <a href="#5-cross-scenario-comparison-output" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Postprocessing
+        5. Cross-scenario comparison output
       
     </span>
   </a>
@@ -1330,10 +1457,60 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-minimal-usage-pattern" class="md-nav__link">
+  <a href="#6-how-to-interpret-each-scenario" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Minimal usage pattern
+        6. How to interpret each scenario
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. How to interpret each scenario">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#straight-straight_1km" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Straight (straight_1km)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#circle-circle_r50" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Circle (circle_r50)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#figure-eight-figure_eight" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Figure-eight (figure_eight)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-what-this-tutorial-validates-well" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. What this tutorial validates well
       
     </span>
   </a>
@@ -1341,10 +1518,43 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-related-guides" class="md-nav__link">
+  <a href="#8-what-this-tutorial-does-not-validate-alone" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Related guides
+        8. What this tutorial does not validate alone
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-common-mistakes-and-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Common mistakes and fixes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-suggested-next-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Suggested next step
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run command
       
     </span>
   </a>
@@ -1371,119 +1581,135 @@
   
 
 
-<h1 id="api-overview">API Overview<a class="headerlink" href="#api-overview" title="Permanent link">&para;</a></h1>
-<p>This page maps the public API to the engineering workflow.</p>
-<p>If you are new to the package, start with <a href="../HOW_TO_USE/">How to Use</a>.</p>
-<h2 id="1-track-inputs">1. Track inputs<a class="headerlink" href="#1-track-inputs" title="Permanent link">&para;</a></h2>
-<h3 id="load-measuredreal-track-data">Load measured/real track data<a class="headerlink" href="#load-measuredreal-track-data" title="Permanent link">&para;</a></h3>
+<h1 id="synthetic-track-walkthrough">Synthetic Track Walkthrough<a class="headerlink" href="#synthetic-track-walkthrough" title="Permanent link">&para;</a></h1>
+<p>This tutorial walks through <code>examples/synthetic_track_scenarios.py</code> in code order.</p>
+<p>Goal: build intuition for solver behavior on controlled geometries before moving
+to real circuits.</p>
+<h2 id="why-this-tutorial-is-important">Why this tutorial is important<a class="headerlink" href="#why-this-tutorial-is-important" title="Permanent link">&para;</a></h2>
+<p>Synthetic tracks are your first physical consistency filter.
+If behavior is implausible here, Spa results are likely hard to trust.</p>
+<h2 id="1-imports-map-code-to-engineering-blocks">1. Imports: map code to engineering blocks<a class="headerlink" href="#1-imports-map-code-to-engineering-blocks" title="Permanent link">&para;</a></h2>
+<p>The script imports:</p>
 <ul>
-<li><code>pylapsim.track.load_track_csv(path) -&gt; TrackData</code></li>
+<li><code>analysis</code>: KPI and figure export,</li>
+<li><code>simulation</code>: lap solver,</li>
+<li><code>track</code>: synthetic layout generators,</li>
+<li><code>vehicle</code>: point-mass model and its physics settings,</li>
+<li><code>utils</code>: logging and constants.</li>
 </ul>
-<p>Required CSV columns:</p>
+<p>If you are new to Python: imports are simply selecting the tools you need.</p>
+<h2 id="2-define-vehicle-and-model">2. Define vehicle and model<a class="headerlink" href="#2-define-vehicle-and-model" title="Permanent link">&para;</a></h2>
+<h3 id="21-vehicle-parameter-block">2.1 Vehicle parameter block<a class="headerlink" href="#21-vehicle-parameter-block" title="Permanent link">&para;</a></h3>
+<p><code>_example_vehicle_parameters()</code> provides a complete car definition.</p>
+<p>Most influential fields for this tutorial:</p>
 <ul>
-<li><code>x</code></li>
-<li><code>y</code></li>
-<li><code>elevation</code></li>
-<li><code>banking</code></li>
+<li><code>mass</code>, <code>lift_coefficient</code>, <code>drag_coefficient</code>, <code>frontal_area</code></li>
+<li>govern acceleration/drag balance and high-speed behavior,</li>
+<li><code>front_weight_fraction</code></li>
+<li>influences axle-load diagnostics,</li>
+<li>remaining vehicle parameters</li>
+<li>keep cross-model compatibility.</li>
 </ul>
-<h3 id="generate-synthetic-validation-tracks">Generate synthetic validation tracks<a class="headerlink" href="#generate-synthetic-validation-tracks" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>pylapsim.track.build_straight_track(...) -&gt; TrackData</code></li>
-<li><code>pylapsim.track.build_circular_track(...) -&gt; TrackData</code></li>
-<li><code>pylapsim.track.build_figure_eight_track(...) -&gt; TrackData</code></li>
-</ul>
-<h2 id="2-vehicle-and-tire-models">2. Vehicle and tire models<a class="headerlink" href="#2-vehicle-and-tire-models" title="Permanent link">&para;</a></h2>
-<h3 id="shared-physical-vehicle-parameters">Shared physical vehicle parameters<a class="headerlink" href="#shared-physical-vehicle-parameters" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>pylapsim.vehicle.VehicleParameters</code></li>
-</ul>
-<h3 id="tire-parameters">Tire parameters<a class="headerlink" href="#tire-parameters" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>pylapsim.tire.default_axle_tire_parameters() -&gt; AxleTireParameters</code></li>
-</ul>
-<h3 id="single-track-backend">Single-track backend<a class="headerlink" href="#single-track-backend" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>pylapsim.vehicle.SingleTrackModel(vehicle, tires, physics, numerics)</code></li>
-<li><code>pylapsim.vehicle.SingleTrackPhysics</code></li>
-<li><code>pylapsim.vehicle.SingleTrackNumerics</code></li>
-<li><code>pylapsim.vehicle.build_single_track_model(vehicle, tires, physics=None, numerics=None)</code></li>
-</ul>
-<p>Terminology note:</p>
-<ul>
-<li><code>SingleTrack</code> corresponds to the "bicycle model" terminology commonly used in literature.</li>
-</ul>
-<h3 id="point-mass-backend">Point-mass backend<a class="headerlink" href="#point-mass-backend" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>pylapsim.vehicle.PointMassModel(vehicle, physics)</code></li>
-<li><code>pylapsim.vehicle.PointMassPhysics</code></li>
-<li><code>pylapsim.vehicle.build_point_mass_model(vehicle, physics=None)</code></li>
-<li><code>pylapsim.vehicle.calibrate_point_mass_friction_to_single_track(vehicle, tires, ...)</code></li>
-</ul>
-<h2 id="3-simulation-setup-and-run">3. Simulation setup and run<a class="headerlink" href="#3-simulation-setup-and-run" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>pylapsim.simulation.RuntimeConfig</code></li>
-<li><code>pylapsim.simulation.NumericsConfig</code></li>
-<li><code>pylapsim.simulation.SimulationConfig</code></li>
-<li><code>pylapsim.simulation.build_simulation_config(...)</code></li>
-<li><code>pylapsim.simulation.simulate_lap(track, model, config) -&gt; LapResult</code></li>
-</ul>
-<p>Backend runtime controls:</p>
-<ul>
-<li><code>RuntimeConfig.compute_backend</code>: <code>"numpy"</code>, <code>"numba"</code>, or <code>"torch"</code></li>
-<li><code>RuntimeConfig.torch_device</code>: keep <code>"cpu"</code> for <code>numpy</code>/<code>numba</code>; use <code>"cpu"</code> or <code>"cuda:0"</code> for <code>torch</code></li>
-<li><code>RuntimeConfig.torch_compile</code>: optional compile acceleration for <code>torch</code> only</li>
-</ul>
-<p>See <a href="../BACKENDS/">Compute Backends</a> for selection guidance and benchmarks.</p>
-<p>Vehicle-model solver contract:</p>
-<ul>
-<li><code>validate()</code></li>
-<li><code>lateral_accel_limit(speed, banking)</code></li>
-<li><code>max_longitudinal_accel(speed, lateral_accel_required, grade, banking)</code></li>
-<li><code>max_longitudinal_decel(speed, lateral_accel_required, grade, banking)</code></li>
-<li><code>diagnostics(speed, longitudinal_accel, lateral_accel, curvature)</code></li>
-</ul>
-<h2 id="4-postprocessing">4. Postprocessing<a class="headerlink" href="#4-postprocessing" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>pylapsim.analysis.compute_kpis(result) -&gt; KpiSummary</code></li>
-<li><code>pylapsim.analysis.export_standard_plots(result, output_dir)</code></li>
-<li><code>pylapsim.analysis.export.export_kpi_json(kpis, path)</code></li>
-<li><code>pylapsim.analysis.compute_performance_envelope(model, ...) -&gt; PerformanceEnvelopeResult</code></li>
-<li><code>pylapsim.analysis.PerformanceEnvelopePhysics</code></li>
-<li><code>pylapsim.analysis.PerformanceEnvelopeNumerics</code></li>
-<li><code>pylapsim.analysis.PerformanceEnvelopeRuntime</code></li>
-<li><code>pylapsim.analysis.build_performance_envelope_config(...) -&gt; PerformanceEnvelopeConfig</code></li>
-</ul>
-<p><code>LapResult</code> provides:</p>
-<ul>
-<li>lap time</li>
-<li>speed / longitudinal acceleration / lateral acceleration traces</li>
-<li>yaw moment</li>
-<li>front/rear axle loads</li>
-<li>power and energy</li>
-</ul>
-<p><code>PerformanceEnvelopeResult</code> provides:</p>
-<ul>
-<li>speed support points</li>
-<li>lateral-acceleration limits per speed</li>
-<li>sampled lateral-acceleration grid</li>
-<li>max/min longitudinal acceleration grid</li>
-<li>optional <code>.to_dataframe()</code> conversion for tabular studies</li>
-</ul>
-<h2 id="5-minimal-usage-pattern">5. Minimal usage pattern<a class="headerlink" href="#5-minimal-usage-pattern" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">track</span> <span class="o">=</span> <span class="n">load_track_csv</span><span class="p">(</span><span class="s2">&quot;data/spa_francorchamps.csv&quot;</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">build_single_track_model</span><span class="p">(</span><span class="n">vehicle</span><span class="o">=</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">tires</span><span class="o">=</span><span class="n">tires</span><span class="p">,</span> <span class="n">physics</span><span class="o">=</span><span class="n">SingleTrackPhysics</span><span class="p">())</span>
-<span class="n">config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span><span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">)</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">simulate_lap</span><span class="p">(</span><span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
-<span class="n">kpis</span> <span class="o">=</span> <span class="n">compute_kpis</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<h3 id="22-model-choice-point-mass">2.2 Model choice: point-mass<a class="headerlink" href="#22-model-choice-point-mass" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">build_point_mass_model</span><span class="p">(</span><span class="n">vehicle</span><span class="o">=</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">physics</span><span class="o">=</span><span class="n">PointMassPhysics</span><span class="p">())</span>
 </code></pre></div>
-<h2 id="6-related-guides">6. Related guides<a class="headerlink" href="#6-related-guides" title="Permanent link">&para;</a></h2>
+<p>Interpretation:</p>
 <ul>
-<li><a href="../HOW_TO_USE/">How to Use</a></li>
-<li><a href="../EXAMPLES/">Examples Overview</a></li>
-<li><a href="../SOLVER/">Solver</a></li>
-<li><a href="../SINGLE_TRACK_MODEL/">Single-Track Model</a></li>
-<li><a href="../POINT_MASS_MODEL/">Point-Mass Model</a></li>
+<li>very fast and stable for benchmark scenarios,</li>
+<li>no explicit yaw state,</li>
+<li>yaw moment output is structurally zero by design.</li>
 </ul>
+<p>If your study requires yaw-moment dynamics, switch to single-track model.</p>
+<h3 id="23-solver-setup">2.3 Solver setup<a class="headerlink" href="#23-solver-setup" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span><span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">)</span>
+</code></pre></div>
+<p><code>max_speed</code> is a runtime cap, not a guarantee that the car can sustain this speed.
+Actual speed comes from force balance and constraints.</p>
+<h2 id="3-build-three-benchmark-tracks">3. Build three benchmark tracks<a class="headerlink" href="#3-build-three-benchmark-tracks" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">tracks</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;straight_1km&quot;</span><span class="p">:</span> <span class="n">build_straight_track</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="n">STRAIGHT_LENGTH</span><span class="p">),</span>
+    <span class="s2">&quot;circle_r50&quot;</span><span class="p">:</span> <span class="n">build_circular_track</span><span class="p">(</span><span class="n">radius</span><span class="o">=</span><span class="n">CIRCLE_RADIUS</span><span class="p">),</span>
+    <span class="s2">&quot;figure_eight&quot;</span><span class="p">:</span> <span class="n">build_figure_eight_track</span><span class="p">(</span><span class="n">lobe_radius</span><span class="o">=</span><span class="n">FIGURE_EIGHT_RADIUS</span><span class="p">),</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="31-straight-1-km">3.1 Straight (1 km)<a class="headerlink" href="#31-straight-1-km" title="Permanent link">&para;</a></h3>
+<p>Tests pure longitudinal behavior with no curvature demand.</p>
+<h3 id="32-circle-50-m-radius">3.2 Circle (50 m radius)<a class="headerlink" href="#32-circle-50-m-radius" title="Permanent link">&para;</a></h3>
+<p>Tests quasi-steady cornering with near-constant curvature.</p>
+<h3 id="33-figure-eight">3.3 Figure-eight<a class="headerlink" href="#33-figure-eight" title="Permanent link">&para;</a></h3>
+<p>Tests left/right transition dynamics and sign changes in lateral acceleration.</p>
+<h2 id="4-run-simulation-loop">4. Run simulation loop<a class="headerlink" href="#4-run-simulation-loop" title="Permanent link">&para;</a></h2>
+<p>Per scenario:</p>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">simulate_lap</span><span class="p">(</span><span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+<span class="n">kpis</span> <span class="o">=</span> <span class="n">compute_kpis</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="n">export_standard_plots</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">scenario_dir</span><span class="p">)</span>
+<span class="n">export_kpi_json</span><span class="p">(</span><span class="n">kpis</span><span class="p">,</span> <span class="n">scenario_dir</span> <span class="o">/</span> <span class="s2">&quot;kpis.json&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>This is the canonical PyLapSim pattern and can be reused for custom studies.</p>
+<h2 id="5-cross-scenario-comparison-output">5. Cross-scenario comparison output<a class="headerlink" href="#5-cross-scenario-comparison-output" title="Permanent link">&para;</a></h2>
+<p>After scenario runs, script generates:</p>
+<ul>
+<li><code>speed_trace_comparison.png</code></li>
+<li><code>scenario_summary.json</code></li>
+</ul>
+<p>These files support quick A/B/C interpretation across geometries.</p>
+<h2 id="6-how-to-interpret-each-scenario">6. How to interpret each scenario<a class="headerlink" href="#6-how-to-interpret-each-scenario" title="Permanent link">&para;</a></h2>
+<h3 id="straight-straight_1km">Straight (<code>straight_1km</code>)<a class="headerlink" href="#straight-straight_1km" title="Permanent link">&para;</a></h3>
+<p>Expected:</p>
+<ul>
+<li>lateral acceleration near zero,</li>
+<li>curvature near zero,</li>
+<li>speed governed by net longitudinal balance.</li>
+</ul>
+<p>Important nuance:</p>
+<ul>
+<li>speed can decrease if drag at current speed exceeds available drive acceleration.</li>
+</ul>
+<h3 id="circle-circle_r50">Circle (<code>circle_r50</code>)<a class="headerlink" href="#circle-circle_r50" title="Permanent link">&para;</a></h3>
+<p>Expected:</p>
+<ul>
+<li>interior speed close to steady value,</li>
+<li>interior longitudinal acceleration near zero,</li>
+<li>positive lateral acceleration around loop.</li>
+</ul>
+<p>Practical tip:</p>
+<ul>
+<li>ignore seam-adjacent points for steady-state assessment.</li>
+</ul>
+<h3 id="figure-eight-figure_eight">Figure-eight (<code>figure_eight</code>)<a class="headerlink" href="#figure-eight-figure_eight" title="Permanent link">&para;</a></h3>
+<p>Expected:</p>
+<ul>
+<li>lateral acceleration changes sign,</li>
+<li>acceleration and braking phases near transitions,</li>
+<li>stronger speed variation than constant-radius cornering.</li>
+</ul>
+<h2 id="7-what-this-tutorial-validates-well">7. What this tutorial validates well<a class="headerlink" href="#7-what-this-tutorial-validates-well" title="Permanent link">&para;</a></h2>
+<ul>
+<li>solver stability,</li>
+<li>unit consistency and sign conventions,</li>
+<li>gross physical plausibility,</li>
+<li>basic model-behavior sanity.</li>
+</ul>
+<h2 id="8-what-this-tutorial-does-not-validate-alone">8. What this tutorial does not validate alone<a class="headerlink" href="#8-what-this-tutorial-does-not-validate-alone" title="Permanent link">&para;</a></h2>
+<ul>
+<li>absolute lap-time fidelity on a real circuit,</li>
+<li>transient steering/yaw control quality,</li>
+<li>powertrain energy strategy realism.</li>
+</ul>
+<h2 id="9-common-mistakes-and-fixes">9. Common mistakes and fixes<a class="headerlink" href="#9-common-mistakes-and-fixes" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Expecting nonzero yaw moment with point-mass model.</li>
+<li>Use single-track model if yaw diagnostics are required.</li>
+<li>Treating seam points as steady-state evidence.</li>
+<li>trim boundary points before concluding.</li>
+<li>Assuming <code>max_speed</code> is always reached.</li>
+<li>check drag and available drive force first.</li>
+</ol>
+<h2 id="10-suggested-next-step">10. Suggested next step<a class="headerlink" href="#10-suggested-next-step" title="Permanent link">&para;</a></h2>
+<p>After this tutorial, continue with <a href="../EXAMPLES_SPA/">Spa Walkthrough</a>.</p>
+<h2 id="run-command">Run command<a class="headerlink" href="#run-command" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>examples/synthetic_track_scenarios.py
+</code></pre></div>
 
 
 

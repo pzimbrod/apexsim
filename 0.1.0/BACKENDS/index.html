@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://pzimbrod.github.io/pylapsim/0.1.0/API/">
+        <link rel="canonical" href="https://pzimbrod.github.io/pylapsim/0.1.0/BACKENDS/">
       
       
-        <link rel="prev" href="../BACKENDS/">
+        <link rel="prev" href="../HOW_TO_USE/">
       
       
-        <link rel="next" href="../SOLVER/">
+        <link rel="next" href="../API/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>API Overview - PyLapSim</title>
+        <title>Compute Backends - PyLapSim</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#api-overview" class="md-skip">
+        <a href="#compute-backends" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              API Overview
+              Compute Backends
             
           </span>
         </div>
@@ -377,34 +377,6 @@
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../BACKENDS/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Compute Backends
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -424,7 +396,7 @@
   <span class="md-ellipsis">
     
   
-    API Overview
+    Compute Backends
   
 
     
@@ -442,7 +414,7 @@
   <span class="md-ellipsis">
     
   
-    API Overview
+    Compute Backends
   
 
     
@@ -468,33 +440,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-track-inputs" class="md-nav__link">
+  <a href="#backend-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Track inputs
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1. Track inputs">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#load-measuredreal-track-data" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Load measured/real track data
+        Backend policy
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#generate-synthetic-validation-tracks" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#current-model-support" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Generate synthetic validation tracks
+        Current model support
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision guide
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decision guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#trade-offs-at-a-glance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trade-offs at a glance
       
     </span>
   </a>
@@ -507,22 +490,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-vehicle-and-tire-models" class="md-nav__link">
+  <a href="#configuration-examples" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Vehicle and tire models
+        Configuration examples
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. Vehicle and tire models">
+    <nav class="md-nav" aria-label="Configuration examples">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#shared-physical-vehicle-parameters" class="md-nav__link">
+  <a href="#numpy-cpu-reference" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Shared physical vehicle parameters
+        NumPy (CPU reference)
       
     </span>
   </a>
@@ -530,10 +513,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tire-parameters" class="md-nav__link">
+  <a href="#numba-cpu-optimized" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tire parameters
+        Numba (CPU-optimized)
       
     </span>
   </a>
@@ -541,21 +524,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#single-track-backend" class="md-nav__link">
+  <a href="#torch-cpu-or-gpu" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Single-track backend
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#point-mass-backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Point-mass backend
+        Torch (CPU or GPU)
       
     </span>
   </a>
@@ -568,10 +540,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-simulation-setup-and-run" class="md-nav__link">
+  <a href="#benchmark-methodology" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Simulation setup and run
+        Benchmark methodology
       
     </span>
   </a>
@@ -579,10 +551,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-postprocessing" class="md-nav__link">
+  <a href="#benchmark-snapshot-february-17-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Postprocessing
+        Benchmark snapshot (February 17, 2026)
       
     </span>
   </a>
@@ -590,21 +562,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-minimal-usage-pattern" class="md-nav__link">
+  <a href="#reproducibility-tips" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Minimal usage pattern
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-related-guides" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Related guides
+        Reproducibility tips
       
     </span>
   </a>
@@ -615,6 +576,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1208,33 +1197,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-track-inputs" class="md-nav__link">
+  <a href="#backend-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Track inputs
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1. Track inputs">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#load-measuredreal-track-data" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Load measured/real track data
+        Backend policy
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#generate-synthetic-validation-tracks" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#current-model-support" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Generate synthetic validation tracks
+        Current model support
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision guide
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decision guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#trade-offs-at-a-glance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trade-offs at a glance
       
     </span>
   </a>
@@ -1247,22 +1247,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-vehicle-and-tire-models" class="md-nav__link">
+  <a href="#configuration-examples" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Vehicle and tire models
+        Configuration examples
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. Vehicle and tire models">
+    <nav class="md-nav" aria-label="Configuration examples">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#shared-physical-vehicle-parameters" class="md-nav__link">
+  <a href="#numpy-cpu-reference" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Shared physical vehicle parameters
+        NumPy (CPU reference)
       
     </span>
   </a>
@@ -1270,10 +1270,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tire-parameters" class="md-nav__link">
+  <a href="#numba-cpu-optimized" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tire parameters
+        Numba (CPU-optimized)
       
     </span>
   </a>
@@ -1281,21 +1281,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#single-track-backend" class="md-nav__link">
+  <a href="#torch-cpu-or-gpu" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Single-track backend
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#point-mass-backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Point-mass backend
+        Torch (CPU or GPU)
       
     </span>
   </a>
@@ -1308,10 +1297,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-simulation-setup-and-run" class="md-nav__link">
+  <a href="#benchmark-methodology" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Simulation setup and run
+        Benchmark methodology
       
     </span>
   </a>
@@ -1319,10 +1308,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-postprocessing" class="md-nav__link">
+  <a href="#benchmark-snapshot-february-17-2026" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Postprocessing
+        Benchmark snapshot (February 17, 2026)
       
     </span>
   </a>
@@ -1330,21 +1319,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-minimal-usage-pattern" class="md-nav__link">
+  <a href="#reproducibility-tips" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Minimal usage pattern
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-related-guides" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Related guides
+        Reproducibility tips
       
     </span>
   </a>
@@ -1371,118 +1349,185 @@
   
 
 
-<h1 id="api-overview">API Overview<a class="headerlink" href="#api-overview" title="Permanent link">&para;</a></h1>
-<p>This page maps the public API to the engineering workflow.</p>
-<p>If you are new to the package, start with <a href="../HOW_TO_USE/">How to Use</a>.</p>
-<h2 id="1-track-inputs">1. Track inputs<a class="headerlink" href="#1-track-inputs" title="Permanent link">&para;</a></h2>
-<h3 id="load-measuredreal-track-data">Load measured/real track data<a class="headerlink" href="#load-measuredreal-track-data" title="Permanent link">&para;</a></h3>
+<h1 id="compute-backends">Compute Backends<a class="headerlink" href="#compute-backends" title="Permanent link">&para;</a></h1>
+<p>PyLapSim separates physical modeling from numerical execution backends.
+This page helps you choose the right backend for your study.</p>
+<h2 id="backend-policy">Backend policy<a class="headerlink" href="#backend-policy" title="Permanent link">&para;</a></h2>
+<p>Supported backends are intentionally restricted to:</p>
 <ul>
-<li><code>pylapsim.track.load_track_csv(path) -&gt; TrackData</code></li>
+<li><code>numpy</code>: CPU-only reference backend.</li>
+<li><code>numba</code>: CPU-only JIT-accelerated backend.</li>
+<li><code>torch</code>: CPU and GPU backend (device via <code>torch_device</code>).</li>
 </ul>
-<p>Required CSV columns:</p>
+<p>The runtime validator enforces this policy:</p>
 <ul>
-<li><code>x</code></li>
-<li><code>y</code></li>
-<li><code>elevation</code></li>
-<li><code>banking</code></li>
+<li><code>numpy</code> and <code>numba</code> require <code>torch_device="cpu"</code>.</li>
+<li><code>torch_compile=True</code> is only valid with <code>compute_backend="torch"</code>.</li>
 </ul>
-<h3 id="generate-synthetic-validation-tracks">Generate synthetic validation tracks<a class="headerlink" href="#generate-synthetic-validation-tracks" title="Permanent link">&para;</a></h3>
+<h2 id="current-model-support">Current model support<a class="headerlink" href="#current-model-support" title="Permanent link">&para;</a></h2>
+<p>Backend support is model-dependent:</p>
 <ul>
-<li><code>pylapsim.track.build_straight_track(...) -&gt; TrackData</code></li>
-<li><code>pylapsim.track.build_circular_track(...) -&gt; TrackData</code></li>
-<li><code>pylapsim.track.build_figure_eight_track(...) -&gt; TrackData</code></li>
-</ul>
-<h2 id="2-vehicle-and-tire-models">2. Vehicle and tire models<a class="headerlink" href="#2-vehicle-and-tire-models" title="Permanent link">&para;</a></h2>
-<h3 id="shared-physical-vehicle-parameters">Shared physical vehicle parameters<a class="headerlink" href="#shared-physical-vehicle-parameters" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>pylapsim.vehicle.VehicleParameters</code></li>
-</ul>
-<h3 id="tire-parameters">Tire parameters<a class="headerlink" href="#tire-parameters" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>pylapsim.tire.default_axle_tire_parameters() -&gt; AxleTireParameters</code></li>
-</ul>
-<h3 id="single-track-backend">Single-track backend<a class="headerlink" href="#single-track-backend" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>pylapsim.vehicle.SingleTrackModel(vehicle, tires, physics, numerics)</code></li>
-<li><code>pylapsim.vehicle.SingleTrackPhysics</code></li>
-<li><code>pylapsim.vehicle.SingleTrackNumerics</code></li>
-<li><code>pylapsim.vehicle.build_single_track_model(vehicle, tires, physics=None, numerics=None)</code></li>
+<li><code>PointMassModel</code>: supports <code>numpy</code>, <code>numba</code>, <code>torch</code>.</li>
+<li><code>SingleTrackModel</code>: supports <code>numpy</code>, <code>numba</code>, <code>torch</code>.</li>
 </ul>
 <p>Terminology note:</p>
 <ul>
-<li><code>SingleTrack</code> corresponds to the "bicycle model" terminology commonly used in literature.</li>
+<li><code>SingleTrackModel</code> corresponds to the "bicycle model" terminology often used
+  in literature.</li>
 </ul>
-<h3 id="point-mass-backend">Point-mass backend<a class="headerlink" href="#point-mass-backend" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>pylapsim.vehicle.PointMassModel(vehicle, physics)</code></li>
-<li><code>pylapsim.vehicle.PointMassPhysics</code></li>
-<li><code>pylapsim.vehicle.build_point_mass_model(vehicle, physics=None)</code></li>
-<li><code>pylapsim.vehicle.calibrate_point_mass_friction_to_single_track(vehicle, tires, ...)</code></li>
-</ul>
-<h2 id="3-simulation-setup-and-run">3. Simulation setup and run<a class="headerlink" href="#3-simulation-setup-and-run" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>pylapsim.simulation.RuntimeConfig</code></li>
-<li><code>pylapsim.simulation.NumericsConfig</code></li>
-<li><code>pylapsim.simulation.SimulationConfig</code></li>
-<li><code>pylapsim.simulation.build_simulation_config(...)</code></li>
-<li><code>pylapsim.simulation.simulate_lap(track, model, config) -&gt; LapResult</code></li>
-</ul>
-<p>Backend runtime controls:</p>
-<ul>
-<li><code>RuntimeConfig.compute_backend</code>: <code>"numpy"</code>, <code>"numba"</code>, or <code>"torch"</code></li>
-<li><code>RuntimeConfig.torch_device</code>: keep <code>"cpu"</code> for <code>numpy</code>/<code>numba</code>; use <code>"cpu"</code> or <code>"cuda:0"</code> for <code>torch</code></li>
-<li><code>RuntimeConfig.torch_compile</code>: optional compile acceleration for <code>torch</code> only</li>
-</ul>
-<p>See <a href="../BACKENDS/">Compute Backends</a> for selection guidance and benchmarks.</p>
-<p>Vehicle-model solver contract:</p>
-<ul>
-<li><code>validate()</code></li>
-<li><code>lateral_accel_limit(speed, banking)</code></li>
-<li><code>max_longitudinal_accel(speed, lateral_accel_required, grade, banking)</code></li>
-<li><code>max_longitudinal_decel(speed, lateral_accel_required, grade, banking)</code></li>
-<li><code>diagnostics(speed, longitudinal_accel, lateral_accel, curvature)</code></li>
-</ul>
-<h2 id="4-postprocessing">4. Postprocessing<a class="headerlink" href="#4-postprocessing" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>pylapsim.analysis.compute_kpis(result) -&gt; KpiSummary</code></li>
-<li><code>pylapsim.analysis.export_standard_plots(result, output_dir)</code></li>
-<li><code>pylapsim.analysis.export.export_kpi_json(kpis, path)</code></li>
-<li><code>pylapsim.analysis.compute_performance_envelope(model, ...) -&gt; PerformanceEnvelopeResult</code></li>
-<li><code>pylapsim.analysis.PerformanceEnvelopePhysics</code></li>
-<li><code>pylapsim.analysis.PerformanceEnvelopeNumerics</code></li>
-<li><code>pylapsim.analysis.PerformanceEnvelopeRuntime</code></li>
-<li><code>pylapsim.analysis.build_performance_envelope_config(...) -&gt; PerformanceEnvelopeConfig</code></li>
-</ul>
-<p><code>LapResult</code> provides:</p>
-<ul>
-<li>lap time</li>
-<li>speed / longitudinal acceleration / lateral acceleration traces</li>
-<li>yaw moment</li>
-<li>front/rear axle loads</li>
-<li>power and energy</li>
-</ul>
-<p><code>PerformanceEnvelopeResult</code> provides:</p>
-<ul>
-<li>speed support points</li>
-<li>lateral-acceleration limits per speed</li>
-<li>sampled lateral-acceleration grid</li>
-<li>max/min longitudinal acceleration grid</li>
-<li>optional <code>.to_dataframe()</code> conversion for tabular studies</li>
-</ul>
-<h2 id="5-minimal-usage-pattern">5. Minimal usage pattern<a class="headerlink" href="#5-minimal-usage-pattern" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">track</span> <span class="o">=</span> <span class="n">load_track_csv</span><span class="p">(</span><span class="s2">&quot;data/spa_francorchamps.csv&quot;</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">build_single_track_model</span><span class="p">(</span><span class="n">vehicle</span><span class="o">=</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">tires</span><span class="o">=</span><span class="n">tires</span><span class="p">,</span> <span class="n">physics</span><span class="o">=</span><span class="n">SingleTrackPhysics</span><span class="p">())</span>
-<span class="n">config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span><span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">)</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">simulate_lap</span><span class="p">(</span><span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
-<span class="n">kpis</span> <span class="o">=</span> <span class="n">compute_kpis</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<p>If you request a backend that a model does not implement, the solver raises a
+clear <code>ConfigurationError</code> describing the missing model-side methods.</p>
+<h2 id="decision-guide">Decision guide<a class="headerlink" href="#decision-guide" title="Permanent link">&para;</a></h2>
+<p>Use this practical rule-set:</p>
+<ol>
+<li>Use <code>numpy</code> when you need robust baseline behavior and easiest debugging.</li>
+<li>Use <code>numba</code> for large CPU parameter sweeps with <code>PointMassModel</code> or <code>SingleTrackModel</code>.</li>
+<li>Use <code>torch</code> when you need tensor-native workflows, GPU execution, or future
+   differentiable optimization pipelines.</li>
+</ol>
+<h3 id="trade-offs-at-a-glance">Trade-offs at a glance<a class="headerlink" href="#trade-offs-at-a-glance" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Backend</th>
+<th>Hardware</th>
+<th>Typical strength</th>
+<th>Typical cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>numpy</code></td>
+<td>CPU</td>
+<td>Stable baseline, easy to inspect</td>
+<td>Slower for huge batch studies</td>
+</tr>
+<tr>
+<td><code>numba</code></td>
+<td>CPU</td>
+<td>Very fast steady-state loops after JIT warmup</td>
+<td>First call includes compile overhead</td>
+</tr>
+<tr>
+<td><code>torch</code></td>
+<td>CPU/GPU</td>
+<td>Backend portability, tensor ecosystem</td>
+<td>Higher overhead for single-lap CPU workloads</td>
+</tr>
+</tbody>
+</table>
+<h2 id="configuration-examples">Configuration examples<a class="headerlink" href="#configuration-examples" title="Permanent link">&para;</a></h2>
+<h3 id="numpy-cpu-reference">NumPy (CPU reference)<a class="headerlink" href="#numpy-cpu-reference" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pylapsim.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_simulation_config</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span>
+    <span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;numpy&quot;</span><span class="p">,</span>
+    <span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">,</span>
+<span class="p">)</span>
 </code></pre></div>
-<h2 id="6-related-guides">6. Related guides<a class="headerlink" href="#6-related-guides" title="Permanent link">&para;</a></h2>
+<h3 id="numba-cpu-optimized">Numba (CPU-optimized)<a class="headerlink" href="#numba-cpu-optimized" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pylapsim.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_simulation_config</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span>
+    <span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;numba&quot;</span><span class="p">,</span>
+    <span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="torch-cpu-or-gpu">Torch (CPU or GPU)<a class="headerlink" href="#torch-cpu-or-gpu" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pylapsim.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_simulation_config</span>
+
+<span class="c1"># CPU</span>
+<span class="n">config_cpu</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span>
+    <span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;torch&quot;</span><span class="p">,</span>
+    <span class="n">torch_device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+    <span class="n">torch_compile</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># GPU</span>
+<span class="n">config_gpu</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span>
+    <span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;torch&quot;</span><span class="p">,</span>
+    <span class="n">torch_device</span><span class="o">=</span><span class="s2">&quot;cuda:0&quot;</span><span class="p">,</span>
+    <span class="n">torch_compile</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<h2 id="benchmark-methodology">Benchmark methodology<a class="headerlink" href="#benchmark-methodology" title="Permanent link">&para;</a></h2>
+<p>Reference script:</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>examples/backend_benchmarks.py<span class="w"> </span>--warmup-runs<span class="w"> </span><span class="m">5</span><span class="w"> </span>--timed-runs<span class="w"> </span><span class="m">20</span>
+</code></pre></div>
+<p>Notes:</p>
 <ul>
-<li><a href="../HOW_TO_USE/">How to Use</a></li>
-<li><a href="../EXAMPLES/">Examples Overview</a></li>
-<li><a href="../SOLVER/">Solver</a></li>
-<li><a href="../SINGLE_TRACK_MODEL/">Single-Track Model</a></li>
-<li><a href="../POINT_MASS_MODEL/">Point-Mass Model</a></li>
+<li>Benchmarks run full Spa point-mass laps (<code>data/spa_francorchamps.csv</code>).</li>
+<li>"First Call" includes startup/JIT/compile effects.</li>
+<li>"Steady" values are from repeated post-warmup runs.</li>
+<li>Use your own machine data for final backend decisions.</li>
+<li>With some torch versions, <code>torch_compile=True</code> may print graph-break warnings
+  for scalar convergence checks; results remain valid, but timing includes this behavior.</li>
+</ul>
+<h2 id="benchmark-snapshot-february-17-2026">Benchmark snapshot (February 17, 2026)<a class="headerlink" href="#benchmark-snapshot-february-17-2026" title="Permanent link">&para;</a></h2>
+<p>Environment used for this snapshot:</p>
+<ul>
+<li>CPU: Intel Core i7-8550U (4C/8T)</li>
+<li><code>numpy==2.3.5</code></li>
+<li><code>numba==0.63.1</code></li>
+<li><code>torch==2.10.0+cpu</code></li>
+<li>CUDA unavailable in this run</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Backend</th>
+<th style="text-align: right;">First Call [ms]</th>
+<th style="text-align: right;">Steady Mean [ms]</th>
+<th style="text-align: right;">Steady Median [ms]</th>
+<th style="text-align: right;">Lap Time [s]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>numpy</code></td>
+<td style="text-align: right;">19.72</td>
+<td style="text-align: right;">14.72</td>
+<td style="text-align: right;">14.73</td>
+<td style="text-align: right;">133.668234</td>
+</tr>
+<tr>
+<td><code>numba</code></td>
+<td style="text-align: right;">1303.90</td>
+<td style="text-align: right;">0.69</td>
+<td style="text-align: right;">0.68</td>
+<td style="text-align: right;">133.668234</td>
+</tr>
+<tr>
+<td><code>torch</code> (<code>cpu</code>)</td>
+<td style="text-align: right;">323.99</td>
+<td style="text-align: right;">342.27</td>
+<td style="text-align: right;">337.44</td>
+<td style="text-align: right;">133.668234</td>
+</tr>
+<tr>
+<td><code>torch</code> (<code>cpu</code>, <code>compile=True</code>)</td>
+<td style="text-align: right;">5177.77</td>
+<td style="text-align: right;">230.14</td>
+<td style="text-align: right;">226.74</td>
+<td style="text-align: right;">133.668234</td>
+</tr>
+</tbody>
+</table>
+<p>Interpretation of this snapshot:</p>
+<ul>
+<li><code>numba</code> steady-state is about 21x faster than <code>numpy</code> after JIT warmup.</li>
+<li><code>torch</code> on CPU is slower than <code>numpy</code> for single-lap workflows in this setup.</li>
+<li><code>torch_compile</code> improved torch steady-state by about 1.5x, but remained slower
+  than <code>numpy</code> in this CPU-only environment.</li>
+<li>Identical lap times across backends confirm numerical consistency for this case.</li>
+</ul>
+<h2 id="reproducibility-tips">Reproducibility tips<a class="headerlink" href="#reproducibility-tips" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Run each benchmark at least twice and compare medians.</li>
+<li>Avoid other heavy processes during timing runs.</li>
+<li>For GPU evaluation, include both <code>torch_device="cuda:0"</code> and
+  <code>torch_compile=True/False</code> variants.</li>
+<li>Save your benchmark JSON using <code>--output</code> and keep it with your project notes.</li>
 </ul>
 
 

@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://pzimbrod.github.io/pylapsim/0.1.0/API/">
+        <link rel="canonical" href="https://pzimbrod.github.io/pylapsim/0.1.0/EXAMPLES_SPA/">
       
       
-        <link rel="prev" href="../BACKENDS/">
+        <link rel="prev" href="../EXAMPLES_SYNTHETIC/">
       
       
-        <link rel="next" href="../SOLVER/">
+        <link rel="next" href="../SINGLE_TRACK_MODEL/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>API Overview - PyLapSim</title>
+        <title>Spa-Francorchamps - PyLapSim</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#api-overview" class="md-skip">
+        <a href="#spa-walkthrough" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              API Overview
+              Spa-Francorchamps
             
           </span>
         </div>
@@ -300,20 +300,18 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
@@ -334,7 +332,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -405,37 +403,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Overview
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../API/" class="md-nav__link">
         
   
   
@@ -451,170 +422,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-track-inputs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Track inputs
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1. Track inputs">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#load-measuredreal-track-data" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Load measured/real track data
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#generate-synthetic-validation-tracks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Generate synthetic validation tracks
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-vehicle-and-tire-models" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Vehicle and tire models
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Vehicle and tire models">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#shared-physical-vehicle-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Shared physical vehicle parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#tire-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tire parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#single-track-backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Single-track backend
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#point-mass-backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Point-mass backend
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-simulation-setup-and-run" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Simulation setup and run
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-postprocessing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Postprocessing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-minimal-usage-pattern" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Minimal usage pattern
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-related-guides" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Related guides
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -715,18 +522,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -747,7 +556,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -818,10 +627,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../EXAMPLES_SPA/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spa-Francorchamps
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -837,6 +673,303 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-this-tutorial-helps-you-do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What this tutorial helps you do
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-shared-workflow-across-spa-lap-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Shared workflow across Spa lap scripts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-examplesspaspa_lap_single_trackpy-single-track-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. examples/spa/spa_lap_single_track.py (single-track baseline)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. examples/spa/spa_lap_single_track.py (single-track baseline)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-why-start-here" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Why start here?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-code-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Code flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-what-this-script-captures-well" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 What this script captures well
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-what-it-still-does-not-capture-fully" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 What it still does not capture fully
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-examplesspaspa_lap_point_masspy-fast-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. examples/spa/spa_lap_point_mass.py (fast baseline)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. examples/spa/spa_lap_point_mass.py (fast baseline)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Purpose
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-core-code-difference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Core code difference
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-interpretation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Interpretation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-examplesspaspa_model_comparisonpy-tradeoff-study" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. examples/spa/spa_model_comparison.py (tradeoff study)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. examples/spa/spa_model_comparison.py (tradeoff study)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-why-this-script-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Why this script matters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-sequence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Sequence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-key-outputs-to-inspect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Key outputs to inspect
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-examplesspaspa_performance_envelopepy-speed-dependent-g-g-families" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. examples/spa/spa_performance_envelope.py (speed-dependent G-G families)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. examples/spa/spa_performance_envelope.py (speed-dependent G-G families)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-why-this-script-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Why this script matters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-key-outputs-to-inspect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Key outputs to inspect
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-parameter-tuning-order-for-a-new-vehicle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Parameter tuning order for a new vehicle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-how-to-read-spa-results-correctly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. How to read Spa results correctly
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-practical-limitations-to-keep-in-mind" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Practical limitations to keep in mind
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-suggested-study-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Suggested study workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1208,22 +1341,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-track-inputs" class="md-nav__link">
+  <a href="#what-this-tutorial-helps-you-do" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Track inputs
+        What this tutorial helps you do
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. Track inputs">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-shared-workflow-across-spa-lap-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Shared workflow across Spa lap scripts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-examplesspaspa_lap_single_trackpy-single-track-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. examples/spa/spa_lap_single_track.py (single-track baseline)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. examples/spa/spa_lap_single_track.py (single-track baseline)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#load-measuredreal-track-data" class="md-nav__link">
+  <a href="#21-why-start-here" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Load measured/real track data
+        2.1 Why start here?
       
     </span>
   </a>
@@ -1231,10 +1386,32 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#generate-synthetic-validation-tracks" class="md-nav__link">
+  <a href="#22-code-flow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Generate synthetic validation tracks
+        2.2 Code flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-what-this-script-captures-well" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 What this script captures well
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-what-it-still-does-not-capture-fully" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 What it still does not capture fully
       
     </span>
   </a>
@@ -1247,22 +1424,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-vehicle-and-tire-models" class="md-nav__link">
+  <a href="#3-examplesspaspa_lap_point_masspy-fast-baseline" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Vehicle and tire models
+        3. examples/spa/spa_lap_point_mass.py (fast baseline)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. Vehicle and tire models">
+    <nav class="md-nav" aria-label="3. examples/spa/spa_lap_point_mass.py (fast baseline)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#shared-physical-vehicle-parameters" class="md-nav__link">
+  <a href="#31-purpose" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Shared physical vehicle parameters
+        3.1 Purpose
       
     </span>
   </a>
@@ -1270,10 +1447,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tire-parameters" class="md-nav__link">
+  <a href="#32-core-code-difference" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tire parameters
+        3.2 Core code difference
       
     </span>
   </a>
@@ -1281,21 +1458,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#single-track-backend" class="md-nav__link">
+  <a href="#33-interpretation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Single-track backend
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#point-mass-backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Point-mass backend
+        3.3 Interpretation
       
     </span>
   </a>
@@ -1308,10 +1474,99 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-simulation-setup-and-run" class="md-nav__link">
+  <a href="#4-examplesspaspa_model_comparisonpy-tradeoff-study" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Simulation setup and run
+        4. examples/spa/spa_model_comparison.py (tradeoff study)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. examples/spa/spa_model_comparison.py (tradeoff study)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-why-this-script-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Why this script matters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-sequence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Sequence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-key-outputs-to-inspect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Key outputs to inspect
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-examplesspaspa_performance_envelopepy-speed-dependent-g-g-families" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. examples/spa/spa_performance_envelope.py (speed-dependent G-G families)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. examples/spa/spa_performance_envelope.py (speed-dependent G-G families)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-why-this-script-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Why this script matters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-key-outputs-to-inspect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Key outputs to inspect
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-parameter-tuning-order-for-a-new-vehicle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Parameter tuning order for a new vehicle
       
     </span>
   </a>
@@ -1319,10 +1574,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-postprocessing" class="md-nav__link">
+  <a href="#7-how-to-read-spa-results-correctly" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Postprocessing
+        7. How to read Spa results correctly
       
     </span>
   </a>
@@ -1330,10 +1585,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-minimal-usage-pattern" class="md-nav__link">
+  <a href="#8-practical-limitations-to-keep-in-mind" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Minimal usage pattern
+        8. Practical limitations to keep in mind
       
     </span>
   </a>
@@ -1341,10 +1596,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-related-guides" class="md-nav__link">
+  <a href="#9-suggested-study-workflow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Related guides
+        9. Suggested study workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run commands
       
     </span>
   </a>
@@ -1371,119 +1637,163 @@
   
 
 
-<h1 id="api-overview">API Overview<a class="headerlink" href="#api-overview" title="Permanent link">&para;</a></h1>
-<p>This page maps the public API to the engineering workflow.</p>
-<p>If you are new to the package, start with <a href="../HOW_TO_USE/">How to Use</a>.</p>
-<h2 id="1-track-inputs">1. Track inputs<a class="headerlink" href="#1-track-inputs" title="Permanent link">&para;</a></h2>
-<h3 id="load-measuredreal-track-data">Load measured/real track data<a class="headerlink" href="#load-measuredreal-track-data" title="Permanent link">&para;</a></h3>
+<h1 id="spa-walkthrough">Spa Walkthrough<a class="headerlink" href="#spa-walkthrough" title="Permanent link">&para;</a></h1>
+<p>This tutorial explains the Spa example scripts in execution order and in practical
+engineering language.</p>
+<p>Use this after the synthetic-track tutorial.</p>
+<h2 id="what-this-tutorial-helps-you-do">What this tutorial helps you do<a class="headerlink" href="#what-this-tutorial-helps-you-do" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>pylapsim.track.load_track_csv(path) -&gt; TrackData</code></li>
+<li>Run realistic full-lap simulations on Spa.</li>
+<li>Understand the difference between single-track and point-mass outputs.</li>
+<li>Build a reproducible model-comparison workflow.</li>
+<li>Interpret outputs within the limits of a quasi-steady solver.</li>
 </ul>
-<p>Required CSV columns:</p>
+<h2 id="1-shared-workflow-across-spa-lap-scripts">1. Shared workflow across Spa lap scripts<a class="headerlink" href="#1-shared-workflow-across-spa-lap-scripts" title="Permanent link">&para;</a></h2>
+<p>The lap-focused scripts (<code>spa_lap_single_track.py</code>, <code>spa_lap_point_mass.py</code>,
+<code>spa_model_comparison.py</code>) follow the same structure:</p>
+<ol>
+<li>Load Spa track CSV.</li>
+<li>Create vehicle/model inputs.</li>
+<li>Configure runtime/numerics.</li>
+<li>Run <code>simulate_lap(...)</code>.</li>
+<li>Export plots and KPI JSON.</li>
+</ol>
+<p>The performance-envelope script builds on the same vehicle setup but performs
+envelope sampling instead of lap solving.</p>
+<h2 id="2-examplesspaspa_lap_single_trackpy-single-track-baseline">2. <code>examples/spa/spa_lap_single_track.py</code> (single-track baseline)<a class="headerlink" href="#2-examplesspaspa_lap_single_trackpy-single-track-baseline" title="Permanent link">&para;</a></h2>
+<h3 id="21-why-start-here">2.1 Why start here?<a class="headerlink" href="#21-why-start-here" title="Permanent link">&para;</a></h3>
+<p>This is the highest-fidelity backend currently available in the library’s
+standard pipeline.</p>
+<h3 id="22-code-flow">2.2 Code flow<a class="headerlink" href="#22-code-flow" title="Permanent link">&para;</a></h3>
 <ul>
-<li><code>x</code></li>
-<li><code>y</code></li>
-<li><code>elevation</code></li>
-<li><code>banking</code></li>
+<li>Load track:</li>
 </ul>
-<h3 id="generate-synthetic-validation-tracks">Generate synthetic validation tracks<a class="headerlink" href="#generate-synthetic-validation-tracks" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>pylapsim.track.build_straight_track(...) -&gt; TrackData</code></li>
-<li><code>pylapsim.track.build_circular_track(...) -&gt; TrackData</code></li>
-<li><code>pylapsim.track.build_figure_eight_track(...) -&gt; TrackData</code></li>
-</ul>
-<h2 id="2-vehicle-and-tire-models">2. Vehicle and tire models<a class="headerlink" href="#2-vehicle-and-tire-models" title="Permanent link">&para;</a></h2>
-<h3 id="shared-physical-vehicle-parameters">Shared physical vehicle parameters<a class="headerlink" href="#shared-physical-vehicle-parameters" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>pylapsim.vehicle.VehicleParameters</code></li>
-</ul>
-<h3 id="tire-parameters">Tire parameters<a class="headerlink" href="#tire-parameters" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>pylapsim.tire.default_axle_tire_parameters() -&gt; AxleTireParameters</code></li>
-</ul>
-<h3 id="single-track-backend">Single-track backend<a class="headerlink" href="#single-track-backend" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>pylapsim.vehicle.SingleTrackModel(vehicle, tires, physics, numerics)</code></li>
-<li><code>pylapsim.vehicle.SingleTrackPhysics</code></li>
-<li><code>pylapsim.vehicle.SingleTrackNumerics</code></li>
-<li><code>pylapsim.vehicle.build_single_track_model(vehicle, tires, physics=None, numerics=None)</code></li>
-</ul>
-<p>Terminology note:</p>
-<ul>
-<li><code>SingleTrack</code> corresponds to the "bicycle model" terminology commonly used in literature.</li>
-</ul>
-<h3 id="point-mass-backend">Point-mass backend<a class="headerlink" href="#point-mass-backend" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>pylapsim.vehicle.PointMassModel(vehicle, physics)</code></li>
-<li><code>pylapsim.vehicle.PointMassPhysics</code></li>
-<li><code>pylapsim.vehicle.build_point_mass_model(vehicle, physics=None)</code></li>
-<li><code>pylapsim.vehicle.calibrate_point_mass_friction_to_single_track(vehicle, tires, ...)</code></li>
-</ul>
-<h2 id="3-simulation-setup-and-run">3. Simulation setup and run<a class="headerlink" href="#3-simulation-setup-and-run" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>pylapsim.simulation.RuntimeConfig</code></li>
-<li><code>pylapsim.simulation.NumericsConfig</code></li>
-<li><code>pylapsim.simulation.SimulationConfig</code></li>
-<li><code>pylapsim.simulation.build_simulation_config(...)</code></li>
-<li><code>pylapsim.simulation.simulate_lap(track, model, config) -&gt; LapResult</code></li>
-</ul>
-<p>Backend runtime controls:</p>
-<ul>
-<li><code>RuntimeConfig.compute_backend</code>: <code>"numpy"</code>, <code>"numba"</code>, or <code>"torch"</code></li>
-<li><code>RuntimeConfig.torch_device</code>: keep <code>"cpu"</code> for <code>numpy</code>/<code>numba</code>; use <code>"cpu"</code> or <code>"cuda:0"</code> for <code>torch</code></li>
-<li><code>RuntimeConfig.torch_compile</code>: optional compile acceleration for <code>torch</code> only</li>
-</ul>
-<p>See <a href="../BACKENDS/">Compute Backends</a> for selection guidance and benchmarks.</p>
-<p>Vehicle-model solver contract:</p>
-<ul>
-<li><code>validate()</code></li>
-<li><code>lateral_accel_limit(speed, banking)</code></li>
-<li><code>max_longitudinal_accel(speed, lateral_accel_required, grade, banking)</code></li>
-<li><code>max_longitudinal_decel(speed, lateral_accel_required, grade, banking)</code></li>
-<li><code>diagnostics(speed, longitudinal_accel, lateral_accel, curvature)</code></li>
-</ul>
-<h2 id="4-postprocessing">4. Postprocessing<a class="headerlink" href="#4-postprocessing" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>pylapsim.analysis.compute_kpis(result) -&gt; KpiSummary</code></li>
-<li><code>pylapsim.analysis.export_standard_plots(result, output_dir)</code></li>
-<li><code>pylapsim.analysis.export.export_kpi_json(kpis, path)</code></li>
-<li><code>pylapsim.analysis.compute_performance_envelope(model, ...) -&gt; PerformanceEnvelopeResult</code></li>
-<li><code>pylapsim.analysis.PerformanceEnvelopePhysics</code></li>
-<li><code>pylapsim.analysis.PerformanceEnvelopeNumerics</code></li>
-<li><code>pylapsim.analysis.PerformanceEnvelopeRuntime</code></li>
-<li><code>pylapsim.analysis.build_performance_envelope_config(...) -&gt; PerformanceEnvelopeConfig</code></li>
-</ul>
-<p><code>LapResult</code> provides:</p>
-<ul>
-<li>lap time</li>
-<li>speed / longitudinal acceleration / lateral acceleration traces</li>
-<li>yaw moment</li>
-<li>front/rear axle loads</li>
-<li>power and energy</li>
-</ul>
-<p><code>PerformanceEnvelopeResult</code> provides:</p>
-<ul>
-<li>speed support points</li>
-<li>lateral-acceleration limits per speed</li>
-<li>sampled lateral-acceleration grid</li>
-<li>max/min longitudinal acceleration grid</li>
-<li>optional <code>.to_dataframe()</code> conversion for tabular studies</li>
-</ul>
-<h2 id="5-minimal-usage-pattern">5. Minimal usage pattern<a class="headerlink" href="#5-minimal-usage-pattern" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">track</span> <span class="o">=</span> <span class="n">load_track_csv</span><span class="p">(</span><span class="s2">&quot;data/spa_francorchamps.csv&quot;</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">build_single_track_model</span><span class="p">(</span><span class="n">vehicle</span><span class="o">=</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">tires</span><span class="o">=</span><span class="n">tires</span><span class="p">,</span> <span class="n">physics</span><span class="o">=</span><span class="n">SingleTrackPhysics</span><span class="p">())</span>
-<span class="n">config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span><span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">)</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">simulate_lap</span><span class="p">(</span><span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
-<span class="n">kpis</span> <span class="o">=</span> <span class="n">compute_kpis</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">track</span> <span class="o">=</span> <span class="n">load_track_csv</span><span class="p">(</span><span class="n">spa_track_path</span><span class="p">())</span>
 </code></pre></div>
-<h2 id="6-related-guides">6. Related guides<a class="headerlink" href="#6-related-guides" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../HOW_TO_USE/">How to Use</a></li>
-<li><a href="../EXAMPLES/">Examples Overview</a></li>
-<li><a href="../SOLVER/">Solver</a></li>
-<li><a href="../SINGLE_TRACK_MODEL/">Single-Track Model</a></li>
-<li><a href="../POINT_MASS_MODEL/">Point-Mass Model</a></li>
+<li>Build inputs:</li>
 </ul>
+<div class="highlight"><pre><span></span><code><span class="n">vehicle</span> <span class="o">=</span> <span class="n">example_vehicle_parameters</span><span class="p">()</span>
+<span class="n">tires</span> <span class="o">=</span> <span class="n">default_axle_tire_parameters</span><span class="p">()</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">build_single_track_model</span><span class="p">(</span><span class="n">vehicle</span><span class="o">=</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">tires</span><span class="o">=</span><span class="n">tires</span><span class="p">,</span> <span class="n">physics</span><span class="o">=</span><span class="n">SingleTrackPhysics</span><span class="p">())</span>
+</code></pre></div>
+<ul>
+<li>Configure and run:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="n">config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">()</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">simulate_lap</span><span class="p">(</span><span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>Export:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="n">kpis</span> <span class="o">=</span> <span class="n">compute_kpis</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="n">export_standard_plots</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">)</span>
+<span class="n">export_kpi_json</span><span class="p">(</span><span class="n">kpis</span><span class="p">,</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;kpis.json&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="23-what-this-script-captures-well">2.3 What this script captures well<a class="headerlink" href="#23-what-this-script-captures-well" title="Permanent link">&para;</a></h3>
+<ul>
+<li>lateral-force-limited behavior with load sensitivity,</li>
+<li>drag/downforce interaction,</li>
+<li>axle-load diagnostics,</li>
+<li>yaw-moment diagnostics.</li>
+</ul>
+<h3 id="24-what-it-still-does-not-capture-fully">2.4 What it still does not capture fully<a class="headerlink" href="#24-what-it-still-does-not-capture-fully" title="Permanent link">&para;</a></h3>
+<ul>
+<li>full transient driver/steering control effects,</li>
+<li>advanced powertrain/energy strategy effects,</li>
+<li>full multi-body suspension compliance.</li>
+</ul>
+<h2 id="3-examplesspaspa_lap_point_masspy-fast-baseline">3. <code>examples/spa/spa_lap_point_mass.py</code> (fast baseline)<a class="headerlink" href="#3-examplesspaspa_lap_point_masspy-fast-baseline" title="Permanent link">&para;</a></h2>
+<h3 id="31-purpose">3.1 Purpose<a class="headerlink" href="#31-purpose" title="Permanent link">&para;</a></h3>
+<p>Use this for rapid studies, initial sweeps, and baseline checks.</p>
+<h3 id="32-core-code-difference">3.2 Core code difference<a class="headerlink" href="#32-core-code-difference" title="Permanent link">&para;</a></h3>
+<p>Only model backend changes:</p>
+<div class="highlight"><pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">build_point_mass_model</span><span class="p">(</span>
+    <span class="n">vehicle</span><span class="o">=</span><span class="n">vehicle</span><span class="p">,</span>
+    <span class="n">physics</span><span class="o">=</span><span class="n">PointMassPhysics</span><span class="p">(</span>
+        <span class="n">max_drive_accel</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span>
+        <span class="n">max_brake_accel</span><span class="o">=</span><span class="mf">16.0</span><span class="p">,</span>
+        <span class="n">friction_coefficient</span><span class="o">=</span><span class="mf">1.7</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="33-interpretation">3.3 Interpretation<a class="headerlink" href="#33-interpretation" title="Permanent link">&para;</a></h3>
+<ul>
+<li>faster and simpler than single-track,</li>
+<li>no yaw-state dynamics,</li>
+<li>yaw moment reported as zero by construction.</li>
+</ul>
+<h2 id="4-examplesspaspa_model_comparisonpy-tradeoff-study">4. <code>examples/spa/spa_model_comparison.py</code> (tradeoff study)<a class="headerlink" href="#4-examplesspaspa_model_comparisonpy-tradeoff-study" title="Permanent link">&para;</a></h2>
+<h3 id="41-why-this-script-matters">4.1 Why this script matters<a class="headerlink" href="#41-why-this-script-matters" title="Permanent link">&para;</a></h3>
+<p>It demonstrates how to quantify value added by model complexity, not just compare lap times.</p>
+<h3 id="42-sequence">4.2 Sequence<a class="headerlink" href="#42-sequence" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Run single-track model.</li>
+<li>Calibrate point-mass friction to single-track lateral envelope.</li>
+<li>Run calibrated point-mass model.</li>
+<li>Export KPI deltas and speed overlay.</li>
+</ol>
+<h3 id="43-key-outputs-to-inspect">4.3 Key outputs to inspect<a class="headerlink" href="#43-key-outputs-to-inspect" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>comparison_kpis.json</code></li>
+<li><code>speed_trace_comparison.png</code></li>
+<li>per-model KPI JSON and plots under comparison folders.</li>
+</ul>
+<h2 id="5-examplesspaspa_performance_envelopepy-speed-dependent-g-g-families">5. <code>examples/spa/spa_performance_envelope.py</code> (speed-dependent G-G families)<a class="headerlink" href="#5-examplesspaspa_performance_envelopepy-speed-dependent-g-g-families" title="Permanent link">&para;</a></h2>
+<h3 id="51-why-this-script-matters">5.1 Why this script matters<a class="headerlink" href="#51-why-this-script-matters" title="Permanent link">&para;</a></h3>
+<p>It demonstrates the new Performance-Envelope API on realistic vehicle setups:</p>
+<ol>
+<li>Build single-track model.</li>
+<li>Calibrate a point-mass model against single-track lateral limits.</li>
+<li>Compute speed-dependent G-G envelopes for both models.</li>
+<li>Export array-based and optional tabular artifacts.</li>
+</ol>
+<h3 id="52-key-outputs-to-inspect">5.2 Key outputs to inspect<a class="headerlink" href="#52-key-outputs-to-inspect" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>single_track_envelope.npz</code></li>
+<li><code>point_mass_envelope.npz</code></li>
+<li><code>envelope_family_comparison.png</code></li>
+<li>optional CSV exports (if pandas is installed)</li>
+<li><code>summary.json</code></li>
+</ul>
+<h2 id="6-parameter-tuning-order-for-a-new-vehicle">6. Parameter tuning order for a new vehicle<a class="headerlink" href="#6-parameter-tuning-order-for-a-new-vehicle" title="Permanent link">&para;</a></h2>
+<p>Recommended order:</p>
+<ol>
+<li>Vehicle mass and aero parameters.</li>
+<li>Tire parameters.</li>
+<li>Model physics limits (<code>SingleTrackPhysics</code> / <code>PointMassPhysics</code>).</li>
+<li>Numerical solver settings (only if required for convergence robustness).</li>
+</ol>
+<p>This minimizes risk of hiding physical mis-modeling behind numerical tuning.</p>
+<h2 id="7-how-to-read-spa-results-correctly">7. How to read Spa results correctly<a class="headerlink" href="#7-how-to-read-spa-results-correctly" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Lap time alone is not enough; inspect speed trace shape and acceleration envelopes.</li>
+<li>Compare where models differ along track distance, not only global KPIs.</li>
+<li>Treat yaw-moment plots only as meaningful for models that represent yaw dynamics.</li>
+<li>Validate magnitude ranges against known class-level expectations.</li>
+</ol>
+<h2 id="8-practical-limitations-to-keep-in-mind">8. Practical limitations to keep in mind<a class="headerlink" href="#8-practical-limitations-to-keep-in-mind" title="Permanent link">&para;</a></h2>
+<p>Even with single-track model, this remains a quasi-steady solver workflow.
+Use caution when drawing conclusions about:</p>
+<ul>
+<li>highly transient driver actions,</li>
+<li>fine control-system behavior,</li>
+<li>sub-second event details.</li>
+</ul>
+<h2 id="9-suggested-study-workflow">9. Suggested study workflow<a class="headerlink" href="#9-suggested-study-workflow" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Start from <code>spa/spa_lap_single_track.py</code>.</li>
+<li>Run <code>spa/spa_lap_point_mass.py</code>.</li>
+<li>Run <code>spa/spa_model_comparison.py</code>.</li>
+<li>Run <code>spa/spa_performance_envelope.py</code>.</li>
+<li>Calibrate/adjust parameters and rerun for consistency.</li>
+</ol>
+<h2 id="run-commands">Run commands<a class="headerlink" href="#run-commands" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>examples/spa/spa_lap_single_track.py
+python<span class="w"> </span>examples/spa/spa_lap_point_mass.py
+python<span class="w"> </span>examples/spa/spa_model_comparison.py
+python<span class="w"> </span>examples/spa/spa_performance_envelope.py
+</code></pre></div>
 
 
 

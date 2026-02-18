@@ -16,7 +16,7 @@
         <link rel="prev" href="../ASSUMPTIONS/">
       
       
-        <link rel="next" href="../BICYCLE_MODEL/">
+        <link rel="next" href="../EXAMPLES/">
       
       
         
@@ -352,6 +352,62 @@
   
   
     <li class="md-nav__item">
+      <a href="../HOW_TO_USE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How to Use
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../BACKENDS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compute Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../API/" class="md-nav__link">
         
   
@@ -602,7 +658,7 @@
   <span class="md-ellipsis">
     
   
-    Vehicle Models
+    Examples
   
 
     
@@ -615,6 +671,144 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXAMPLES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXAMPLES_SYNTHETIC/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synthetic Tracks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXAMPLES_SPA/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spa-Francorchamps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vehicle Models
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -631,14 +825,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../BICYCLE_MODEL/" class="md-nav__link">
+      <a href="../SINGLE_TRACK_MODEL/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Bicycle Model
+    Single-Track Model
   
 
     
@@ -702,10 +896,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
   
@@ -723,8 +917,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1077,10 +1271,10 @@ python<span class="w"> </span>-m<span class="w"> </span>coverage<span class="w">
 <li>Physical model inputs:</li>
 <li><code>VehicleParameters</code></li>
 <li><code>PacejkaParameters</code> / <code>AxleTireParameters</code></li>
-<li><code>BicyclePhysics</code></li>
+<li><code>SingleTrackPhysics</code></li>
 <li>Numerical/discretization controls:</li>
 <li><code>NumericsConfig</code></li>
-<li><code>BicycleNumerics</code></li>
+<li><code>SingleTrackNumerics</code></li>
 <li>Simulation runtime controls (non-physical scenario bounds):</li>
 <li><code>RuntimeConfig</code></li>
 </ul>
@@ -1089,7 +1283,7 @@ physical parameter dataclasses.</p>
 <p>Defaulting guidance:</p>
 <ul>
 <li>Numerical controls may include stable defaults to keep quick-start simulations
-  robust (<code>NumericsConfig</code>, <code>BicycleNumerics</code>).</li>
+  robust (<code>NumericsConfig</code>, <code>SingleTrackNumerics</code>).</li>
 <li>Physical parameter classes should stay explicit and scenario-specific.</li>
 </ul>
 <h2 id="vehicle-model-architecture">Vehicle Model Architecture<a class="headerlink" href="#vehicle-model-architecture" title="Permanent link">&para;</a></h2>
@@ -1101,9 +1295,24 @@ physical parameter dataclasses.</p>
   <code>EnvelopeVehicleModel</code> in <code>src/pylapsim/vehicle/_model_base.py</code>
   provides inheritance-based code organization for built-in backends.</li>
 </ul>
-<p>Built-in models (<code>BicycleModel</code>, <code>PointMassModel</code>) inherit the same base class
+<p>Built-in models (<code>SingleTrackModel</code>, <code>PointMassModel</code>) inherit the same base class
 to share validation layering, friction-circle scaling, and net
 drag/grade-corrected longitudinal limits.</p>
+<p>For backend-enabled models, keep backend adapters out of the physics layer:</p>
+<ul>
+<li><code>PointMassModel</code> composes private mixins from
+  <code>src/pylapsim/vehicle/_point_mass_physics.py</code> and
+  <code>src/pylapsim/vehicle/_point_mass_backends.py</code>.</li>
+<li>Physics equations stay backend-agnostic.</li>
+<li>Backend-specific methods (<code>numba</code>, <code>torch</code>) stay isolated in adapter mixins.</li>
+<li><code>SingleTrackModel</code> composes <code>src/pylapsim/vehicle/_single_track_physics.py</code>,
+  which extends <code>PointMassPhysicalMixin</code> to reuse the shared physical core.</li>
+<li>Single-track backend adapters live in <code>src/pylapsim/vehicle/_single_track_backends.py</code>
+  and mirror the point-mass backend adapter structure.</li>
+<li>Single-track-specific dynamics/supporting components live in
+  <code>src/pylapsim/vehicle/single_track/</code> (for example <code>dynamics.py</code>,
+  <code>load_transfer.py</code>) to keep model-specific code grouped together.</li>
+</ul>
 <h2 id="refreshing-spa-data">Refreshing Spa Data<a class="headerlink" href="#refreshing-spa-data" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
 python<span class="w"> </span>scripts/import_spa_from_tumftm.py

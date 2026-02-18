@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://pzimbrod.github.io/pylapsim/0.1.0/API/">
+        <link rel="canonical" href="https://pzimbrod.github.io/pylapsim/0.1.0/SINGLE_TRACK_MODEL/">
       
       
-        <link rel="prev" href="../BACKENDS/">
+        <link rel="prev" href="../EXAMPLES_SPA/">
       
       
-        <link rel="next" href="../SOLVER/">
+        <link rel="next" href="../POINT_MASS_MODEL/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>API Overview - PyLapSim</title>
+        <title>Single-Track Model - PyLapSim</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#api-overview" class="md-skip">
+        <a href="#single-track-model" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +120,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              API Overview
+              Single-Track Model
             
           </span>
         </div>
@@ -300,20 +300,18 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
@@ -334,7 +332,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -405,37 +403,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Overview
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../API/" class="md-nav__link">
         
   
   
@@ -451,170 +422,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-track-inputs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Track inputs
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1. Track inputs">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#load-measuredreal-track-data" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Load measured/real track data
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#generate-synthetic-validation-tracks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Generate synthetic validation tracks
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-vehicle-and-tire-models" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Vehicle and tire models
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Vehicle and tire models">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#shared-physical-vehicle-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Shared physical vehicle parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#tire-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tire parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#single-track-backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Single-track backend
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#point-mass-backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Point-mass backend
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-simulation-setup-and-run" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Simulation setup and run
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-postprocessing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Postprocessing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-minimal-usage-pattern" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Minimal usage pattern
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-related-guides" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Related guides
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -853,18 +660,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
@@ -885,7 +694,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -900,10 +709,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../SINGLE_TRACK_MODEL/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single-Track Model
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -919,6 +755,114 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-lateral-limit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Lateral Limit
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-lateral-tire-force-model-pacejka" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Lateral Tire Force Model (Pacejka)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-quasi-static-normal-loads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Quasi-Static Normal Loads
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-longitudinal-limits-with-friction-circle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Longitudinal Limits with Friction Circle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-equation-to-code-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Equation-to-Code Mapping
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Example
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1208,110 +1152,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-track-inputs" class="md-nav__link">
+  <a href="#1-scope" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Track inputs
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1. Track inputs">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#load-measuredreal-track-data" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Load measured/real track data
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#generate-synthetic-validation-tracks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Generate synthetic validation tracks
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-vehicle-and-tire-models" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Vehicle and tire models
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Vehicle and tire models">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#shared-physical-vehicle-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Shared physical vehicle parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#tire-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tire parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#single-track-backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Single-track backend
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#point-mass-backend" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Point-mass backend
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-simulation-setup-and-run" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Simulation setup and run
+        1. Scope
       
     </span>
   </a>
@@ -1319,10 +1163,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-postprocessing" class="md-nav__link">
+  <a href="#2-lateral-limit" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Postprocessing
+        2. Lateral Limit
       
     </span>
   </a>
@@ -1330,10 +1174,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-minimal-usage-pattern" class="md-nav__link">
+  <a href="#3-lateral-tire-force-model-pacejka" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Minimal usage pattern
+        3. Lateral Tire Force Model (Pacejka)
       
     </span>
   </a>
@@ -1341,10 +1185,54 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-related-guides" class="md-nav__link">
+  <a href="#4-quasi-static-normal-loads" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Related guides
+        4. Quasi-Static Normal Loads
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-longitudinal-limits-with-friction-circle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Longitudinal Limits with Friction Circle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-equation-to-code-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Equation-to-Code Mapping
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Example
       
     </span>
   </a>
@@ -1371,118 +1259,148 @@
   
 
 
-<h1 id="api-overview">API Overview<a class="headerlink" href="#api-overview" title="Permanent link">&para;</a></h1>
-<p>This page maps the public API to the engineering workflow.</p>
-<p>If you are new to the package, start with <a href="../HOW_TO_USE/">How to Use</a>.</p>
-<h2 id="1-track-inputs">1. Track inputs<a class="headerlink" href="#1-track-inputs" title="Permanent link">&para;</a></h2>
-<h3 id="load-measuredreal-track-data">Load measured/real track data<a class="headerlink" href="#load-measuredreal-track-data" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>pylapsim.track.load_track_csv(path) -&gt; TrackData</code></li>
-</ul>
-<p>Required CSV columns:</p>
-<ul>
-<li><code>x</code></li>
-<li><code>y</code></li>
-<li><code>elevation</code></li>
-<li><code>banking</code></li>
-</ul>
-<h3 id="generate-synthetic-validation-tracks">Generate synthetic validation tracks<a class="headerlink" href="#generate-synthetic-validation-tracks" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>pylapsim.track.build_straight_track(...) -&gt; TrackData</code></li>
-<li><code>pylapsim.track.build_circular_track(...) -&gt; TrackData</code></li>
-<li><code>pylapsim.track.build_figure_eight_track(...) -&gt; TrackData</code></li>
-</ul>
-<h2 id="2-vehicle-and-tire-models">2. Vehicle and tire models<a class="headerlink" href="#2-vehicle-and-tire-models" title="Permanent link">&para;</a></h2>
-<h3 id="shared-physical-vehicle-parameters">Shared physical vehicle parameters<a class="headerlink" href="#shared-physical-vehicle-parameters" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>pylapsim.vehicle.VehicleParameters</code></li>
-</ul>
-<h3 id="tire-parameters">Tire parameters<a class="headerlink" href="#tire-parameters" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>pylapsim.tire.default_axle_tire_parameters() -&gt; AxleTireParameters</code></li>
-</ul>
-<h3 id="single-track-backend">Single-track backend<a class="headerlink" href="#single-track-backend" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>pylapsim.vehicle.SingleTrackModel(vehicle, tires, physics, numerics)</code></li>
-<li><code>pylapsim.vehicle.SingleTrackPhysics</code></li>
-<li><code>pylapsim.vehicle.SingleTrackNumerics</code></li>
-<li><code>pylapsim.vehicle.build_single_track_model(vehicle, tires, physics=None, numerics=None)</code></li>
-</ul>
+<h1 id="single-track-model">Single-Track Model<a class="headerlink" href="#single-track-model" title="Permanent link">&para;</a></h1>
+<p>This document defines the implemented single-track backend in
+<code>src/pylapsim/vehicle/single_track_model.py</code> and
+<code>src/pylapsim/vehicle/_single_track_physics.py</code>.</p>
 <p>Terminology note:</p>
 <ul>
-<li><code>SingleTrack</code> corresponds to the "bicycle model" terminology commonly used in literature.</li>
+<li><code>SingleTrack</code> in this package corresponds to the "bicycle model" terminology
+  frequently used in vehicle-dynamics literature.</li>
 </ul>
-<h3 id="point-mass-backend">Point-mass backend<a class="headerlink" href="#point-mass-backend" title="Permanent link">&para;</a></h3>
+<p>The single-track backend is implemented as a physical extension of the
+point-mass physical core (<code>PointMassPhysicalMixin</code>), with single-track-specific
+lateral force and diagnostic equations layered on top.</p>
+<h2 id="1-scope">1. Scope<a class="headerlink" href="#1-scope" title="Permanent link">&para;</a></h2>
+<p>The single-track model keeps the solver API contract and adds axle-level lateral
+tire force modeling, quasi-static load transfer, and yaw-moment diagnostics.</p>
+<p>State assumptions in the lap-time solver context:</p>
 <ul>
-<li><code>pylapsim.vehicle.PointMassModel(vehicle, physics)</code></li>
-<li><code>pylapsim.vehicle.PointMassPhysics</code></li>
-<li><code>pylapsim.vehicle.build_point_mass_model(vehicle, physics=None)</code></li>
-<li><code>pylapsim.vehicle.calibrate_point_mass_friction_to_single_track(vehicle, tires, ...)</code></li>
+<li>quasi-steady envelope evaluation (no transient tire relaxation in profile solve),</li>
+<li>lateral force from load-sensitive Pacejka at front and rear axle,</li>
+<li>friction-circle coupling between lateral demand and longitudinal capability,</li>
+<li>net along-track acceleration after drag and grade corrections.</li>
 </ul>
-<h2 id="3-simulation-setup-and-run">3. Simulation setup and run<a class="headerlink" href="#3-simulation-setup-and-run" title="Permanent link">&para;</a></h2>
+<h2 id="2-lateral-limit">2. Lateral Limit<a class="headerlink" href="#2-lateral-limit" title="Permanent link">&para;</a></h2>
+<p>At speed <span class="arithmatex">\(v\)</span> and banking angle <span class="arithmatex">\(\beta\)</span>, the model solves lateral capacity by a
+fixed-point iteration because normal load and lateral force depend on the
+lateral-acceleration estimate itself.</p>
+<p>Given current iterate <span class="arithmatex">\(a_y^{(k)}\)</span>:</p>
+<ol>
+<li>Estimate axle loads from quasi-static vertical balance and load transfer.</li>
+<li>Evaluate axle lateral forces at representative peak slip angle
+   <span class="arithmatex">\(\alpha_\text{peak}\)</span>.</li>
+<li>Update the lateral limit with banking contribution. The dependence on the
+   previous iterate is carried by the axle normal loads used in tire-force
+   evaluation:</li>
+</ol>
+<div class="arithmatex">\[
+a_y^{(k+1)} = \max\left(
+a_{y,\min},
+\frac{2F_y\!\left(\alpha_\text{peak}, F_{z,f}\!\left(a_y^{(k)}\right)/2\right) + 2F_y\!\left(\alpha_\text{peak}, F_{z,r}\!\left(a_y^{(k)}\right)/2\right)}{m} + g\sin\beta
+\right).
+\]</div>
+<p>Equivalently, writing axle-level lateral forces explicitly as
+<span class="arithmatex">\(F_{y,f}^{(k)}\)</span> and <span class="arithmatex">\(F_{y,r}^{(k)}\)</span>:</p>
+<div class="arithmatex">\[
+a_y^{(k+1)} = \max\left(a_{y,\min}, \frac{F_{y,f}^{(k)} + F_{y,r}^{(k)}}{m} + g\sin\beta\right),
+\]</div>
+<p>with <span class="arithmatex">\(F_{y,f}^{(k)}, F_{y,r}^{(k)}\)</span> computed from <span class="arithmatex">\(F_{z,f}(a_y^{(k)})\)</span> and
+<span class="arithmatex">\(F_{z,r}(a_y^{(k)})\)</span>.</p>
+<p>Stop criterion:</p>
+<div class="arithmatex">\[
+\left|a_y^{(k+1)} - a_y^{(k)}\right| \le \text{tol}_y
+\]</div>
+<p>or max iteration count.</p>
+<h2 id="3-lateral-tire-force-model-pacejka">3. Lateral Tire Force Model (Pacejka)<a class="headerlink" href="#3-lateral-tire-force-model-pacejka" title="Permanent link">&para;</a></h2>
+<p>Each axle force is the sum of two equivalent tires:</p>
+<div class="arithmatex">\[
+F_{y,f} = 2\,F_y(\alpha_f, F_{z,f}/2), \quad
+F_{y,r} = 2\,F_y(\alpha_r, F_{z,r}/2).
+\]</div>
+<p>Per-tire Pacejka-style lateral force:</p>
+<div class="arithmatex">\[
+F_y = D\,\mu_\text{scale}(F_z)\,F_z\,\sin\left(C\,\arctan\left(\xi\right)\right),
+\]</div>
+<div class="arithmatex">\[
+\xi = B\alpha - E\left(B\alpha - \arctan(B\alpha)\right),
+\]</div>
+<p>with load sensitivity factor:</p>
+<div class="arithmatex">\[
+\mu_\text{scale}(F_z) = \max\left(1 + s\,\frac{F_z - F_{z,\text{ref}}}{F_{z,\text{ref}}},\ \mu_{\min}\right).
+\]</div>
+<h2 id="4-quasi-static-normal-loads">4. Quasi-Static Normal Loads<a class="headerlink" href="#4-quasi-static-normal-loads" title="Permanent link">&para;</a></h2>
+<p>Total vertical load:</p>
+<div class="arithmatex">\[
+F_{z,\text{tot}} = mg + F_\text{down}(v), \quad F_\text{down}(v)=\tfrac{1}{2}\rho C_L A v^2.
+\]</div>
+<p>Front axle raw load with longitudinal transfer:</p>
+<div class="arithmatex">\[
+F_{z,f}^\text{raw} = mg\,\phi_f + F_{\text{down},f} - \frac{m a_x h}{L}.
+\]</div>
+<p>Rear axle load follows from equilibrium:</p>
+<div class="arithmatex">\[
+F_{z,r} = F_{z,\text{tot}} - F_{z,f}.
+\]</div>
+<p>Lateral transfer is distributed by effective front roll-stiffness share and
+split to left/right wheel loads while preserving axle totals.</p>
+<h2 id="5-longitudinal-limits-with-friction-circle">5. Longitudinal Limits with Friction Circle<a class="headerlink" href="#5-longitudinal-limits-with-friction-circle" title="Permanent link">&para;</a></h2>
+<p>For required lateral acceleration magnitude <span class="arithmatex">\(|a_{y,\text{req}}|\)</span>:</p>
+<div class="arithmatex">\[
+\lambda = \sqrt{\max\left(0,\ 1 - \left(\frac{|a_{y,\text{req}}|}{a_{y,\text{lim}}}\right)^2\right)}.
+\]</div>
+<p>Drive and brake envelopes:</p>
+<div class="arithmatex">\[
+a_{x,\text{drive}} = a_{x,\text{drive,max}}\,\lambda,\quad
+a_{x,\text{brake}} = a_{x,\text{brake,max}}\,\lambda.
+\]</div>
+<p>Net along-track acceleration:</p>
+<div class="arithmatex">\[
+a_{x,\text{net}} = a_{x,\text{drive}} - \frac{D(v)}{m} - g\gamma,
+\]</div>
+<p>available deceleration magnitude:</p>
+<div class="arithmatex">\[
+a_{x,\text{decel,avail}} = \max\left(a_{x,\text{brake}} + \frac{D(v)}{m} + g\gamma,\ 0\right),
+\]</div>
+<p>with</p>
+<div class="arithmatex">\[
+D(v)=\tfrac{1}{2}\rho C_D A v^2.
+\]</div>
+<h2 id="6-diagnostics">6. Diagnostics<a class="headerlink" href="#6-diagnostics" title="Permanent link">&para;</a></h2>
+<p>The backend reports at each operating point:</p>
 <ul>
-<li><code>pylapsim.simulation.RuntimeConfig</code></li>
-<li><code>pylapsim.simulation.NumericsConfig</code></li>
-<li><code>pylapsim.simulation.SimulationConfig</code></li>
-<li><code>pylapsim.simulation.build_simulation_config(...)</code></li>
-<li><code>pylapsim.simulation.simulate_lap(track, model, config) -&gt; LapResult</code></li>
+<li>yaw moment from 3-DOF single-track force balance,</li>
+<li>front and rear axle normal loads,</li>
+<li>tractive power:</li>
 </ul>
-<p>Backend runtime controls:</p>
+<div class="arithmatex">\[
+P = \left(m a_x + D(v)\right)v.
+\]</div>
+<p>The solver uses quasi-steady envelopes for speed profile generation; the
+3-DOF single-track dynamics model is used primarily for physically meaningful
+analysis diagnostics (e.g., yaw-moment traces).</p>
+<h2 id="7-equation-to-code-mapping">7. Equation-to-Code Mapping<a class="headerlink" href="#7-equation-to-code-mapping" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>RuntimeConfig.compute_backend</code>: <code>"numpy"</code>, <code>"numba"</code>, or <code>"torch"</code></li>
-<li><code>RuntimeConfig.torch_device</code>: keep <code>"cpu"</code> for <code>numpy</code>/<code>numba</code>; use <code>"cpu"</code> or <code>"cuda:0"</code> for <code>torch</code></li>
-<li><code>RuntimeConfig.torch_compile</code>: optional compile acceleration for <code>torch</code> only</li>
+<li>lateral limit fixed-point:
+  <code>SingleTrackModel.lateral_accel_limit(...)</code></li>
+<li>Pacejka lateral force:
+  <code>magic_formula_lateral(...)</code></li>
+<li>normal-load estimation:
+  <code>estimate_normal_loads(...)</code></li>
+<li>friction-circle scaling:
+  <code>EnvelopeVehicleModel._friction_circle_scale(...)</code></li>
+<li>longitudinal accel/decel:
+  <code>SingleTrackModel.max_longitudinal_accel(...)</code>,
+  <code>SingleTrackModel.max_longitudinal_decel(...)</code></li>
+<li>diagnostics:
+  <code>SingleTrackModel.diagnostics(...)</code>, <code>SingleTrackDynamicsModel.force_balance(...)</code></li>
 </ul>
-<p>See <a href="../BACKENDS/">Compute Backends</a> for selection guidance and benchmarks.</p>
-<p>Vehicle-model solver contract:</p>
+<h2 id="8-example">8. Example<a class="headerlink" href="#8-example" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>validate()</code></li>
-<li><code>lateral_accel_limit(speed, banking)</code></li>
-<li><code>max_longitudinal_accel(speed, lateral_accel_required, grade, banking)</code></li>
-<li><code>max_longitudinal_decel(speed, lateral_accel_required, grade, banking)</code></li>
-<li><code>diagnostics(speed, longitudinal_accel, lateral_accel, curvature)</code></li>
-</ul>
-<h2 id="4-postprocessing">4. Postprocessing<a class="headerlink" href="#4-postprocessing" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>pylapsim.analysis.compute_kpis(result) -&gt; KpiSummary</code></li>
-<li><code>pylapsim.analysis.export_standard_plots(result, output_dir)</code></li>
-<li><code>pylapsim.analysis.export.export_kpi_json(kpis, path)</code></li>
-<li><code>pylapsim.analysis.compute_performance_envelope(model, ...) -&gt; PerformanceEnvelopeResult</code></li>
-<li><code>pylapsim.analysis.PerformanceEnvelopePhysics</code></li>
-<li><code>pylapsim.analysis.PerformanceEnvelopeNumerics</code></li>
-<li><code>pylapsim.analysis.PerformanceEnvelopeRuntime</code></li>
-<li><code>pylapsim.analysis.build_performance_envelope_config(...) -&gt; PerformanceEnvelopeConfig</code></li>
-</ul>
-<p><code>LapResult</code> provides:</p>
-<ul>
-<li>lap time</li>
-<li>speed / longitudinal acceleration / lateral acceleration traces</li>
-<li>yaw moment</li>
-<li>front/rear axle loads</li>
-<li>power and energy</li>
-</ul>
-<p><code>PerformanceEnvelopeResult</code> provides:</p>
-<ul>
-<li>speed support points</li>
-<li>lateral-acceleration limits per speed</li>
-<li>sampled lateral-acceleration grid</li>
-<li>max/min longitudinal acceleration grid</li>
-<li>optional <code>.to_dataframe()</code> conversion for tabular studies</li>
-</ul>
-<h2 id="5-minimal-usage-pattern">5. Minimal usage pattern<a class="headerlink" href="#5-minimal-usage-pattern" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">track</span> <span class="o">=</span> <span class="n">load_track_csv</span><span class="p">(</span><span class="s2">&quot;data/spa_francorchamps.csv&quot;</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">build_single_track_model</span><span class="p">(</span><span class="n">vehicle</span><span class="o">=</span><span class="n">vehicle</span><span class="p">,</span> <span class="n">tires</span><span class="o">=</span><span class="n">tires</span><span class="p">,</span> <span class="n">physics</span><span class="o">=</span><span class="n">SingleTrackPhysics</span><span class="p">())</span>
-<span class="n">config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span><span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">)</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">simulate_lap</span><span class="p">(</span><span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
-<span class="n">kpis</span> <span class="o">=</span> <span class="n">compute_kpis</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-</code></pre></div>
-<h2 id="6-related-guides">6. Related guides<a class="headerlink" href="#6-related-guides" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="../HOW_TO_USE/">How to Use</a></li>
-<li><a href="../EXAMPLES/">Examples Overview</a></li>
-<li><a href="../SOLVER/">Solver</a></li>
-<li><a href="../SINGLE_TRACK_MODEL/">Single-Track Model</a></li>
-<li><a href="../POINT_MASS_MODEL/">Point-Mass Model</a></li>
+<li>Single-track standalone usage:
+  <code>examples/spa/spa_lap_single_track.py</code></li>
+<li>Side-by-side comparison against point-mass model:
+  <code>examples/spa/spa_model_comparison.py</code></li>
 </ul>
 
 
