@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="apexsim icon (cyan, option B)">
+  <defs>
+    <!-- Background -->
+    <linearGradient id="bg" x1="70" y1="40" x2="460" y2="480" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#050817"></stop>
+      <stop offset="0.55" stop-color="#0A1024"></stop>
+      <stop offset="1" stop-color="#0B132A"></stop>
+    </linearGradient>
+
+    <!-- Soft highlight -->
+    <radialGradient id="hl" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(180 150) rotate(55) scale(340)">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.10"></stop>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop>
+    </radialGradient>
+
+    <!-- Cyan-first line gradient -->
+    <linearGradient id="lineGrad" x1="130" y1="390" x2="430" y2="130" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#67E8F9"></stop>
+      <stop offset="0.55" stop-color="#22D3EE"></stop>
+      <stop offset="1" stop-color="#06B6D4"></stop>
+    </linearGradient>
+
+    <!-- Glow -->
+    <filter id="glow" x="-45%" y="-45%" width="190%" height="190%">
+      <feGaussianBlur stdDeviation="6" result="b"></feGaussianBlur>
+      <feColorMatrix in="b" type="matrix" values="0 0 0 0 0
+                0 1 0 0 0
+                0 0 1 0 0
+                0 0 0 0.85 0" result="g"></feColorMatrix>
+      <feMerge>
+        <feMergeNode in="g"></feMergeNode>
+        <feMergeNode in="SourceGraphic"></feMergeNode>
+      </feMerge>
+    </filter>
+
+    <!-- Chevron marker -->
+    <marker id="chev" viewBox="0 0 16 16" refX="9.2" refY="8" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M5 3 L11 8 L5 13" fill="none" stroke="#67E8F9" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"></path>
+    </marker>
+
+    <!-- More curved "ideal line" (kept within safe margins) -->
+    <path id="curve" d="M128 382
+         C 214 306, 262 296, 302 266
+         C 348 232, 380 198, 402 158"></path>
+  </defs>
+
+  <!-- Rounded square -->
+  <rect x="44" y="44" width="424" height="424" rx="108" fill="url(#bg)"></rect>
+  <rect x="44" y="44" width="424" height="424" rx="108" fill="url(#hl)"></rect>
+
+  <!-- Optional: ultra-subtle grid hint -->
+  <g opacity="0.07" stroke="#67E8F9" stroke-width="2">
+    <path d="M104 176 H408"></path>
+    <path d="M104 244 H408"></path>
+    <path d="M104 312 H408"></path>
+    <path d="M176 104 V408"></path>
+    <path d="M244 104 V408"></path>
+    <path d="M312 104 V408"></path>
+  </g>
+
+  <!-- Sensitivity sweep echoes (thin, understated) -->
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M122 370 C 214 298, 264 286, 306 252 C 350 216, 384 184, 408 152" stroke="#67E8F9" stroke-opacity="0.14" stroke-width="10"></path>
+    <path d="M140 394 C 220 322, 266 314, 304 286 C 344 256, 372 226, 392 192" stroke="#67E8F9" stroke-opacity="0.10" stroke-width="10"></path>
+  </g>
+
+  <!-- Ideal line -->
+  <use href="#curve" fill="none" stroke="url(#lineGrad)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" marker-end="url(#chev)"></use>
+
+  <!-- Adaptive sampling points (denser near apex / high sensitivity region) -->
+  <g fill="#E6FBFF">
+    <!-- approach -->
+    <circle cx="168" cy="340" r="4.0" opacity="0.50"></circle>
+    <circle cx="190" cy="324" r="4.5" opacity="0.58"></circle>
+    <circle cx="212" cy="312" r="4.9" opacity="0.64"></circle>
+    <circle cx="232" cy="304" r="5.2" opacity="0.68"></circle>
+
+    <!-- ramp up density -->
+    <circle cx="250" cy="296" r="5.5" opacity="0.72"></circle>
+    <circle cx="266" cy="288" r="5.8" opacity="0.76"></circle>
+    <circle cx="280" cy="280" r="6.0" opacity="0.80"></circle>
+    <circle cx="292" cy="272" r="6.2" opacity="0.84"></circle>
+
+    <!-- apex cluster -->
+    <circle cx="302" cy="266" r="6.4" opacity="0.88"></circle>
+    <circle cx="312" cy="258" r="6.1" opacity="0.84"></circle>
+    <circle cx="322" cy="250" r="5.7" opacity="0.78"></circle>
+    <circle cx="334" cy="240" r="5.2" opacity="0.70"></circle>
+    <circle cx="348" cy="228" r="4.8" opacity="0.62"></circle>
+  </g>
+
+  <!-- Apex focus pulse -->
+  <g>
+    <circle cx="302" cy="266" r="10" fill="#E6FBFF" opacity="0.92"></circle>
+    <circle cx="302" cy="266" r="28" fill="#67E8F9" opacity="0.12"></circle>
+  </g>
+</svg>
