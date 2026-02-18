@@ -45,6 +45,192 @@ DEFAULT_TRANSIENT_PID_STEER_KD = 0.12
 DEFAULT_TRANSIENT_PID_STEER_VY_DAMPING = 0.25
 DEFAULT_TRANSIENT_PID_LONGITUDINAL_INTEGRAL_LIMIT = 30.0
 DEFAULT_TRANSIENT_PID_STEER_INTEGRAL_LIMIT = 2.0
+DEFAULT_TRANSIENT_PID_GAIN_SCHEDULING_MODE = "off"
+VALID_TRANSIENT_PID_GAIN_SCHEDULING_MODES = ("off", "physics_informed", "custom")
+
+
+@dataclass(frozen=True)
+class PidSpeedSchedule:
+    """Piecewise-linear speed-dependent gain schedule.
+
+    Args:
+        speed_nodes_mps: Monotonic speed nodes [m/s].
+        values: Gain values at ``speed_nodes_mps``.
+    """
+
+    speed_nodes_mps: tuple[float, ...]
+    values: tuple[float, ...]
+
+    def validate(self) -> None:
+        """Validate PWL node/value vectors.
+
+        Raises:
+            apexsim.utils.exceptions.ConfigurationError: If nodes or values are
+                inconsistent.
+        """
+        if len(self.speed_nodes_mps) < 2:
+            msg = "PidSpeedSchedule.speed_nodes_mps must contain at least two nodes"
+            raise ConfigurationError(msg)
+        if len(self.speed_nodes_mps) != len(self.values):
+            msg = "PidSpeedSchedule.speed_nodes_mps and values must have the same length"
+            raise ConfigurationError(msg)
+        speeds = np.asarray(self.speed_nodes_mps, dtype=float)
+        values = np.asarray(self.values, dtype=float)
+        if np.any(~np.isfinite(speeds)):
+            msg = "PidSpeedSchedule.speed_nodes_mps must be finite"
+            raise ConfigurationError(msg)
+        if np.any(~np.isfinite(values)):
+            msg = "PidSpeedSchedule.values must be finite"
+            raise ConfigurationError(msg)
+        if np.any(speeds < 0.0):
+            msg = "PidSpeedSchedule.speed_nodes_mps must be greater than or equal to 0"
+            raise ConfigurationError(msg)
+        if np.any(np.diff(speeds) <= 0.0):
+            msg = "PidSpeedSchedule.speed_nodes_mps must be strictly increasing"
+            raise ConfigurationError(msg)
+
+    def evaluate(self, speed_mps: float) -> float:
+        """Evaluate schedule at one speed by linear interpolation with clamping.
+
+        Args:
+            speed_mps: Evaluation speed [m/s].
+
+        Returns:
+            Interpolated schedule value.
+        """
+        if not np.isfinite(speed_mps):
+            msg = "speed_mps must be finite"
+            raise ConfigurationError(msg)
+        speeds = np.asarray(self.speed_nodes_mps, dtype=float)
+        values = np.asarray(self.values, dtype=float)
+        return float(np.interp(float(speed_mps), speeds, values))
+
+    def evaluate_many(self, speeds_mps: np.ndarray) -> np.ndarray:
+        """Evaluate schedule at multiple speeds.
+
+        Args:
+            speeds_mps: Evaluation speeds [m/s].
+
+        Returns:
+            Interpolated values for each input speed.
+        """
+        speeds_query = np.asarray(speeds_mps, dtype=float)
+        if np.any(~np.isfinite(speeds_query)):
+            msg = "speeds_mps must be finite"
+            raise ConfigurationError(msg)
+        speeds = np.asarray(self.speed_nodes_mps, dtype=float)
+        values = np.asarray(self.values, dtype=float)
+        return np.asarray(np.interp(speeds_query, speeds, values), dtype=float)
+
+
+@dataclass(frozen=True)
+class TransientPidGainSchedulingConfig:
+    """Speed-dependent PID gain schedules.
+
+    Longitudinal schedules are used by point-mass and single-track PID drivers.
+    Steering schedules are used by single-track PID drivers.
+    """
+
+    longitudinal_kp: PidSpeedSchedule | None = None
+    longitudinal_ki: PidSpeedSchedule | None = None
+    longitudinal_kd: PidSpeedSchedule | None = None
+    steer_kp: PidSpeedSchedule | None = None
+    steer_ki: PidSpeedSchedule | None = None
+    steer_kd: PidSpeedSchedule | None = None
+    steer_vy_damping: PidSpeedSchedule | None = None
+
+    def validate(self) -> None:
+        """Validate scheduling config and node-grid consistency.
+
+        Raises:
+            apexsim.utils.exceptions.ConfigurationError: If schedules are
+                inconsistent.
+        """
+        for name, schedule in (
+            ("longitudinal_kp", self.longitudinal_kp),
+            ("longitudinal_ki", self.longitudinal_ki),
+            ("longitudinal_kd", self.longitudinal_kd),
+            ("steer_kp", self.steer_kp),
+            ("steer_ki", self.steer_ki),
+            ("steer_kd", self.steer_kd),
+            ("steer_vy_damping", self.steer_vy_damping),
+        ):
+            if schedule is None:
+                continue
+            try:
+                schedule.validate()
+            except ConfigurationError as exc:
+                msg = f"Invalid schedule {name!r}: {exc}"
+                raise ConfigurationError(msg) from exc
+
+        self._validate_shared_grid(
+            group_name="longitudinal",
+            schedules=(
+                self.longitudinal_kp,
+                self.longitudinal_ki,
+                self.longitudinal_kd,
+            ),
+        )
+        self._validate_shared_grid(
+            group_name="steering",
+            schedules=(
+                self.steer_kp,
+                self.steer_ki,
+                self.steer_kd,
+                self.steer_vy_damping,
+            ),
+        )
+
+    def has_longitudinal_schedules(self) -> bool:
+        """Return whether all longitudinal schedules are present.
+
+        Returns:
+            ``True`` when longitudinal ``kp``, ``ki``, and ``kd`` schedules are
+            all configured.
+        """
+        return (
+            self.longitudinal_kp is not None
+            and self.longitudinal_ki is not None
+            and self.longitudinal_kd is not None
+        )
+
+    def has_steering_schedules(self) -> bool:
+        """Return whether all steering schedules are present.
+
+        Returns:
+            ``True`` when steering ``kp``, ``ki``, ``kd``, and lateral-velocity
+            damping schedules are all configured.
+        """
+        return (
+            self.steer_kp is not None
+            and self.steer_ki is not None
+            and self.steer_kd is not None
+            and self.steer_vy_damping is not None
+        )
+
+    def _validate_shared_grid(
+        self,
+        *,
+        group_name: str,
+        schedules: tuple[PidSpeedSchedule | None, ...],
+    ) -> None:
+        """Require equal speed grids within one schedule group.
+
+        Args:
+            group_name: Human-readable group identifier used in error messages.
+            schedules: Schedule tuple belonging to one gain group.
+        """
+        present = [item for item in schedules if item is not None]
+        if len(present) <= 1:
+            return
+        reference_nodes = present[0].speed_nodes_mps
+        for candidate in present[1:]:
+            if candidate.speed_nodes_mps != reference_nodes:
+                msg = (
+                    f"All {group_name} schedules must share identical speed_nodes_mps "
+                    "for consistent interpolation."
+                )
+                raise ConfigurationError(msg)
 
 
 @dataclass(frozen=True)
@@ -82,6 +268,10 @@ class TransientNumericsConfig:
             integrator state.
         pid_steer_integral_limit: Absolute clamp for steering PID integrator
             state.
+        pid_gain_scheduling_mode: PID gain scheduling mode:
+            ``"off"``, ``"physics_informed"``, or ``"custom"``.
+        pid_gain_scheduling: Optional custom schedule table set used when
+            ``pid_gain_scheduling_mode="custom"``.
     """
 
     integration_method: str = DEFAULT_TRANSIENT_INTEGRATION_METHOD
@@ -107,6 +297,8 @@ class TransientNumericsConfig:
         DEFAULT_TRANSIENT_PID_LONGITUDINAL_INTEGRAL_LIMIT
     )
     pid_steer_integral_limit: float = DEFAULT_TRANSIENT_PID_STEER_INTEGRAL_LIMIT
+    pid_gain_scheduling_mode: str = DEFAULT_TRANSIENT_PID_GAIN_SCHEDULING_MODE
+    pid_gain_scheduling: TransientPidGainSchedulingConfig | None = None
 
     def validate(self) -> None:
         """Validate transient numerical controls.
@@ -187,6 +379,28 @@ class TransientNumericsConfig:
         ):
             msg = "pid_steer_integral_limit must be a non-negative finite value"
             raise ConfigurationError(msg)
+        if self.pid_gain_scheduling_mode not in VALID_TRANSIENT_PID_GAIN_SCHEDULING_MODES:
+            msg = (
+                "pid_gain_scheduling_mode must be one of "
+                f"{VALID_TRANSIENT_PID_GAIN_SCHEDULING_MODES}, got: "
+                f"{self.pid_gain_scheduling_mode!r}"
+            )
+            raise ConfigurationError(msg)
+        if self.pid_gain_scheduling is not None:
+            self.pid_gain_scheduling.validate()
+        if self.pid_gain_scheduling_mode == "custom":
+            if self.pid_gain_scheduling is None:
+                msg = (
+                    "pid_gain_scheduling must be provided when "
+                    "pid_gain_scheduling_mode='custom'"
+                )
+                raise ConfigurationError(msg)
+            if not self.pid_gain_scheduling.has_longitudinal_schedules():
+                msg = (
+                    "Custom PID gain scheduling requires longitudinal schedules "
+                    "(kp/ki/kd)."
+                )
+                raise ConfigurationError(msg)
 
 
 @dataclass(frozen=True)
