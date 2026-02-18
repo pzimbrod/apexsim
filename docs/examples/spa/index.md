@@ -35,9 +35,9 @@ comparison, envelope), so results stay comparable.
    vehicle states are solved from local equilibrium in arc-length domain,
    without full transient tire-state dynamics.
 2. Lateral/longitudinal coupling:
-   available `a_x` is reduced as required `a_y` approaches the lateral limit.
+   available $a_x$ is reduced as required $a_y$ approaches the lateral limit.
 3. Aero coupling:
-   both drag and downforce scale approximately with `v^2`, which changes
+   both drag and downforce scale approximately with $v^2$, which changes
    acceleration limits strongly at higher speeds.
 4. Model hierarchy:
    point-mass is a reduced model; single-track adds yaw and axle-level effects.

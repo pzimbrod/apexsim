@@ -44,11 +44,17 @@ The single-track model is a reduced planar vehicle model with front/rear axle
 representation. In quasi-steady use, the key balances are:
 
 - lateral acceleration balance:
-  `a_y = (F_y,f + F_y,r) / m`
+  $$
+  a_y = \frac{F_{y,f} + F_{y,r}}{m}
+  $$
 - yaw moment balance signal:
-  `M_z = l_f F_y,f - l_r F_y,r`
+  $$
+  M_z = l_f F_{y,f} - l_r F_{y,r}
+  $$
 - path-kinematics coupling:
-  `a_y = v^2 * kappa`
+  $$
+  a_y = v^2 \kappa
+  $$
 
 Tire forces are generated from the Pacejka-style lateral model with load
 sensitivity. This makes axle-load distribution and aero effects directly
@@ -63,6 +69,6 @@ relevant for cornering limits.
 ## Potential learnings from the data
 
 1. Check lap-time and speed-trace shape together, not separately.
-2. Validate that high `|a_y|` regions align with curved track sectors.
+2. Validate that high $|a_y|$ regions align with curved track sectors.
 3. Use yaw-moment traces as consistency diagnostics for lateral balance.
 4. If output magnitudes are implausible, re-check physical inputs before changing numerics.

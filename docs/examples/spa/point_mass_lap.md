@@ -46,11 +46,18 @@ The point-mass model uses an isotropic acceleration envelope with aero coupling.
 Typical relations are:
 
 - normal-acceleration budget:
-  `a_n(v) = g + F_down(v) / m`
+  $$
+  a_n(v) = g + \frac{F_{\mathrm{down}}(v)}{m}
+  $$
 - lateral limit (flat road simplification):
-  `a_y,lim(v) = mu * a_n(v)`
+  $$
+  a_{y,\mathrm{lim}}(v) = \mu \, a_n(v)
+  $$
 - friction-circle coupling:
-  `a_x,avail = a_x,max * sqrt(1 - (a_y,req / a_y,lim)^2)`
+  $$
+  a_{x,\mathrm{avail}} =
+  a_{x,\max}\sqrt{1 - \left(\frac{a_{y,\mathrm{req}}}{a_{y,\mathrm{lim}}}\right)^2}
+  $$
 
 This structure is intentionally compact and efficient for fast sweeps.
 
@@ -64,4 +71,4 @@ This structure is intentionally compact and efficient for fast sweeps.
 
 1. Use this model for baseline trends and wide parameter scans.
 2. Compare against single-track before drawing conclusions on yaw-sensitive effects.
-3. Separate differences caused by calibration (`mu`) from structural model differences.
+3. Separate differences caused by calibration ($\mu$) from structural model differences.

@@ -22,12 +22,18 @@ Generate and interpret velocity-dependent G-G envelopes for both model families.
 
 ## Theoretical definition
 
-For each speed sample `v_j`, the script evaluates a feasible acceleration set:
+For each speed sample $v_j$, the script evaluates a feasible acceleration set:
 
-`E(v_j) = {(a_y, a_x) | a_y in [-a_y,lim(v_j), +a_y,lim(v_j)], a_x in [a_x,min, a_x,max]}`
+$$
+\mathcal{E}(v_j)=
+\left\{(a_y,a_x)\,\middle|\,
+a_y\in\left[-a_{y,\mathrm{lim}}(v_j),+a_{y,\mathrm{lim}}(v_j)\right],\;
+a_x\in\left[a_{x,\min}(v_j),a_{x,\max}(v_j)\right]
+\right\}
+$$
 
 In the exported arrays, this becomes a discretized family of G-G slices indexed
-by speed. The point-mass and single-track models provide `a_y,lim(v)` and
+by speed. The point-mass and single-track models provide $a_{y,\mathrm{lim}}(v)$ and
 longitudinal bounds via their own physical assumptions.
 
 ## Main artifacts
@@ -40,7 +46,7 @@ longitudinal bounds via their own physical assumptions.
 
 ## Potential learnings from the data
 
-1. At each speed, interpret the upper/lower `a_x` bounds at equal `a_y`.
+1. At each speed, interpret the upper/lower $a_x$ bounds at equal $a_y$.
 2. Compare drive and braking envelopes separately.
 3. Identify speed ranges where model disagreement is systematically largest.
 4. Use these ranges as focused inputs for lap-level model comparisons.
@@ -48,5 +54,5 @@ longitudinal bounds via their own physical assumptions.
 ## Common pitfalls
 
 1. Comparing envelopes at different speed grids.
-2. Mixing up signed `a_x` convention (braking is negative in exported minimum trace).
+2. Mixing up signed $a_x$ convention (braking is negative in exported minimum trace).
 3. Assuming envelope superiority at one speed implies lap-time superiority everywhere.
