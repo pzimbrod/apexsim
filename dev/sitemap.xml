@@ -1,75 +1,91 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://pzimbrod.github.io/pylapsim/dev/</loc>
+         <loc>https://pzimbrod.github.io/apexsim/dev/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
-         <loc>https://pzimbrod.github.io/pylapsim/dev/API/</loc>
+         <loc>https://pzimbrod.github.io/apexsim/dev/API/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
-         <loc>https://pzimbrod.github.io/pylapsim/dev/ASSUMPTIONS/</loc>
+         <loc>https://pzimbrod.github.io/apexsim/dev/ASSUMPTIONS/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
-         <loc>https://pzimbrod.github.io/pylapsim/dev/BACKENDS/</loc>
+         <loc>https://pzimbrod.github.io/apexsim/dev/BACKENDS/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
-         <loc>https://pzimbrod.github.io/pylapsim/dev/DEVELOPMENT/</loc>
+         <loc>https://pzimbrod.github.io/apexsim/dev/DEVELOPMENT/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
-         <loc>https://pzimbrod.github.io/pylapsim/dev/EXAMPLES/</loc>
+         <loc>https://pzimbrod.github.io/apexsim/dev/EXAMPLES/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
-         <loc>https://pzimbrod.github.io/pylapsim/dev/EXAMPLES_SPA/</loc>
+         <loc>https://pzimbrod.github.io/apexsim/dev/EXAMPLES_SYNTHETIC/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
-         <loc>https://pzimbrod.github.io/pylapsim/dev/EXAMPLES_SYNTHETIC/</loc>
+         <loc>https://pzimbrod.github.io/apexsim/dev/HOW_TO_USE/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
-         <loc>https://pzimbrod.github.io/pylapsim/dev/HOW_TO_USE/</loc>
+         <loc>https://pzimbrod.github.io/apexsim/dev/POINT_MASS_MODEL/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
-         <loc>https://pzimbrod.github.io/pylapsim/dev/POINT_MASS_MODEL/</loc>
+         <loc>https://pzimbrod.github.io/apexsim/dev/SINGLE_TRACK_MODEL/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
-         <loc>https://pzimbrod.github.io/pylapsim/dev/SINGLE_TRACK_MODEL/</loc>
+         <loc>https://pzimbrod.github.io/apexsim/dev/SOLVER/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
-         <loc>https://pzimbrod.github.io/pylapsim/dev/SOLVER/</loc>
+         <loc>https://pzimbrod.github.io/apexsim/dev/examples/spa/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
-         <loc>https://pzimbrod.github.io/pylapsim/dev/reference/analysis/</loc>
+         <loc>https://pzimbrod.github.io/apexsim/dev/examples/spa/model_comparison/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
-         <loc>https://pzimbrod.github.io/pylapsim/dev/reference/pylapsim/</loc>
+         <loc>https://pzimbrod.github.io/apexsim/dev/examples/spa/performance_envelope/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
-         <loc>https://pzimbrod.github.io/pylapsim/dev/reference/simulation/</loc>
+         <loc>https://pzimbrod.github.io/apexsim/dev/examples/spa/point_mass_lap/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
-         <loc>https://pzimbrod.github.io/pylapsim/dev/reference/tire/</loc>
+         <loc>https://pzimbrod.github.io/apexsim/dev/examples/spa/single_track_lap/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
-         <loc>https://pzimbrod.github.io/pylapsim/dev/reference/track/</loc>
+         <loc>https://pzimbrod.github.io/apexsim/dev/reference/analysis/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
     <url>
-         <loc>https://pzimbrod.github.io/pylapsim/dev/reference/vehicle/</loc>
+         <loc>https://pzimbrod.github.io/apexsim/dev/reference/apexsim/</loc>
+         <lastmod>2026-02-18</lastmod>
+    </url>
+    <url>
+         <loc>https://pzimbrod.github.io/apexsim/dev/reference/simulation/</loc>
+         <lastmod>2026-02-18</lastmod>
+    </url>
+    <url>
+         <loc>https://pzimbrod.github.io/apexsim/dev/reference/tire/</loc>
+         <lastmod>2026-02-18</lastmod>
+    </url>
+    <url>
+         <loc>https://pzimbrod.github.io/apexsim/dev/reference/track/</loc>
+         <lastmod>2026-02-18</lastmod>
+    </url>
+    <url>
+         <loc>https://pzimbrod.github.io/apexsim/dev/reference/vehicle/</loc>
          <lastmod>2026-02-18</lastmod>
     </url>
 </urlset>
