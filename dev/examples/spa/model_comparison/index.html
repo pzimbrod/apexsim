@@ -1423,7 +1423,10 @@ attribute to model structure rather than parameter mismatch.</p>
 <p>The calibration step fits an effective point-mass friction value so that
 point-mass lateral limits approximate single-track lateral limits over a speed set.
 Conceptually, this is a least-squares fit:</p>
-<p><code>mu* = argmin_mu sum_i (mu * a_n(v_i) - a_y,lim,single_track(v_i))^2</code></p>
+<div class="arithmatex">\[
+\mu^\star
+= \arg\min_{\mu}\sum_i\left(\mu\,a_n(v_i)-a_{y,\mathrm{lim},\mathrm{single\text{-}track}}(v_i)\right)^2
+\]</div>
 <p>This keeps cross-model comparison focused on structure, not arbitrary parameter
 offsets.</p>
 <h2 id="main-artifacts">Main artifacts<a class="headerlink" href="#main-artifacts" title="Permanent link">&para;</a></h2>

@@ -1423,10 +1423,16 @@
 <li>Makes speed dependence explicit in longitudinal/lateral coupling.</li>
 </ul>
 <h2 id="theoretical-definition">Theoretical definition<a class="headerlink" href="#theoretical-definition" title="Permanent link">&para;</a></h2>
-<p>For each speed sample <code>v_j</code>, the script evaluates a feasible acceleration set:</p>
-<p><code>E(v_j) = {(a_y, a_x) | a_y in [-a_y,lim(v_j), +a_y,lim(v_j)], a_x in [a_x,min, a_x,max]}</code></p>
+<p>For each speed sample <span class="arithmatex">\(v_j\)</span>, the script evaluates a feasible acceleration set:</p>
+<div class="arithmatex">\[
+\mathcal{E}(v_j)=
+\left\{(a_y,a_x)\,\middle|\,
+a_y\in\left[-a_{y,\mathrm{lim}}(v_j),+a_{y,\mathrm{lim}}(v_j)\right],\;
+a_x\in\left[a_{x,\min}(v_j),a_{x,\max}(v_j)\right]
+\right\}
+\]</div>
 <p>In the exported arrays, this becomes a discretized family of G-G slices indexed
-by speed. The point-mass and single-track models provide <code>a_y,lim(v)</code> and
+by speed. The point-mass and single-track models provide <span class="arithmatex">\(a_{y,\mathrm{lim}}(v)\)</span> and
 longitudinal bounds via their own physical assumptions.</p>
 <h2 id="main-artifacts">Main artifacts<a class="headerlink" href="#main-artifacts" title="Permanent link">&para;</a></h2>
 <ol>
@@ -1438,7 +1444,7 @@ longitudinal bounds via their own physical assumptions.</p>
 </ol>
 <h2 id="potential-learnings-from-the-data">Potential learnings from the data<a class="headerlink" href="#potential-learnings-from-the-data" title="Permanent link">&para;</a></h2>
 <ol>
-<li>At each speed, interpret the upper/lower <code>a_x</code> bounds at equal <code>a_y</code>.</li>
+<li>At each speed, interpret the upper/lower <span class="arithmatex">\(a_x\)</span> bounds at equal <span class="arithmatex">\(a_y\)</span>.</li>
 <li>Compare drive and braking envelopes separately.</li>
 <li>Identify speed ranges where model disagreement is systematically largest.</li>
 <li>Use these ranges as focused inputs for lap-level model comparisons.</li>
@@ -1446,7 +1452,7 @@ longitudinal bounds via their own physical assumptions.</p>
 <h2 id="common-pitfalls">Common pitfalls<a class="headerlink" href="#common-pitfalls" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Comparing envelopes at different speed grids.</li>
-<li>Mixing up signed <code>a_x</code> convention (braking is negative in exported minimum trace).</li>
+<li>Mixing up signed <span class="arithmatex">\(a_x\)</span> convention (braking is negative in exported minimum trace).</li>
 <li>Assuming envelope superiority at one speed implies lap-time superiority everywhere.</li>
 </ol>
 
