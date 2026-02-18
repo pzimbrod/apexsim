@@ -260,6 +260,30 @@ envelope = compute_performance_envelope(
 envelope_array = envelope.to_numpy()
 ```
 
+Optional: compute local scalar sensitivities (autodiff is default, finite
+difference remains available for regression checks):
+
+```python
+from apexsim.analysis import (
+    SensitivityParameter,
+    SensitivityRuntime,
+    compute_sensitivities,
+)
+
+def objective(params):
+    # Example scalar objective; replace by lap_time / energy KPI objective.
+    return params["mass"] ** 2 + 0.5 * params["drag_coefficient"]
+
+sens = compute_sensitivities(
+    objective=objective,
+    parameters=[
+        SensitivityParameter(name="mass", value=820.0, kind="physical"),
+        SensitivityParameter(name="drag_coefficient", value=0.92, kind="physical"),
+    ],
+    runtime=SensitivityRuntime(method="finite_difference"),
+)
+```
+
 Minimum review set:
 
 - lap time

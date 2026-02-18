@@ -85,6 +85,12 @@ Vehicle-model solver contract:
 - `apexsim.analysis.PerformanceEnvelopeNumerics`
 - `apexsim.analysis.PerformanceEnvelopeRuntime`
 - `apexsim.analysis.build_performance_envelope_config(...) -> PerformanceEnvelopeConfig`
+- `apexsim.analysis.SensitivityParameter`
+- `apexsim.analysis.SensitivityNumerics`
+- `apexsim.analysis.SensitivityRuntime`
+- `apexsim.analysis.SensitivityConfig`
+- `apexsim.analysis.build_sensitivity_config(...) -> SensitivityConfig`
+- `apexsim.analysis.compute_sensitivities(objective, parameters, ...) -> SensitivityResult`
 
 `LapResult` provides:
 
@@ -101,6 +107,13 @@ Vehicle-model solver contract:
 - sampled lateral-acceleration grid
 - max/min longitudinal acceleration grid
 - optional `.to_dataframe()` conversion for tabular studies
+
+`SensitivityResult` provides:
+
+- baseline scalar objective value
+- local sensitivities per parameter
+- method metadata (`autodiff` or `finite_difference`)
+- baseline parameter values and parameter kind (`physical` / `numerical`)
 
 ## 5. Minimal usage pattern
 
