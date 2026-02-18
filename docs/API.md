@@ -55,18 +55,24 @@ Terminology note:
 
 - `apexsim.simulation.RuntimeConfig`
 - `apexsim.simulation.NumericsConfig`
+- `apexsim.simulation.TransientConfig`
+- `apexsim.simulation.TransientNumericsConfig`
+- `apexsim.simulation.TransientRuntimeConfig`
 - `apexsim.simulation.SimulationConfig`
 - `apexsim.simulation.build_simulation_config(...)`
 - `apexsim.simulation.simulate_lap(track, model, config) -> LapResult`
 - `apexsim.simulation.solve_speed_profile_torch(track, model, config) -> TorchSpeedProfileResult`
+- `apexsim.simulation.solve_transient_lap_torch(track, model, config) -> TorchTransientProfileResult`
 
 Backend runtime controls:
 
 - `RuntimeConfig.compute_backend`: `"numpy"`, `"numba"`, or `"torch"`
+- `RuntimeConfig.solver_mode`: `"quasi_static"` or `"transient_oc"`
 - `RuntimeConfig.torch_device`: keep `"cpu"` for `numpy`/`numba`; use `"cpu"` or `"cuda:0"` for `torch`
 - `RuntimeConfig.torch_compile`: reserved flag, must currently remain `False` for simulation
 - `RuntimeConfig.initial_speed`: optional start speed at first track sample [m/s]
   (supports `0.0` for standing starts)
+- `TransientRuntimeConfig.driver_model`: `"pid"` (default) or `"optimal_control"`
 
 Constraint for differentiable solver use:
 
@@ -111,6 +117,8 @@ Vehicle-model solver contract:
 - yaw moment
 - front/rear axle loads
 - power and energy
+- solver mode identifier (`quasi_static` or `transient_oc`)
+- transient-only traces (`time`, `vx`, `vy`, `yaw_rate`, `steer_cmd`, `ax_cmd`)
 
 `PerformanceEnvelopeResult` provides:
 

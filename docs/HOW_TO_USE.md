@@ -12,6 +12,7 @@ vehicle models.
 Main strengths:
 
 - Quasi-steady lap-time simulation on arbitrary track centerlines.
+- Transient lap simulation through the same `simulate_lap(...)` API.
 - Interchangeable vehicle models behind one solver API.
 - Clear separation between physical inputs and numerical solver settings.
 - Reproducible engineering outputs (KPIs + standardized plots).
@@ -21,8 +22,7 @@ Main strengths:
 
 Current model boundaries are important for correct interpretation:
 
-- No full transient lap solver in production path yet.
-- No driver model or closed-loop control strategy model.
+- No human-driver identification or preview-control model yet.
 - No detailed powertrain/energy management model yet.
 - No full multi-body chassis compliance model.
 - No direct tire thermal/wear state evolution.
@@ -173,18 +173,51 @@ Simple setup:
 config = build_simulation_config(max_speed=115.0)
 ```
 
-Explicit setup:
+Explicit quasi-static setup:
 
 ```python
 from apexsim.simulation import NumericsConfig, RuntimeConfig, SimulationConfig
 
 config = SimulationConfig(
-    runtime=RuntimeConfig(max_speed=115.0, initial_speed=20.0),
+    runtime=RuntimeConfig(
+        max_speed=115.0,
+        initial_speed=20.0,
+        solver_mode="quasi_static",
+    ),
     numerics=NumericsConfig(
         min_speed=8.0,
         lateral_envelope_max_iterations=20,
         lateral_envelope_convergence_tolerance=0.1,
         transient_step=0.01,
+    ),
+)
+```
+
+Explicit transient setup:
+
+```python
+from apexsim.simulation import (
+    TransientConfig,
+    TransientNumericsConfig,
+    TransientRuntimeConfig,
+    build_simulation_config,
+)
+
+config_transient = build_simulation_config(
+    compute_backend="numpy",
+    solver_mode="transient_oc",
+    initial_speed=0.0,  # standing start
+    transient=TransientConfig(
+        numerics=TransientNumericsConfig(
+            integration_method="rk4",
+            max_iterations=60,
+            control_interval=8,  # optimize on coarser control mesh, then interpolate
+        ),
+        runtime=TransientRuntimeConfig(
+            ode_backend_policy="auto",
+            optimizer_backend_policy="auto",
+            verbosity=1,  # 1: optimizer progress, 2: +track progress
+        ),
     ),
 )
 ```
@@ -206,7 +239,7 @@ Selection rule:
 
 - `numpy`: robust baseline and easiest debugging.
 - `numba`: fastest CPU sweeps (currently with `PointMassModel` and `SingleTrackModel`).
-- `torch`: CPU/GPU execution and tensor-native workflows.
+- `torch`: CPU/GPU execution and AD-native workflows.
 
 For quantitative guidance, see [Compute Backends](BACKENDS.md).
 
@@ -221,6 +254,20 @@ Do not compensate wrong physics by over-tuning numerics.
 start behavior. Set it explicitly when you need controlled acceleration phases
 from the first sample (for example, straight-line bottleneck studies or
 standing starts with `initial_speed=0.0`).
+
+`solver_mode` selects the algorithm:
+
+- `quasi_static`: envelope-based speed-profile solver (default).
+- `transient_oc`: transient dynamic solver mode.
+  - Default driver model: PID (`TransientRuntimeConfig.driver_model="pid"`).
+  - Optional full optimizer path: `driver_model="optimal_control"`.
+
+Transient dependency note:
+
+- `driver_model="pid"` does not require transient optimizer extras.
+- `numpy` / `numba` with `driver_model="optimal_control"` requires `scipy`.
+- `torch` with `driver_model="optimal_control"` requires `torchdiffeq`.
+- Both are part of the default package dependencies.
 
 ## Step 5: Run the lap simulation
 
@@ -237,6 +284,12 @@ result = simulate_lap(track=track, model=model, config=config)
 - axle loads
 - power trace
 - integrated energy
+
+When `solver_mode="transient_oc"`, `result` also contains:
+
+- `time`
+- `vx`, `vy`, `yaw_rate`
+- `steer_cmd`, `ax_cmd`
 
 ## Step 6: Postprocess and export
 
@@ -341,6 +394,26 @@ torch_config = build_simulation_config(
 )
 torch_result = solve_speed_profile_torch(track=track, model=model, config=torch_config)
 lap_time_tensor = torch_result.lap_time
+```
+
+Optional: run the public differentiable torch transient API directly:
+
+```python
+from apexsim.simulation import solve_transient_lap_torch
+
+torch_transient_config = build_simulation_config(
+    compute_backend="torch",
+    solver_mode="transient_oc",
+    torch_device="cpu",
+    torch_compile=False,
+    initial_speed=0.0,
+)
+torch_transient_result = solve_transient_lap_torch(
+    track=track,
+    model=model,
+    config=torch_transient_config,
+)
+lap_time_tensor = torch_transient_result.lap_time
 ```
 
 Minimum review set:

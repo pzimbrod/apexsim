@@ -11,11 +11,20 @@ Supported backends are intentionally restricted to:
 - `numba`: CPU-only JIT-accelerated backend.
 - `torch`: CPU and GPU backend (device via `torch_device`).
 
+Solver modes:
+
+- `quasi_static` (default)
+- `transient_oc`
+
 The runtime validator enforces this policy:
 
 - `numpy` and `numba` require `torch_device="cpu"`.
 - `compute_backend="torch"` currently requires `torch_compile=False` so the
   solver path remains AD-compatible by default.
+- `solver_mode="transient_oc"` with `driver_model="optimal_control"` requires
+  backend-specific extras:
+  - `numpy` and `numba`: `scipy`
+  - `torch`: `torchdiffeq`
 
 ## Current model support
 
@@ -38,8 +47,8 @@ Use this practical rule-set:
 
 1. Use `numpy` when you need robust baseline behavior and easiest debugging.
 2. Use `numba` for large CPU parameter sweeps with `PointMassModel` or `SingleTrackModel`.
-3. Use `torch` when you need tensor-native workflows, GPU execution, or future
-   differentiable optimization pipelines.
+3. Use `torch` when you need tensor-native workflows, GPU execution, or AD-first
+   optimization workflows.
 
 ### Trade-offs at a glance
 
@@ -48,6 +57,13 @@ Use this practical rule-set:
 | `numpy` | CPU | Stable baseline, easy to inspect | Slower for huge batch studies |
 | `numba` | CPU | Very fast steady-state loops after JIT warmup | First call includes compile overhead |
 | `torch` | CPU/GPU | Backend portability, tensor ecosystem | Higher overhead for single-lap CPU workloads |
+
+## Transient dependency note
+
+The transient solver dependencies are included in the default install:
+
+- `scipy` for NumPy/Numba transient optimal-control paths
+- `torchdiffeq` for Torch transient optimal-control ODE integration
 
 ## Configuration examples
 

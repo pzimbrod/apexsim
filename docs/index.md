@@ -19,6 +19,7 @@ interchangeable vehicle models.
 - [Examples Overview](EXAMPLES.md)
 - [Synthetic Track Walkthrough](EXAMPLES_SYNTHETIC.md)
 - [Spa Walkthrough](examples/spa/index.md)
+- [Transient Solver Walkthrough](examples/transient/index.md)
 - [Solver Derivation](SOLVER.md)
 - [Single-Track Model](SINGLE_TRACK_MODEL.md)
 - [Point-Mass Model](POINT_MASS_MODEL.md)

@@ -1,7 +1,14 @@
 # Solver Mathematics
 
-This document explains how lap time is computed in the current quasi-steady solver
-implementation (`src/apexsim/simulation/profile.py`).
+This document explains the two solver modes available through
+`simulate_lap(track, model, config)`:
+
+- quasi-static speed-profile solver (`solver_mode="quasi_static"`)
+- transient dynamic solver (`solver_mode="transient_oc"`)
+
+Sections 1-10 cover the quasi-static formulation
+(`src/apexsim/simulation/profile.py`). Section 11 summarizes the transient
+formulations (`src/apexsim/simulation/transient_*.py`).
 
 ## 1. Discretization and State
 
@@ -162,7 +169,7 @@ The actual number of iterations used is reported as
 
 ## 8. Physical Scope and Limitations
 
-Current solver is intentionally quasi-steady:
+Quasi-static mode is intentionally envelope-based:
 
 - No transient tire relaxation dynamics.
 - No explicit driver/controller model in the speed-profile pass.
@@ -213,3 +220,90 @@ Current constraint:
 
 - `RuntimeConfig.torch_compile` must be `False` for
   `solve_speed_profile_torch`.
+
+## 11. Transient Solver Mathematics
+
+Transient mode supports two driver/control strategies over fixed track
+arc-length samples:
+
+- `driver_model="pid"` (default): closed-loop PID driver tracking a quasi-static
+  reference profile.
+- `driver_model="optimal_control"`: minimum-time optimal-control formulation.
+
+The OC objective is:
+$$
+\min_{u} \; T + w_{\text{lat}} J_{\text{lat}} + w_{\text{trk}} J_{\text{trk}} + w_{\text{sm}} J_{\text{sm}}.
+$$
+
+### 11.1 State and controls
+
+- Point-mass transient state:
+$$
+x_i = [v_i]
+$$
+- Single-track transient state:
+$$
+x_i = [v_{x,i}, v_{y,i}, r_i]
+$$
+where $r$ is yaw rate.
+
+Controls:
+
+- Point-mass: longitudinal command $a_{x,\text{cmd},i}$.
+- Single-track: $a_{x,\text{cmd},i}$ and steering command $\delta_i$.
+
+Single-track control bounds are physical model inputs:
+
+- `SingleTrackPhysics.max_steer_angle`
+- `SingleTrackPhysics.max_steer_rate`
+
+### 11.2 Dynamics propagation
+
+Arc-length segments are converted to bounded time steps:
+$$
+\Delta t_i = \operatorname{clip}\left(\frac{\Delta s_i}{\max(|v_i|,\varepsilon_v)},\; \Delta t_{\min},\; \Delta t_{\max}\right).
+$$
+
+Point-mass update:
+$$
+v_{i+1} = \operatorname{clip}(v_i + a_{x,\text{net},i}\Delta t_i, 0, v_{\max}).
+$$
+
+Single-track update uses Euler or RK4 integration of:
+$$
+\dot{x} = f(x, u),
+$$
+with a 3-DOF single-track dynamic model.
+
+### 11.3 Constraint penalties and objective terms
+
+The transient objective combines:
+
+- lap-time term $T$,
+- lateral-feasibility penalty $J_{\text{lat}}$,
+- single-track tracking penalty $J_{\text{trk}}$,
+- control smoothness penalty $J_{\text{sm}}$.
+
+Penalty weights come from `TransientNumericsConfig`:
+
+- `lateral_constraint_weight`
+- `tracking_weight`
+- `control_smoothness_weight`
+
+### 11.4 Backend strategies
+
+- NumPy: SciPy optimizer with transient simulation core.
+- Numba: numba backend dispatch with shared transient core semantics.
+- Torch: differentiable transient graph plus torch optimizer and `torchdiffeq`.
+
+All modes are accessed through the same public runner:
+
+```python
+result = simulate_lap(track=track, model=model, config=config)
+```
+
+Transient mode adds time/state/control traces in `LapResult`:
+
+- `time`
+- `vx`, `vy`, `yaw_rate`
+- `steer_cmd`, `ax_cmd`

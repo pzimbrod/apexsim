@@ -78,6 +78,10 @@ nav:
           - Point-Mass Lap: examples/spa/point_mass_lap.md
           - Model Comparison: examples/spa/model_comparison.md
           - Performance Envelope: examples/spa/performance_envelope.md
+      - Transient:
+          - Overview: examples/transient/index.md
+          - Point-Mass Lap: examples/transient/point_mass_lap.md
+          - Single-Track Lap: examples/transient/single_track_lap.md
       - Sensitivity:
           - Overview: examples/sensitivity/index.md
           - Synthetic Single-Track: examples/sensitivity/synthetic_single_track_sensitivity.ipynb
