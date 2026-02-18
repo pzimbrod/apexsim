@@ -243,6 +243,23 @@ export_standard_plots(result, output_dir)
 export_kpi_json(kpis, output_dir / "kpis.json")
 ```
 
+Optional: generate a speed-dependent performance envelope (G-G map family):
+
+```python
+from pylapsim.analysis import (
+    PerformanceEnvelopeNumerics,
+    PerformanceEnvelopePhysics,
+    compute_performance_envelope,
+)
+
+envelope = compute_performance_envelope(
+    model=model,
+    physics=PerformanceEnvelopePhysics(speed_min=20.0, speed_max=90.0),
+    numerics=PerformanceEnvelopeNumerics(speed_samples=31, lateral_accel_samples=41),
+)
+envelope_array = envelope.to_numpy()
+```
+
 Minimum review set:
 
 - lap time

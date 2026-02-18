@@ -80,6 +80,11 @@ Vehicle-model solver contract:
 - `pylapsim.analysis.compute_kpis(result) -> KpiSummary`
 - `pylapsim.analysis.export_standard_plots(result, output_dir)`
 - `pylapsim.analysis.export.export_kpi_json(kpis, path)`
+- `pylapsim.analysis.compute_performance_envelope(model, ...) -> PerformanceEnvelopeResult`
+- `pylapsim.analysis.PerformanceEnvelopePhysics`
+- `pylapsim.analysis.PerformanceEnvelopeNumerics`
+- `pylapsim.analysis.PerformanceEnvelopeRuntime`
+- `pylapsim.analysis.build_performance_envelope_config(...) -> PerformanceEnvelopeConfig`
 
 `LapResult` provides:
 
@@ -88,6 +93,14 @@ Vehicle-model solver contract:
 - yaw moment
 - front/rear axle loads
 - power and energy
+
+`PerformanceEnvelopeResult` provides:
+
+- speed support points
+- lateral-acceleration limits per speed
+- sampled lateral-acceleration grid
+- max/min longitudinal acceleration grid
+- optional `.to_dataframe()` conversion for tabular studies
 
 ## 5. Minimal usage pattern
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import unittest
 
+import pylapsim.analysis as analysis_pkg
 import pylapsim.simulation as simulation_pkg
 import pylapsim.track as track_pkg
 import pylapsim.vehicle as vehicle_pkg
@@ -30,6 +31,19 @@ class PackageExportTests(unittest.TestCase):
         self.assertIsNotNone(track_pkg.build_straight_track)
         self.assertIsNotNone(track_pkg.build_circular_track)
         self.assertIsNotNone(track_pkg.build_figure_eight_track)
+
+    def test_analysis_exports_resolve(self) -> None:
+        """Resolve analysis exports including performance-envelope helpers."""
+        self.assertIsNotNone(analysis_pkg.KpiSummary)
+        self.assertIsNotNone(analysis_pkg.compute_kpis)
+        self.assertIsNotNone(analysis_pkg.export_standard_plots)
+        self.assertIsNotNone(analysis_pkg.PerformanceEnvelopePhysics)
+        self.assertIsNotNone(analysis_pkg.PerformanceEnvelopeNumerics)
+        self.assertIsNotNone(analysis_pkg.PerformanceEnvelopeRuntime)
+        self.assertIsNotNone(analysis_pkg.PerformanceEnvelopeConfig)
+        self.assertIsNotNone(analysis_pkg.PerformanceEnvelopeResult)
+        self.assertIsNotNone(analysis_pkg.build_performance_envelope_config)
+        self.assertIsNotNone(analysis_pkg.compute_performance_envelope)
 
     def test_vehicle_lazy_exports_resolve(self) -> None:
         """Resolve vehicle exports that are provided lazily."""
