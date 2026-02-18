@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../../assets/icon.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
@@ -953,6 +953,145 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensitivity
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Sensitivity
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sensitivity/synthetic_single_track_sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synthetic Single-Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sensitivity/spa_single_track_sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spa Single-Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1462,14 +1601,18 @@ and interpret its outputs correctly.</p>
 <h2 id="theoretical-foundation">Theoretical foundation<a class="headerlink" href="#theoretical-foundation" title="Permanent link">&para;</a></h2>
 <p>The single-track model is a reduced planar vehicle model with front/rear axle
 representation. In quasi-steady use, the key balances are:</p>
-<ul>
-<li>lateral acceleration balance:
-  <code>a_y = (F_y,f + F_y,r) / m</code></li>
-<li>yaw moment balance signal:
-  <code>M_z = l_f F_y,f - l_r F_y,r</code></li>
-<li>path-kinematics coupling:
-  <code>a_y = v^2 * kappa</code></li>
-</ul>
+<p>Lateral acceleration balance:</p>
+<div class="arithmatex">\[
+a_y = \frac{F_{y,f} + F_{y,r}}{m}
+\]</div>
+<p>Yaw moment balance signal:</p>
+<div class="arithmatex">\[
+M_z = l_f F_{y,f} - l_r F_{y,r}
+\]</div>
+<p>Path-kinematics coupling:</p>
+<div class="arithmatex">\[
+a_y = v^2 \kappa
+\]</div>
 <p>Tire forces are generated from the Pacejka-style lateral model with load
 sensitivity. This makes axle-load distribution and aero effects directly
 relevant for cornering limits.</p>
@@ -1482,7 +1625,7 @@ relevant for cornering limits.</p>
 <h2 id="potential-learnings-from-the-data">Potential learnings from the data<a class="headerlink" href="#potential-learnings-from-the-data" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Check lap-time and speed-trace shape together, not separately.</li>
-<li>Validate that high <code>|a_y|</code> regions align with curved track sectors.</li>
+<li>Validate that high <span class="arithmatex">\(|a_y|\)</span> regions align with curved track sectors.</li>
 <li>Use yaw-moment traces as consistency diagnostics for lateral balance.</li>
 <li>If output magnitudes are implausible, re-check physical inputs before changing numerics.</li>
 </ol>

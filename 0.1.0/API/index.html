@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/icon.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
@@ -1007,6 +1007,145 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensitivity
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Sensitivity
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/sensitivity/synthetic_single_track_sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synthetic Single-Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/sensitivity/spa_single_track_sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spa Single-Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1591,12 +1730,20 @@
 <li><code>apexsim.simulation.SimulationConfig</code></li>
 <li><code>apexsim.simulation.build_simulation_config(...)</code></li>
 <li><code>apexsim.simulation.simulate_lap(track, model, config) -&gt; LapResult</code></li>
+<li><code>apexsim.simulation.solve_speed_profile_torch(track, model, config) -&gt; TorchSpeedProfileResult</code></li>
 </ul>
 <p>Backend runtime controls:</p>
 <ul>
 <li><code>RuntimeConfig.compute_backend</code>: <code>"numpy"</code>, <code>"numba"</code>, or <code>"torch"</code></li>
 <li><code>RuntimeConfig.torch_device</code>: keep <code>"cpu"</code> for <code>numpy</code>/<code>numba</code>; use <code>"cpu"</code> or <code>"cuda:0"</code> for <code>torch</code></li>
-<li><code>RuntimeConfig.torch_compile</code>: optional compile acceleration for <code>torch</code> only</li>
+<li><code>RuntimeConfig.torch_compile</code>: reserved flag, must currently remain <code>False</code> for simulation</li>
+<li><code>RuntimeConfig.initial_speed</code>: optional start speed at first track sample [m/s]
+  (supports <code>0.0</code> for standing starts)</li>
+</ul>
+<p>Constraint for differentiable solver use:</p>
+<ul>
+<li><code>solve_speed_profile_torch(...)</code> is the differentiable torch solver and requires
+  <code>RuntimeConfig.torch_compile = False</code></li>
 </ul>
 <p>See <a href="../BACKENDS/">Compute Backends</a> for selection guidance and benchmarks.</p>
 <p>Vehicle-model solver contract:</p>
@@ -1617,6 +1764,16 @@
 <li><code>apexsim.analysis.PerformanceEnvelopeNumerics</code></li>
 <li><code>apexsim.analysis.PerformanceEnvelopeRuntime</code></li>
 <li><code>apexsim.analysis.build_performance_envelope_config(...) -&gt; PerformanceEnvelopeConfig</code></li>
+<li><code>apexsim.analysis.SensitivityParameter</code></li>
+<li><code>apexsim.analysis.SensitivityNumerics</code></li>
+<li><code>apexsim.analysis.SensitivityRuntime</code></li>
+<li><code>apexsim.analysis.SensitivityConfig</code></li>
+<li><code>apexsim.analysis.build_sensitivity_config(...) -&gt; SensitivityConfig</code></li>
+<li><code>apexsim.analysis.compute_sensitivities(objective, parameters, ...) -&gt; SensitivityResult</code></li>
+<li><code>apexsim.analysis.SensitivityStudyParameter</code></li>
+<li><code>apexsim.analysis.SensitivityStudyResult</code></li>
+<li><code>apexsim.analysis.register_sensitivity_model_adapter(...) -&gt; None</code></li>
+<li><code>apexsim.analysis.run_lap_sensitivity_study(...) -&gt; SensitivityStudyResult</code></li>
 </ul>
 <p><code>LapResult</code> provides:</p>
 <ul>
@@ -1633,6 +1790,19 @@
 <li>sampled lateral-acceleration grid</li>
 <li>max/min longitudinal acceleration grid</li>
 <li>optional <code>.to_dataframe()</code> conversion for tabular studies</li>
+</ul>
+<p><code>SensitivityResult</code> provides:</p>
+<ul>
+<li>baseline scalar objective value</li>
+<li>local sensitivities per parameter</li>
+<li>method metadata (<code>autodiff</code> or <code>finite_difference</code>)</li>
+<li>baseline parameter values and parameter kind (<code>physical</code> / <code>numerical</code>)</li>
+</ul>
+<p><code>SensitivityStudyResult</code> provides:</p>
+<ul>
+<li>multi-objective lap sensitivity outputs (<code>lap_time_s</code>, <code>energy_kwh</code>)</li>
+<li>long-form tabular export via <code>.to_dataframe()</code></li>
+<li>compact parameter × objective table via <code>.to_pivot()</code></li>
 </ul>
 <h2 id="5-minimal-usage-pattern">5. Minimal usage pattern<a class="headerlink" href="#5-minimal-usage-pattern" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">track</span> <span class="o">=</span> <span class="n">load_track_csv</span><span class="p">(</span><span class="s2">&quot;data/spa_francorchamps.csv&quot;</span><span class="p">)</span>

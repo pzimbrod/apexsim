@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/icon.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
@@ -1079,6 +1079,145 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensitivity
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Sensitivity
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/sensitivity/synthetic_single_track_sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synthetic Single-Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/sensitivity/spa_single_track_sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spa Single-Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1823,7 +1962,7 @@ vehicle models.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">NumericsConfig</span><span class="p">,</span> <span class="n">RuntimeConfig</span><span class="p">,</span> <span class="n">SimulationConfig</span>
 
 <span class="n">config</span> <span class="o">=</span> <span class="n">SimulationConfig</span><span class="p">(</span>
-    <span class="n">runtime</span><span class="o">=</span><span class="n">RuntimeConfig</span><span class="p">(</span><span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">),</span>
+    <span class="n">runtime</span><span class="o">=</span><span class="n">RuntimeConfig</span><span class="p">(</span><span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">,</span> <span class="n">initial_speed</span><span class="o">=</span><span class="mf">20.0</span><span class="p">),</span>
     <span class="n">numerics</span><span class="o">=</span><span class="n">NumericsConfig</span><span class="p">(</span>
         <span class="n">min_speed</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span>
         <span class="n">lateral_envelope_max_iterations</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
@@ -1855,6 +1994,10 @@ vehicle models.</p>
 <li>Numerical parameters control solver stability and convergence.</li>
 </ul>
 <p>Do not compensate wrong physics by over-tuning numerics.</p>
+<p><code>initial_speed</code> is optional. If omitted (<code>None</code>), the solver keeps the legacy
+start behavior. Set it explicitly when you need controlled acceleration phases
+from the first sample (for example, straight-line bottleneck studies or
+standing starts with <code>initial_speed=0.0</code>).</p>
 <h2 id="step-5-run-the-lap-simulation">Step 5: Run the lap simulation<a class="headerlink" href="#step-5-run-the-lap-simulation" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">simulate_lap</span><span class="p">(</span><span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
 </code></pre></div>
@@ -1888,6 +2031,72 @@ vehicle models.</p>
     <span class="n">numerics</span><span class="o">=</span><span class="n">PerformanceEnvelopeNumerics</span><span class="p">(</span><span class="n">speed_samples</span><span class="o">=</span><span class="mi">31</span><span class="p">,</span> <span class="n">lateral_accel_samples</span><span class="o">=</span><span class="mi">41</span><span class="p">),</span>
 <span class="p">)</span>
 <span class="n">envelope_array</span> <span class="o">=</span> <span class="n">envelope</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+</code></pre></div>
+<p>Optional: run a local lap-sensitivity study (AD default on torch backend):</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.analysis</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SensitivityStudyParameter</span><span class="p">,</span>
+    <span class="n">SensitivityRuntime</span><span class="p">,</span>
+    <span class="n">run_lap_sensitivity_study</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">build_single_track_model</span><span class="p">(</span>
+    <span class="n">vehicle</span><span class="o">=</span><span class="n">vehicle</span><span class="p">,</span>
+    <span class="n">tires</span><span class="o">=</span><span class="n">tires</span><span class="p">,</span>
+    <span class="n">physics</span><span class="o">=</span><span class="n">SingleTrackPhysics</span><span class="p">(),</span>
+<span class="p">)</span>
+<span class="n">study</span> <span class="o">=</span> <span class="n">run_lap_sensitivity_study</span><span class="p">(</span>
+    <span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">simulation_config</span><span class="o">=</span><span class="n">config_torch</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">SensitivityStudyParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mass&quot;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">&quot;vehicle.mass&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Vehicle mass&quot;</span><span class="p">),</span>
+        <span class="n">SensitivityStudyParameter</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;drag_coefficient&quot;</span><span class="p">,</span>
+            <span class="n">target</span><span class="o">=</span><span class="s2">&quot;vehicle.drag_coefficient&quot;</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Drag coefficient&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">],</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Spa single-track&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">long_table</span> <span class="o">=</span> <span class="n">study</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
+<span class="n">pivot_table</span> <span class="o">=</span> <span class="n">study</span><span class="o">.</span><span class="n">to_pivot</span><span class="p">()</span>
+</code></pre></div>
+<p>To force finite differences (for regression checks), pass:</p>
+<div class="highlight"><pre><span></span><code><span class="n">study_fd</span> <span class="o">=</span> <span class="n">run_lap_sensitivity_study</span><span class="p">(</span>
+    <span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">simulation_config</span><span class="o">=</span><span class="n">config_torch</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="n">SensitivityStudyParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mass&quot;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">&quot;vehicle.mass&quot;</span><span class="p">)],</span>
+    <span class="n">runtime</span><span class="o">=</span><span class="n">SensitivityRuntime</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;finite_difference&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>To support custom model classes, register an adapter once:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.analysis</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_sensitivity_model_adapter</span>
+
+<span class="n">register_sensitivity_model_adapter</span><span class="p">(</span>
+    <span class="n">model_type</span><span class="o">=</span><span class="n">TwinTrackModel</span><span class="p">,</span>
+    <span class="n">model_factory</span><span class="o">=</span><span class="n">build_twin_track_model</span><span class="p">,</span>
+    <span class="n">model_inputs_getter</span><span class="o">=</span><span class="k">lambda</span> <span class="n">model</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;vehicle&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">vehicle</span><span class="p">,</span>
+        <span class="s2">&quot;tires&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">tires</span><span class="p">,</span>
+        <span class="s2">&quot;physics&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">physics</span><span class="p">,</span>
+        <span class="s2">&quot;numerics&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">numerics</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Optional: run the public differentiable torch speed-profile API directly
+for custom gradient workflows:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_simulation_config</span><span class="p">,</span> <span class="n">solve_speed_profile_torch</span>
+
+<span class="n">torch_config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span>
+    <span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;torch&quot;</span><span class="p">,</span>
+    <span class="n">torch_device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+    <span class="n">torch_compile</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># torch backend keeps AD-compatible behavior</span>
+    <span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">,</span>
+    <span class="n">initial_speed</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">torch_result</span> <span class="o">=</span> <span class="n">solve_speed_profile_torch</span><span class="p">(</span><span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">torch_config</span><span class="p">)</span>
+<span class="n">lap_time_tensor</span> <span class="o">=</span> <span class="n">torch_result</span><span class="o">.</span><span class="n">lap_time</span>
 </code></pre></div>
 <p>Minimum review set:</p>
 <ul>
