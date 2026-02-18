@@ -1,4 +1,4 @@
-"""Solver-facing bicycle vehicle model."""
+"""Solver-facing single-track vehicle model."""
 
 from __future__ import annotations
 
@@ -6,12 +6,15 @@ from dataclasses import dataclass
 
 from pylapsim.tire.models import AxleTireParameters
 from pylapsim.utils.exceptions import ConfigurationError
-from pylapsim.vehicle._bicycle_backends import BicycleNumbaBackendMixin, BicycleTorchBackendMixin
-from pylapsim.vehicle._bicycle_physics import BicyclePhysicalMixin
 from pylapsim.vehicle._model_base import EnvelopeVehicleModel
 from pylapsim.vehicle._physics_primitives import EnvelopePhysics
-from pylapsim.vehicle.bicycle.dynamics import BicycleDynamicsModel
+from pylapsim.vehicle._single_track_backends import (
+    SingleTrackNumbaBackendMixin,
+    SingleTrackTorchBackendMixin,
+)
+from pylapsim.vehicle._single_track_physics import SingleTrackPhysicalMixin
 from pylapsim.vehicle.params import VehicleParameters
+from pylapsim.vehicle.single_track.dynamics import SingleTrackDynamicsModel
 
 DEFAULT_MIN_LATERAL_ACCEL_LIMIT = 0.5
 DEFAULT_LATERAL_LIMIT_MAX_ITERATIONS = 12
@@ -19,8 +22,8 @@ DEFAULT_LATERAL_LIMIT_CONVERGENCE_TOLERANCE = 0.05
 
 
 @dataclass(frozen=True)
-class _BicycleLateralPhysics:
-    """Bicycle-specific lateral-envelope approximation inputs.
+class _SingleTrackLateralPhysics:
+    """Single-track-specific lateral-envelope approximation inputs.
 
     Args:
         peak_slip_angle: Quasi-steady peak slip angle used to evaluate tire
@@ -30,7 +33,7 @@ class _BicycleLateralPhysics:
     peak_slip_angle: float
 
     def validate(self) -> None:
-        """Validate bicycle-specific lateral approximation inputs.
+        """Validate single-track-specific lateral approximation inputs.
 
         Raises:
             pylapsim.utils.exceptions.ConfigurationError: If values are not
@@ -42,8 +45,8 @@ class _BicycleLateralPhysics:
 
 
 @dataclass(frozen=True)
-class BicyclePhysics:
-    """Physical and model-level inputs for the bicycle solver model.
+class SingleTrackPhysics:
+    """Physical and model-level inputs for the single-track solver model.
 
     Args:
         max_drive_accel: Maximum forward tire acceleration on flat road and zero
@@ -72,13 +75,13 @@ class BicyclePhysics:
         )
 
     @property
-    def bicycle_lateral(self) -> _BicycleLateralPhysics:
-        """Return bicycle-specific lateral approximation inputs.
+    def single_track_lateral(self) -> _SingleTrackLateralPhysics:
+        """Return single-track-specific lateral approximation inputs.
 
         Returns:
-            Internal bicycle-specific lateral-envelope representation.
+            Internal single-track-specific lateral-envelope representation.
         """
-        return _BicycleLateralPhysics(peak_slip_angle=self.peak_slip_angle)
+        return _SingleTrackLateralPhysics(peak_slip_angle=self.peak_slip_angle)
 
     def validate(self) -> None:
         """Validate physical adapter parameters.
@@ -88,12 +91,12 @@ class BicyclePhysics:
                 strictly positive.
         """
         self.envelope.validate()
-        self.bicycle_lateral.validate()
+        self.single_track_lateral.validate()
 
 
 @dataclass(frozen=True)
-class BicycleNumerics:
-    """Numerical controls for the bicycle solver model.
+class SingleTrackNumerics:
+    """Numerical controls for the single-track solver model.
 
     Args:
         min_lateral_accel_limit: Lower bound for lateral-acceleration iteration
@@ -126,29 +129,29 @@ class BicycleNumerics:
             raise ConfigurationError(msg)
 
 
-class BicycleModel(
-    BicycleTorchBackendMixin,
-    BicycleNumbaBackendMixin,
-    BicyclePhysicalMixin,
+class SingleTrackModel(
+    SingleTrackTorchBackendMixin,
+    SingleTrackNumbaBackendMixin,
+    SingleTrackPhysicalMixin,
     EnvelopeVehicleModel,
 ):
-    """Vehicle-model API implementation for the bicycle dynamics backend.
+    """Vehicle-model API implementation for the single-track dynamics backend.
 
     The class is intentionally composed from separate OOP layers:
 
-    - ``BicyclePhysicalMixin`` for backend-agnostic bicycle physics,
-    - ``BicycleNumbaBackendMixin`` for numba-specific solver adapter API,
-    - ``BicycleTorchBackendMixin`` for torch-specific solver adapter API.
+    - ``SingleTrackPhysicalMixin`` for backend-agnostic single-track physics,
+    - ``SingleTrackNumbaBackendMixin`` for numba-specific solver adapter API,
+    - ``SingleTrackTorchBackendMixin`` for torch-specific solver adapter API.
     """
 
     def __init__(
         self,
         vehicle: VehicleParameters,
         tires: AxleTireParameters,
-        physics: BicyclePhysics,
-        numerics: BicycleNumerics,
+        physics: SingleTrackPhysics,
+        numerics: SingleTrackNumerics,
     ) -> None:
-        """Initialize bicycle-backed solver adapter.
+        """Initialize single-track-backed solver adapter.
 
         Args:
             vehicle: Vehicle parameterization for dynamics and aero.
@@ -163,44 +166,44 @@ class BicycleModel(
         self.tires = tires
         self.physics = physics
         self.numerics = numerics
-        self._bicycle_lateral_physics = physics.bicycle_lateral
-        self._dynamics = BicycleDynamicsModel(vehicle, tires)
+        self._single_track_lateral_physics = physics.single_track_lateral
+        self._dynamics = SingleTrackDynamicsModel(vehicle, tires)
         super().__init__(vehicle=vehicle, envelope_physics=physics.envelope)
         self.validate()
 
     def _validate_backend(self) -> None:
-        """Validate bicycle-specific model configuration.
+        """Validate single-track-specific model configuration.
 
         Raises:
             pylapsim.utils.exceptions.ConfigurationError: If tire,
-                bicycle-physics, or numerical settings violate constraints.
+                single-track physics, or numerical settings violate constraints.
         """
         self.tires.validate()
-        self._bicycle_lateral_physics.validate()
+        self._single_track_lateral_physics.validate()
         self.numerics.validate()
 
 
-def build_bicycle_model(
+def build_single_track_model(
     vehicle: VehicleParameters,
     tires: AxleTireParameters,
-    physics: BicyclePhysics | None = None,
-    numerics: BicycleNumerics | None = None,
-) -> BicycleModel:
-    """Build a bicycle solver model with sensible numerical defaults.
+    physics: SingleTrackPhysics | None = None,
+    numerics: SingleTrackNumerics | None = None,
+) -> SingleTrackModel:
+    """Build a single-track solver model with sensible numerical defaults.
 
     Args:
         vehicle: Vehicle parameterization for dynamics and aero.
         tires: Front/rear Pacejka tire coefficients.
         physics: Optional physical model inputs for longitudinal and lateral
-            limits. Defaults to :class:`BicyclePhysics`.
-        numerics: Optional numerical controls. Defaults to :class:`BicycleNumerics`.
+            limits. Defaults to :class:`SingleTrackPhysics`.
+        numerics: Optional numerical controls. Defaults to :class:`SingleTrackNumerics`.
 
     Returns:
-        Fully validated solver-facing bicycle model.
+        Fully validated solver-facing single-track model.
     """
-    return BicycleModel(
+    return SingleTrackModel(
         vehicle=vehicle,
         tires=tires,
-        physics=physics or BicyclePhysics(),
-        numerics=numerics or BicycleNumerics(),
+        physics=physics or SingleTrackPhysics(),
+        numerics=numerics or SingleTrackNumerics(),
     )

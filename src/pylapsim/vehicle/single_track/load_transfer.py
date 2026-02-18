@@ -1,4 +1,4 @@
-"""Quasi-static normal-load estimation for bicycle-based simulation."""
+"""Quasi-static normal-load estimation for single_track-based simulation."""
 
 from __future__ import annotations
 

@@ -1,16 +1,21 @@
-# Bicycle Model
+# Single-Track Model
 
-This document defines the implemented bicycle backend in
-`src/pylapsim/vehicle/bicycle_model.py` and
-`src/pylapsim/vehicle/_bicycle_physics.py`.
+This document defines the implemented single-track backend in
+`src/pylapsim/vehicle/single_track_model.py` and
+`src/pylapsim/vehicle/_single_track_physics.py`.
 
-The bicycle backend is implemented as a physical extension of the
-point-mass physical core (`PointMassPhysicalMixin`), with bicycle-specific
+Terminology note:
+
+- `SingleTrack` in this package corresponds to the "bicycle model" terminology
+  frequently used in vehicle-dynamics literature.
+
+The single-track backend is implemented as a physical extension of the
+point-mass physical core (`PointMassPhysicalMixin`), with single-track-specific
 lateral force and diagnostic equations layered on top.
 
 ## 1. Scope
 
-The bicycle model keeps the solver API contract and adds axle-level lateral
+The single-track model keeps the solver API contract and adds axle-level lateral
 tire force modeling, quasi-static load transfer, and yaw-moment diagnostics.
 
 State assumptions in the lap-time solver context:
@@ -145,7 +150,7 @@ $$
 
 The backend reports at each operating point:
 
-- yaw moment from 3-DOF bicycle force balance,
+- yaw moment from 3-DOF single-track force balance,
 - front and rear axle normal loads,
 - tractive power:
 
@@ -154,13 +159,13 @@ P = \left(m a_x + D(v)\right)v.
 $$
 
 The solver uses quasi-steady envelopes for speed profile generation; the
-3-DOF bicycle dynamics model is used primarily for physically meaningful
+3-DOF single-track dynamics model is used primarily for physically meaningful
 analysis diagnostics (e.g., yaw-moment traces).
 
 ## 7. Equation-to-Code Mapping
 
 - lateral limit fixed-point:
-  `BicycleModel.lateral_accel_limit(...)`
+  `SingleTrackModel.lateral_accel_limit(...)`
 - Pacejka lateral force:
   `magic_formula_lateral(...)`
 - normal-load estimation:
@@ -168,14 +173,14 @@ analysis diagnostics (e.g., yaw-moment traces).
 - friction-circle scaling:
   `EnvelopeVehicleModel._friction_circle_scale(...)`
 - longitudinal accel/decel:
-  `BicycleModel.max_longitudinal_accel(...)`,
-  `BicycleModel.max_longitudinal_decel(...)`
+  `SingleTrackModel.max_longitudinal_accel(...)`,
+  `SingleTrackModel.max_longitudinal_decel(...)`
 - diagnostics:
-  `BicycleModel.diagnostics(...)`, `BicycleDynamicsModel.force_balance(...)`
+  `SingleTrackModel.diagnostics(...)`, `SingleTrackDynamicsModel.force_balance(...)`
 
 ## 8. Example
 
-- Bicycle standalone usage:
-  `examples/spa_lap_bicycle.py`
+- Single-track standalone usage:
+  `examples/spa_lap_single_track.py`
 - Side-by-side comparison against point-mass model:
   `examples/spa_model_comparison.py`

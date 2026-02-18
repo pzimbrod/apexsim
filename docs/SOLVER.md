@@ -43,7 +43,7 @@ with clipping to $[v_{\min}, v_{\max}]$.
 
 ### 2.1 Lateral Acceleration Capacity
 
-`BicycleModel.lateral_accel_limit(...)` solves a fixed-point problem because tire force capacity depends
+`SingleTrackModel.lateral_accel_limit(...)` solves a fixed-point problem because tire force capacity depends
 on normal load, and normal load depends on lateral acceleration through load transfer.
 
 For fixed speed $v$:
@@ -164,7 +164,7 @@ These simplifications keep the solver fast and stable, while preserving core con
 for lap-time studies.
 
 The same solver routine can be used with different backends implementing
-`VehicleModel`, including the bicycle and point-mass models.
+`VehicleModel`, including the single-track and point-mass models.
 
 ## 9. Equation-to-Code Mapping
 
@@ -174,7 +174,7 @@ The same solver routine can be used with different backends implementing
   - `src/pylapsim/simulation/envelope.py` (`lateral_speed_limit`)
   - `src/pylapsim/simulation/profile.py` (`solve_speed_profile`, `v_lat[idx] = ...`)
 - Friction-circle scaling $\lambda_i$ (vehicle-model dependent):
-  - `src/pylapsim/vehicle/bicycle_model.py` (`_friction_circle_scale`)
+  - `src/pylapsim/vehicle/single_track_model.py` (`_friction_circle_scale`)
 - Forward pass $v_{i+1}^2 = v_i^2 + 2a\Delta s$:
   - `src/pylapsim/simulation/profile.py` (`solve_speed_profile`, `next_speed_sq = ...`)
 - Backward pass braking feasibility:
@@ -184,7 +184,7 @@ The same solver routine can be used with different backends implementing
 - Segment time model $\Delta t_i = \Delta s_i / \bar v_i$:
   - `src/pylapsim/simulation/profile.py` (`_segment_dt`)
 - Lateral limit fixed-point update:
-  - `src/pylapsim/vehicle/bicycle_model.py` (`lateral_accel_limit`)
+  - `src/pylapsim/vehicle/single_track_model.py` (`lateral_accel_limit`)
 - Lateral envelope fixed-point convergence in speed domain:
   - `src/pylapsim/simulation/profile.py` (`for iteration_idx ...`, `max_delta_speed ...`)
 - Vehicle-model API contract consumed by the solver:

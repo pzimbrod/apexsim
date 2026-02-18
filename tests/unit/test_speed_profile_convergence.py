@@ -13,7 +13,7 @@ from pylapsim.simulation.torch_profile import solve_speed_profile_torch
 from pylapsim.tire.models import default_axle_tire_parameters
 from pylapsim.track.io import load_track_csv
 from pylapsim.utils.exceptions import ConfigurationError
-from pylapsim.vehicle import BicycleModel, BicycleNumerics, BicyclePhysics
+from pylapsim.vehicle import SingleTrackModel, SingleTrackNumerics, SingleTrackPhysics
 from tests.helpers import sample_vehicle_parameters
 
 NUMBA_AVAILABLE = importlib.util.find_spec("numba") is not None
@@ -28,15 +28,15 @@ class SpeedProfileConvergenceTests(unittest.TestCase):
         """Load shared track/model fixtures for convergence tests."""
         root = Path(__file__).resolve().parents[2]
         cls.track = load_track_csv(root / "data" / "spa_francorchamps.csv")
-        cls.model = BicycleModel(
+        cls.model = SingleTrackModel(
             vehicle=sample_vehicle_parameters(),
             tires=default_axle_tire_parameters(),
-            physics=BicyclePhysics(
+            physics=SingleTrackPhysics(
                 max_drive_accel=8.0,
                 max_brake_accel=16.0,
                 peak_slip_angle=0.12,
             ),
-            numerics=BicycleNumerics(
+            numerics=SingleTrackNumerics(
                 min_lateral_accel_limit=0.5,
                 lateral_limit_max_iterations=12,
                 lateral_limit_convergence_tolerance=0.05,
@@ -108,8 +108,8 @@ class SpeedProfileConvergenceTests(unittest.TestCase):
             solve_speed_profile_numba(track=self.track, model=self.model, config=config)
 
     @unittest.skipUnless(NUMBA_AVAILABLE, "Numba not installed")
-    def test_numba_profile_accepts_bicycle_model_backend_api(self) -> None:
-        """Run numba profile solve successfully with bicycle backend adapters."""
+    def test_numba_profile_accepts_single_track_model_backend_api(self) -> None:
+        """Run numba profile solve successfully with single_track backend adapters."""
         config = SimulationConfig(
             runtime=RuntimeConfig(
                 max_speed=115.0,
@@ -123,8 +123,8 @@ class SpeedProfileConvergenceTests(unittest.TestCase):
         self.assertGreater(result.lap_time, 0.0)
 
     @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
-    def test_torch_profile_accepts_bicycle_model_backend_api(self) -> None:
-        """Run torch profile solve successfully with bicycle backend adapters."""
+    def test_torch_profile_accepts_single_track_model_backend_api(self) -> None:
+        """Run torch profile solve successfully with single_track backend adapters."""
         config = SimulationConfig(
             runtime=RuntimeConfig(
                 max_speed=115.0,

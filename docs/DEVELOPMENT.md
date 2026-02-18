@@ -75,10 +75,10 @@ Keep parameter domains separate:
 - Physical model inputs:
   - `VehicleParameters`
   - `PacejkaParameters` / `AxleTireParameters`
-  - `BicyclePhysics`
+  - `SingleTrackPhysics`
 - Numerical/discretization controls:
   - `NumericsConfig`
-  - `BicycleNumerics`
+  - `SingleTrackNumerics`
 - Simulation runtime controls (non-physical scenario bounds):
   - `RuntimeConfig`
 
@@ -88,7 +88,7 @@ physical parameter dataclasses.
 Defaulting guidance:
 
 - Numerical controls may include stable defaults to keep quick-start simulations
-  robust (`NumericsConfig`, `BicycleNumerics`).
+  robust (`NumericsConfig`, `SingleTrackNumerics`).
 - Physical parameter classes should stay explicit and scenario-specific.
 
 ## Vehicle Model Architecture
@@ -101,7 +101,7 @@ The solver contract is represented at two levels:
   `EnvelopeVehicleModel` in `src/pylapsim/vehicle/_model_base.py`
   provides inheritance-based code organization for built-in backends.
 
-Built-in models (`BicycleModel`, `PointMassModel`) inherit the same base class
+Built-in models (`SingleTrackModel`, `PointMassModel`) inherit the same base class
 to share validation layering, friction-circle scaling, and net
 drag/grade-corrected longitudinal limits.
 
@@ -112,15 +112,13 @@ For backend-enabled models, keep backend adapters out of the physics layer:
   `src/pylapsim/vehicle/_point_mass_backends.py`.
 - Physics equations stay backend-agnostic.
 - Backend-specific methods (`numba`, `torch`) stay isolated in adapter mixins.
-- `BicycleModel` composes `src/pylapsim/vehicle/_bicycle_physics.py`,
+- `SingleTrackModel` composes `src/pylapsim/vehicle/_single_track_physics.py`,
   which extends `PointMassPhysicalMixin` to reuse the shared physical core.
-- Bicycle backend adapters live in `src/pylapsim/vehicle/_bicycle_backends.py`
+- Single-track backend adapters live in `src/pylapsim/vehicle/_single_track_backends.py`
   and mirror the point-mass backend adapter structure.
-- Bicycle-specific dynamics/supporting components live in
-  `src/pylapsim/vehicle/bicycle/` (for example `dynamics.py`,
+- Single-track-specific dynamics/supporting components live in
+  `src/pylapsim/vehicle/single_track/` (for example `dynamics.py`,
   `load_transfer.py`) to keep model-specific code grouped together.
-- Legacy module paths (`vehicle/bicycle_dynamics.py`, `vehicle/load_transfer.py`)
-  are lightweight compatibility re-exports only.
 
 ## Refreshing Spa Data
 

@@ -15,7 +15,7 @@ from pylapsim.simulation.runner import simulate_lap
 from pylapsim.tire.models import default_axle_tire_parameters
 from pylapsim.track.io import load_track_csv
 from pylapsim.utils.logging import configure_logging
-from pylapsim.vehicle import BicycleModel, BicycleNumerics, BicyclePhysics
+from pylapsim.vehicle import SingleTrackModel, SingleTrackNumerics, SingleTrackPhysics
 from tests.helpers import sample_vehicle_parameters
 
 
@@ -26,15 +26,15 @@ class AnalysisAndUtilsTests(unittest.TestCase):
         """Ensure standard plot files and KPI JSON export are generated."""
         root = Path(__file__).resolve().parents[2]
         track = load_track_csv(root / "data" / "spa_francorchamps.csv")
-        model = BicycleModel(
+        model = SingleTrackModel(
             vehicle=sample_vehicle_parameters(),
             tires=default_axle_tire_parameters(),
-            physics=BicyclePhysics(
+            physics=SingleTrackPhysics(
                 max_drive_accel=8.0,
                 max_brake_accel=16.0,
                 peak_slip_angle=0.12,
             ),
-            numerics=BicycleNumerics(
+            numerics=SingleTrackNumerics(
                 min_lateral_accel_limit=0.5,
                 lateral_limit_max_iterations=12,
                 lateral_limit_convergence_tolerance=0.05,

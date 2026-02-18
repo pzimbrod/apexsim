@@ -7,8 +7,12 @@ import unittest
 from pylapsim.tire import default_axle_tire_parameters
 from pylapsim.utils.constants import GRAVITY
 from pylapsim.vehicle.aero import aero_forces
-from pylapsim.vehicle.bicycle.dynamics import BicycleDynamicsModel, ControlInput, VehicleState
-from pylapsim.vehicle.bicycle.load_transfer import estimate_normal_loads
+from pylapsim.vehicle.single_track.dynamics import (
+    ControlInput,
+    SingleTrackDynamicsModel,
+    VehicleState,
+)
+from pylapsim.vehicle.single_track.load_transfer import estimate_normal_loads
 from tests.helpers import sample_vehicle_parameters
 
 
@@ -36,10 +40,10 @@ class VehicleDynamicsTests(unittest.TestCase):
         expected = vehicle.mass * GRAVITY + aero.downforce
         self.assertAlmostEqual(total, expected, delta=1e-6)
 
-    def test_bicycle_derivatives_are_finite(self) -> None:
+    def test_single_track_derivatives_are_finite(self) -> None:
         """Return finite derivatives for a representative dynamic state."""
         vehicle = sample_vehicle_parameters()
-        model = BicycleDynamicsModel(vehicle, default_axle_tire_parameters())
+        model = SingleTrackDynamicsModel(vehicle, default_axle_tire_parameters())
         state = VehicleState(vx=40.0, vy=0.7, yaw_rate=0.12)
         control = ControlInput(steer=0.05, longitudinal_accel_cmd=1.5)
 
@@ -76,10 +80,10 @@ class VehicleDynamicsTests(unittest.TestCase):
     def test_state_array_roundtrip_and_speed_sanitization(self) -> None:
         """Round-trip state conversion helpers and sanitize very low speeds."""
         state = VehicleState(vx=15.0, vy=-0.4, yaw_rate=0.2)
-        values = BicycleDynamicsModel.to_array(state)
-        restored = BicycleDynamicsModel.from_array(values)
+        values = SingleTrackDynamicsModel.to_array(state)
+        restored = SingleTrackDynamicsModel.from_array(values)
         self.assertEqual(restored, state)
-        self.assertGreater(BicycleDynamicsModel.sanitize_speed(0.0), 0.0)
+        self.assertGreater(SingleTrackDynamicsModel.sanitize_speed(0.0), 0.0)
 
 
 if __name__ == "__main__":

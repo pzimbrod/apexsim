@@ -65,7 +65,7 @@ def axle_lateral_forces(
     rear_axle_load: float,
     axle_params: AxleTireParameters,
 ) -> tuple[float, float]:
-    """Compute total front/rear axle lateral force for bicycle-equivalent tires.
+    """Compute total front/rear axle lateral force for single_track-equivalent tires.
 
     Args:
         front_slip_angle: Front axle equivalent slip angle [rad].

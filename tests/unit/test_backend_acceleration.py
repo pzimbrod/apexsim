@@ -13,10 +13,10 @@ import numpy as np
 from pylapsim.simulation import numba_profile, torch_profile
 from pylapsim.simulation.config import build_simulation_config
 from pylapsim.simulation.numba_profile import (
-    _bicycle_speed_profile_kernel,
-    _compiled_bicycle_numba_kernel,
     _compiled_numba_kernel,
+    _compiled_single_track_numba_kernel,
     _point_mass_speed_profile_kernel,
+    _single_track_speed_profile_kernel,
     solve_speed_profile_numba,
 )
 from pylapsim.track.io import load_track_csv
@@ -80,7 +80,7 @@ class BackendAccelerationTests(unittest.TestCase):
         """Reset backend caches so tests remain isolated."""
         torch_profile._COMPILED_SOLVER_CACHE.clear()
         numba_profile._COMPILED_NUMBA_KERNEL = None
-        numba_profile._COMPILED_BICYCLE_NUMBA_KERNEL = None
+        numba_profile._COMPILED_SINGLE_TRACK_NUMBA_KERNEL = None
 
     @staticmethod
     def _kernel_inputs() -> tuple[
@@ -127,7 +127,7 @@ class BackendAccelerationTests(unittest.TestCase):
         )
 
     @staticmethod
-    def _bicycle_kernel_inputs() -> tuple[
+    def _single_track_kernel_inputs() -> tuple[
         np.ndarray,
         np.ndarray,
         np.ndarray,
@@ -162,11 +162,11 @@ class BackendAccelerationTests(unittest.TestCase):
         int,
         float,
     ]:
-        """Build deterministic inputs for direct bicycle-kernel testing.
+        """Build deterministic inputs for direct single_track-kernel testing.
 
         Returns:
             Tuple of positional arguments expected by
-            ``_bicycle_speed_profile_kernel``.
+            ``_single_track_speed_profile_kernel``.
         """
         arc_length = np.array([0.0, 50.0, 120.0, 200.0, 280.0], dtype=np.float64)
         curvature = np.array([0.0, 0.012, 0.010, 0.0, -0.011], dtype=np.float64)
@@ -278,9 +278,9 @@ class BackendAccelerationTests(unittest.TestCase):
         self.assertEqual(int(compiled_result[3]), int(python_result[3]))
         self.assertAlmostEqual(float(compiled_result[4]), float(python_result[4]), places=11)
 
-    def test_python_bicycle_numba_kernel_executes_and_respects_bounds(self) -> None:
-        """Execute bicycle kernel in Python mode and verify physical invariants."""
-        args = self._bicycle_kernel_inputs()
+    def test_python_single_track_numba_kernel_executes_and_respects_bounds(self) -> None:
+        """Execute single_track kernel in Python mode and verify physical invariants."""
+        args = self._single_track_kernel_inputs()
         (
             arc_length,
             curvature,
@@ -318,7 +318,7 @@ class BackendAccelerationTests(unittest.TestCase):
         ) = args
 
         speed, longitudinal_accel, lateral_accel, lateral_iterations, lap_time = (
-            _bicycle_speed_profile_kernel(*args)
+            _single_track_speed_profile_kernel(*args)
         )
 
         self.assertEqual(speed.shape, arc_length.shape)
@@ -339,13 +339,13 @@ class BackendAccelerationTests(unittest.TestCase):
             self.assertAlmostEqual(float(longitudinal_accel[-1]), float(longitudinal_accel[-2]))
 
     @unittest.skipUnless(NUMBA_AVAILABLE, "Numba not installed")
-    def test_compiled_bicycle_numba_kernel_matches_python_kernel(self) -> None:
-        """Match compiled bicycle kernel output against Python reference kernel."""
-        kernel = _compiled_bicycle_numba_kernel()
-        self.assertIs(kernel, _compiled_bicycle_numba_kernel())
-        args = self._bicycle_kernel_inputs()
+    def test_compiled_single_track_numba_kernel_matches_python_kernel(self) -> None:
+        """Match compiled single_track kernel output against Python reference kernel."""
+        kernel = _compiled_single_track_numba_kernel()
+        self.assertIs(kernel, _compiled_single_track_numba_kernel())
+        args = self._single_track_kernel_inputs()
 
-        python_result = _bicycle_speed_profile_kernel(*args)
+        python_result = _single_track_speed_profile_kernel(*args)
         compiled_result = kernel(*args)
 
         np.testing.assert_allclose(compiled_result[0], python_result[0], rtol=1e-11, atol=1e-11)
@@ -449,14 +449,14 @@ class BackendAccelerationTests(unittest.TestCase):
         second_kernel = _compiled_numba_kernel()
         self.assertIs(first_kernel, second_kernel)
 
-    def test_compiled_bicycle_numba_kernel_returns_cached_callable(self) -> None:
-        """Return same callable on repeated bicycle-kernel compilation requests."""
+    def test_compiled_single_track_numba_kernel_returns_cached_callable(self) -> None:
+        """Return same callable on repeated single_track-kernel compilation requests."""
         if not NUMBA_AVAILABLE:
             self.skipTest("Numba not installed")
 
-        numba_profile._COMPILED_BICYCLE_NUMBA_KERNEL = None
-        first_kernel = _compiled_bicycle_numba_kernel()
-        second_kernel = _compiled_bicycle_numba_kernel()
+        numba_profile._COMPILED_SINGLE_TRACK_NUMBA_KERNEL = None
+        first_kernel = _compiled_single_track_numba_kernel()
+        second_kernel = _compiled_single_track_numba_kernel()
         self.assertIs(first_kernel, second_kernel)
 
 

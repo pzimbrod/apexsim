@@ -1,4 +1,4 @@
-"""3-DOF bicycle dynamics model."""
+"""3-DOF single-track dynamics model."""
 
 from __future__ import annotations
 
@@ -10,15 +10,15 @@ from pylapsim.tire.models import AxleTireParameters
 from pylapsim.tire.pacejka import axle_lateral_forces
 from pylapsim.utils.constants import SMALL_EPS
 from pylapsim.vehicle.aero import aero_forces
-from pylapsim.vehicle.bicycle.load_transfer import estimate_normal_loads
 from pylapsim.vehicle.params import VehicleParameters
+from pylapsim.vehicle.single_track.load_transfer import estimate_normal_loads
 
 MIN_SLIP_ANGLE_REFERENCE_SPEED = 0.5
 
 
 @dataclass(frozen=True)
 class VehicleState:
-    """Vehicle state for the bicycle model.
+    """Vehicle state for the single-track model.
 
     Args:
         vx: Longitudinal velocity in body frame [m/s].
@@ -33,7 +33,7 @@ class VehicleState:
 
 @dataclass(frozen=True)
 class ControlInput:
-    """Control inputs for the bicycle model.
+    """Control inputs for the single-track model.
 
     Args:
         steer: Front-wheel steering angle [rad].
@@ -63,11 +63,11 @@ class ForceBalance:
     yaw_moment: float
 
 
-class BicycleDynamicsModel:
-    """3-DOF bicycle dynamics model using lateral Pacejka tire forces."""
+class SingleTrackDynamicsModel:
+    """3-DOF single-track dynamics model using lateral Pacejka tire forces."""
 
     def __init__(self, vehicle: VehicleParameters, tires: AxleTireParameters) -> None:
-        """Initialize the bicycle model with validated parameters.
+        """Initialize the single-track model with validated parameters.
 
         Args:
             vehicle: Vehicle and chassis parameterization.

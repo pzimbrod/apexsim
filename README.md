@@ -8,7 +8,7 @@ A modular lap time simulation library for race cars with interchangeable vehicle
 
 ## Features
 
-- 3-DOF bicycle dynamics with aerodynamic effects
+- 3-DOF single-track dynamics with aerodynamic effects
 - Point-mass vehicle model with isotropic friction-circle coupling
 - Pacejka-style lateral tire model with load sensitivity
 - Track CSV parsing (`x, y, elevation, banking`) and geometry processing
@@ -17,6 +17,10 @@ A modular lap time simulation library for race cars with interchangeable vehicle
 - Compute backends: NumPy (CPU), Numba (CPU), and PyTorch (CPU/GPU)
 - Vehicle-model API abstraction for plugging in multiple model complexities
 - KPI and plot generation (lap time, g-levels, speed trace, yaw moment, G-G diagram)
+
+Terminology note:
+
+- `SingleTrack` in the API corresponds to the "bicycle model" naming often used in literature.
 
 ## Project Layout
 
@@ -34,7 +38,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -e '.[dev]'
 pytest
-python examples/spa_lap_bicycle.py
+python examples/spa_lap_single_track.py
 python examples/spa_lap_point_mass.py
 python examples/spa_model_comparison.py
 python examples/synthetic_track_scenarios.py
@@ -42,9 +46,9 @@ python examples/synthetic_track_scenarios.py
 
 ## Example Scripts
 
-- `examples/spa_lap_bicycle.py`: Bicycle model end-to-end run with KPI/plot export.
+- `examples/spa_lap_single_track.py`: Single-track model end-to-end run with KPI/plot export.
 - `examples/spa_lap_point_mass.py`: Point-mass model end-to-end run with KPI/plot export.
-- `examples/spa_model_comparison.py`: Side-by-side bicycle vs calibrated point-mass comparison with KPI deltas and speed-trace overlay.
+- `examples/spa_model_comparison.py`: Side-by-side single-track vs calibrated point-mass comparison with KPI deltas and speed-trace overlay.
 - `examples/synthetic_track_scenarios.py`: Straight, circle, and figure-eight benchmark runs for physical-consistency inspection.
 - `examples/backend_benchmarks.py`: Quantitative timing comparison for NumPy, Numba, and Torch backends.
 

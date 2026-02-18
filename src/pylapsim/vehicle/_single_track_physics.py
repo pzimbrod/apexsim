@@ -1,4 +1,4 @@
-"""Physical equations for bicycle models built on point-mass foundations."""
+"""Physical equations for single-track models built on point-mass foundations."""
 
 from __future__ import annotations
 
@@ -11,12 +11,16 @@ from pylapsim.tire.models import AxleTireParameters
 from pylapsim.tire.pacejka import magic_formula_lateral
 from pylapsim.utils.constants import GRAVITY, SMALL_EPS
 from pylapsim.vehicle._point_mass_physics import PointMassPhysicalMixin, PointMassPhysicalState
-from pylapsim.vehicle.bicycle.dynamics import BicycleDynamicsModel, ControlInput, VehicleState
-from pylapsim.vehicle.bicycle.load_transfer import estimate_normal_loads
+from pylapsim.vehicle.single_track.dynamics import (
+    ControlInput,
+    SingleTrackDynamicsModel,
+    VehicleState,
+)
+from pylapsim.vehicle.single_track.load_transfer import estimate_normal_loads
 
 
-class BicycleLateralPhysicsProtocol(Protocol):
-    """Protocol for bicycle-specific lateral physics settings."""
+class SingleTrackLateralPhysicsProtocol(Protocol):
+    """Protocol for single-track-specific lateral physics settings."""
 
     @property
     def peak_slip_angle(self) -> float:
@@ -30,8 +34,8 @@ class BicycleLateralPhysicsProtocol(Protocol):
         """Validate lateral-physics settings."""
 
 
-class BicycleNumericsProtocol(Protocol):
-    """Protocol for bicycle lateral-iteration numerical controls."""
+class SingleTrackNumericsProtocol(Protocol):
+    """Protocol for single-track lateral-iteration numerical controls."""
 
     @property
     def min_lateral_accel_limit(self) -> float:
@@ -61,23 +65,23 @@ class BicycleNumericsProtocol(Protocol):
         """Validate numerical settings."""
 
 
-class BicyclePhysicalState(PointMassPhysicalState, Protocol):
-    """Protocol describing state shared by bicycle physical mixins."""
+class SingleTrackPhysicalState(PointMassPhysicalState, Protocol):
+    """Protocol describing state shared by single-track physical mixins."""
 
     tires: AxleTireParameters
-    numerics: BicycleNumericsProtocol
-    _bicycle_lateral_physics: BicycleLateralPhysicsProtocol
-    _dynamics: BicycleDynamicsModel
+    numerics: SingleTrackNumericsProtocol
+    _single_track_lateral_physics: SingleTrackLateralPhysicsProtocol
+    _dynamics: SingleTrackDynamicsModel
 
 
-class BicyclePhysicalMixin(PointMassPhysicalMixin):
-    """Bicycle physical extension on top of point-mass physical foundations."""
+class SingleTrackPhysicalMixin(PointMassPhysicalMixin):
+    """SingleTrack physical extension on top of point-mass physical foundations."""
 
     if TYPE_CHECKING:
         tires: AxleTireParameters
-        numerics: BicycleNumericsProtocol
-        _bicycle_lateral_physics: BicycleLateralPhysicsProtocol
-        _dynamics: BicycleDynamicsModel
+        numerics: SingleTrackNumericsProtocol
+        _single_track_lateral_physics: SingleTrackLateralPhysicsProtocol
+        _dynamics: SingleTrackDynamicsModel
 
     def _axle_tire_loads(
         self,
@@ -136,7 +140,7 @@ class BicyclePhysicalMixin(PointMassPhysicalMixin):
         for _ in range(self.numerics.lateral_limit_max_iterations):
             fy_front = 2.0 * np.asarray(
                 magic_formula_lateral(
-                    self._bicycle_lateral_physics.peak_slip_angle,
+                    self._single_track_lateral_physics.peak_slip_angle,
                     front_tire_load,
                     self.tires.front,
                 ),
@@ -144,7 +148,7 @@ class BicyclePhysicalMixin(PointMassPhysicalMixin):
             )
             fy_rear = 2.0 * np.asarray(
                 magic_formula_lateral(
-                    self._bicycle_lateral_physics.peak_slip_angle,
+                    self._single_track_lateral_physics.peak_slip_angle,
                     rear_tire_load,
                     self.tires.rear,
                 ),
@@ -212,7 +216,7 @@ class BicyclePhysicalMixin(PointMassPhysicalMixin):
         )
 
     def _drive_tire_accel_limit(self, speed: float) -> float:
-        """Return pre-envelope tire-limited drive acceleration for bicycle model.
+        """Return pre-envelope tire-limited drive acceleration for single-track model.
 
         Args:
             speed: Vehicle speed [m/s].
@@ -224,7 +228,7 @@ class BicyclePhysicalMixin(PointMassPhysicalMixin):
         return float(self.envelope_physics.max_drive_accel)
 
     def _brake_tire_accel_limit(self, speed: float) -> float:
-        """Return pre-envelope tire-limited brake deceleration for bicycle model.
+        """Return pre-envelope tire-limited brake deceleration for single-track model.
 
         Args:
             speed: Vehicle speed [m/s].
@@ -242,7 +246,7 @@ class BicyclePhysicalMixin(PointMassPhysicalMixin):
         lateral_accel: float,
         curvature: float,
     ) -> ModelDiagnostics:
-        """Evaluate bicycle diagnostics for post-processing outputs.
+        """Evaluate single-track diagnostics for post-processing outputs.
 
         Args:
             speed: Vehicle speed [m/s].
@@ -280,7 +284,7 @@ class BicyclePhysicalMixin(PointMassPhysicalMixin):
         lateral_accel: np.ndarray,
         curvature: np.ndarray,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        """Evaluate bicycle diagnostics over vectorized operating points.
+        """Evaluate single-track diagnostics over vectorized operating points.
 
         Args:
             speed: Speed samples [m/s].

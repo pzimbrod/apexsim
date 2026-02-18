@@ -68,7 +68,7 @@ nav:
       - Synthetic Tracks: EXAMPLES_SYNTHETIC.md
       - Spa-Francorchamps: EXAMPLES_SPA.md
   - Vehicle Models:
-      - Bicycle Model: BICYCLE_MODEL.md
+      - Single-Track Model: SINGLE_TRACK_MODEL.md
       - Point-Mass Model: POINT_MASS_MODEL.md
   - API Reference:
       - Package: reference/pylapsim.md

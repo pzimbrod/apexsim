@@ -20,7 +20,7 @@ from pylapsim.vehicle.params import VehicleParameters
 
 if TYPE_CHECKING:
     from pylapsim.tire.models import AxleTireParameters
-    from pylapsim.vehicle.bicycle_model import BicycleNumerics, BicyclePhysics
+    from pylapsim.vehicle.single_track_model import SingleTrackNumerics, SingleTrackPhysics
 
 DEFAULT_CALIBRATION_SAMPLE_COUNT = 50
 
@@ -70,22 +70,22 @@ class PointMassPhysics:
 
 @dataclass(frozen=True)
 class PointMassCalibrationResult:
-    """Calibration outputs for matching point-mass lateral limits to bicycle behavior.
+    """Calibration outputs for matching point-mass lateral limits to single_track behavior.
 
     Args:
         friction_coefficient: Identified isotropic friction coefficient (-).
         speed_samples: Calibration speed samples used by the identification [m/s].
-        bicycle_lateral_limit: Bicycle-model lateral limit evaluated at
+        single_track_lateral_limit: SingleTrack-model lateral limit evaluated at
             ``speed_samples`` [m/s^2].
         normal_accel_limit: Point-mass normal acceleration budget evaluated at
             ``speed_samples`` [m/s^2].
         mu_samples: Per-sample effective friction ratios computed as
-            ``bicycle_lateral_limit / normal_accel_limit`` (-).
+            ``single_track_lateral_limit / normal_accel_limit`` (-).
     """
 
     friction_coefficient: float
     speed_samples: np.ndarray
-    bicycle_lateral_limit: np.ndarray
+    single_track_lateral_limit: np.ndarray
     normal_accel_limit: np.ndarray
     mu_samples: np.ndarray
 
@@ -149,26 +149,26 @@ def build_point_mass_model(
     return PointMassModel(vehicle=vehicle, physics=physics or PointMassPhysics())
 
 
-def calibrate_point_mass_friction_to_bicycle(
+def calibrate_point_mass_friction_to_single_track(
     vehicle: VehicleParameters,
     tires: AxleTireParameters,
-    bicycle_physics: BicyclePhysics | None = None,
-    bicycle_numerics: BicycleNumerics | None = None,
+    single_track_physics: SingleTrackPhysics | None = None,
+    single_track_numerics: SingleTrackNumerics | None = None,
     speed_samples: np.ndarray | None = None,
 ) -> PointMassCalibrationResult:
-    """Calibrate point-mass friction coefficient to bicycle lateral capability.
+    """Calibrate point-mass friction coefficient to single_track lateral capability.
 
     The calibration matches the point-mass isotropic lateral limit
-    ``mu * (g + F_down(v)/m)`` to the bicycle model's quasi-steady lateral limit
+    ``mu * (g + F_down(v)/m)`` to the single_track model's quasi-steady lateral limit
     in a least-squares sense over provided speed samples.
 
     Args:
         vehicle: Vehicle parameterization shared by both models.
-        tires: Tire parameters used by the bicycle model.
-        bicycle_physics: Optional bicycle-physics settings for calibration.
-            Defaults to :class:`pylapsim.vehicle.BicyclePhysics`.
-        bicycle_numerics: Optional bicycle numerical settings for calibration.
-            Defaults to :class:`pylapsim.vehicle.BicycleNumerics`.
+        tires: Tire parameters used by the single_track model.
+        single_track_physics: Optional single_track-physics settings for calibration.
+            Defaults to :class:`pylapsim.vehicle.SingleTrackPhysics`.
+        single_track_numerics: Optional single_track numerical settings for calibration.
+            Defaults to :class:`pylapsim.vehicle.SingleTrackNumerics`.
         speed_samples: Optional calibration speeds [m/s]. If omitted, a linear
             sweep from 10 to 90 m/s is used.
 
@@ -180,15 +180,19 @@ def calibrate_point_mass_friction_to_bicycle(
         pylapsim.utils.exceptions.ConfigurationError: If provided speed
             samples are empty or contain non-positive entries.
     """
-    from pylapsim.vehicle.bicycle_model import BicycleModel, BicycleNumerics, BicyclePhysics
+    from pylapsim.vehicle.single_track_model import (
+        SingleTrackModel,
+        SingleTrackNumerics,
+        SingleTrackPhysics,
+    )
 
-    bicycle_model = BicycleModel(
+    single_track_model = SingleTrackModel(
         vehicle=vehicle,
         tires=tires,
-        physics=bicycle_physics or BicyclePhysics(),
-        numerics=bicycle_numerics or BicycleNumerics(),
+        physics=single_track_physics or SingleTrackPhysics(),
+        numerics=single_track_numerics or SingleTrackNumerics(),
     )
-    bicycle_model.validate()
+    single_track_model.validate()
 
     if speed_samples is None:
         speeds = np.linspace(10.0, 90.0, DEFAULT_CALIBRATION_SAMPLE_COUNT, dtype=float)
@@ -201,17 +205,17 @@ def calibrate_point_mass_friction_to_bicycle(
             msg = "speed_samples must be strictly positive"
             raise ConfigurationError(msg)
 
-    bicycle_ay = np.asarray(
-        bicycle_model.lateral_accel_limit_batch(
+    single_track_ay = np.asarray(
+        single_track_model.lateral_accel_limit_batch(
             speed=speeds,
             banking=np.zeros_like(speeds, dtype=float),
         ),
         dtype=float,
     )
-    if bicycle_ay.shape != speeds.shape:
+    if single_track_ay.shape != speeds.shape:
         msg = (
-            "BicycleModel.lateral_accel_limit_batch returned an unexpected shape: "
-            f"expected {speeds.shape}, got {bicycle_ay.shape}"
+            "SingleTrackModel.lateral_accel_limit_batch returned an unexpected shape: "
+            f"expected {speeds.shape}, got {single_track_ay.shape}"
         )
         raise ConfigurationError(msg)
 
@@ -220,15 +224,15 @@ def calibrate_point_mass_friction_to_bicycle(
     downforce = downforce_scale * speed_sq
     normal_accel = np.maximum(GRAVITY + downforce / vehicle.mass, SMALL_EPS)
 
-    numerator = float(np.dot(normal_accel, bicycle_ay))
+    numerator = float(np.dot(normal_accel, single_track_ay))
     denominator = float(np.dot(normal_accel, normal_accel))
     mu_fit = max(numerator / max(denominator, SMALL_EPS), SMALL_EPS)
-    mu_samples = bicycle_ay / normal_accel
+    mu_samples = single_track_ay / normal_accel
 
     return PointMassCalibrationResult(
         friction_coefficient=float(mu_fit),
         speed_samples=speeds,
-        bicycle_lateral_limit=bicycle_ay,
+        single_track_lateral_limit=single_track_ay,
         normal_accel_limit=normal_accel,
         mu_samples=mu_samples,
     )

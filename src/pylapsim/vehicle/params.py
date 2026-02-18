@@ -1,4 +1,4 @@
-"""Vehicle parameter definitions for the 3-DOF bicycle model."""
+"""Vehicle parameter definitions for the 3-DOF single_track model."""
 
 from __future__ import annotations
 

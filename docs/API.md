@@ -33,19 +33,23 @@ Required CSV columns:
 
 - `pylapsim.tire.default_axle_tire_parameters() -> AxleTireParameters`
 
-### Bicycle backend
+### Single-track backend
 
-- `pylapsim.vehicle.BicycleModel(vehicle, tires, physics, numerics)`
-- `pylapsim.vehicle.BicyclePhysics`
-- `pylapsim.vehicle.BicycleNumerics`
-- `pylapsim.vehicle.build_bicycle_model(vehicle, tires, physics=None, numerics=None)`
+- `pylapsim.vehicle.SingleTrackModel(vehicle, tires, physics, numerics)`
+- `pylapsim.vehicle.SingleTrackPhysics`
+- `pylapsim.vehicle.SingleTrackNumerics`
+- `pylapsim.vehicle.build_single_track_model(vehicle, tires, physics=None, numerics=None)`
+
+Terminology note:
+
+- `SingleTrack` corresponds to the "bicycle model" terminology commonly used in literature.
 
 ### Point-mass backend
 
 - `pylapsim.vehicle.PointMassModel(vehicle, physics)`
 - `pylapsim.vehicle.PointMassPhysics`
 - `pylapsim.vehicle.build_point_mass_model(vehicle, physics=None)`
-- `pylapsim.vehicle.calibrate_point_mass_friction_to_bicycle(vehicle, tires, ...)`
+- `pylapsim.vehicle.calibrate_point_mass_friction_to_single_track(vehicle, tires, ...)`
 
 ## 3. Simulation setup and run
 
@@ -89,7 +93,7 @@ Vehicle-model solver contract:
 
 ```python
 track = load_track_csv("data/spa_francorchamps.csv")
-model = build_bicycle_model(vehicle=vehicle, tires=tires, physics=BicyclePhysics())
+model = build_single_track_model(vehicle=vehicle, tires=tires, physics=SingleTrackPhysics())
 config = build_simulation_config(max_speed=115.0)
 result = simulate_lap(track=track, model=model, config=config)
 kpis = compute_kpis(result)
@@ -100,5 +104,5 @@ kpis = compute_kpis(result)
 - [How to Use](HOW_TO_USE.md)
 - [Examples Overview](EXAMPLES.md)
 - [Solver](SOLVER.md)
-- [Bicycle Model](BICYCLE_MODEL.md)
+- [Single-Track Model](SINGLE_TRACK_MODEL.md)
 - [Point-Mass Model](POINT_MASS_MODEL.md)

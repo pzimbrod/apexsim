@@ -54,7 +54,7 @@ from pylapsim.simulation import build_simulation_config, simulate_lap
 from pylapsim.tire import default_axle_tire_parameters
 from pylapsim.track import load_track_csv
 from pylapsim.utils.constants import STANDARD_AIR_DENSITY
-from pylapsim.vehicle import BicyclePhysics, VehicleParameters, build_bicycle_model
+from pylapsim.vehicle import SingleTrackPhysics, VehicleParameters, build_single_track_model
 ```
 
 How to read these imports as an engineer:
@@ -106,13 +106,13 @@ Recommendation:
 
 ### 2.3 Choose model complexity
 
-Bicycle model:
+Single-track model:
 
 ```python
-model = build_bicycle_model(
+model = build_single_track_model(
     vehicle=vehicle,
     tires=tires,
-    physics=BicyclePhysics(),
+    physics=SingleTrackPhysics(),
 )
 ```
 
@@ -129,7 +129,7 @@ model = build_point_mass_model(
 
 When to use which:
 
-- Bicycle: better diagnostics (yaw moment, axle-load dynamics), better cornering interpretation.
+- Single-track (bicycle): better diagnostics (yaw moment, axle-load dynamics), better cornering interpretation.
 - Point-mass: fast baseline and sensitivity sweeps.
 
 ## Step 3: Load or generate track
@@ -205,7 +205,7 @@ config_torch = build_simulation_config(
 Selection rule:
 
 - `numpy`: robust baseline and easiest debugging.
-- `numba`: fastest CPU sweeps (currently with `PointMassModel`).
+- `numba`: fastest CPU sweeps (currently with `PointMassModel` and `SingleTrackModel`).
 - `torch`: CPU/GPU execution and tensor-native workflows.
 
 For quantitative guidance, see [Compute Backends](BACKENDS.md).

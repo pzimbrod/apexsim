@@ -18,6 +18,6 @@ interchangeable vehicle models.
 - [Synthetic Track Walkthrough](EXAMPLES_SYNTHETIC.md)
 - [Spa Walkthrough](EXAMPLES_SPA.md)
 - [Solver Derivation](SOLVER.md)
-- [Bicycle Model](BICYCLE_MODEL.md)
+- [Single-Track Model](SINGLE_TRACK_MODEL.md)
 - [Point-Mass Model](POINT_MASS_MODEL.md)
 - [Assumptions](ASSUMPTIONS.md)

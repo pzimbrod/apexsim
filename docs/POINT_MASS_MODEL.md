@@ -121,15 +121,15 @@ The backend reports:
 
 ## 8. Cross-Model Calibration
 
-To align the point-mass model with the bicycle model's lateral envelope, the
+To align the point-mass model with the single-track model's lateral envelope, the
 library provides:
 
-- `calibrate_point_mass_friction_to_bicycle(vehicle, tires, ...)`
+- `calibrate_point_mass_friction_to_single_track(vehicle, tires, ...)`
 
 This identifies an effective isotropic $\mu$ by least-squares fitting:
 
 $$
-\mu^\star = \arg\min_\mu \sum_i \left(\mu a_n(v_i) - a_{y,\text{lim,bicycle}}(v_i)\right)^2.
+\mu^\star = \arg\min_\mu \sum_i \left(\mu a_n(v_i) - a_{y,\text{lim,single-track}}(v_i)\right)^2.
 $$
 
 The comparison example uses this calibration before running the point-mass model.
@@ -138,5 +138,5 @@ The comparison example uses this calibration before running the point-mass model
 
 - Point-mass standalone usage:
   `examples/spa_lap_point_mass.py`
-- Side-by-side comparison against bicycle model:
+- Side-by-side comparison against single-track model:
   `examples/spa_model_comparison.py`

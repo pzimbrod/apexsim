@@ -27,7 +27,7 @@ class ModelDiagnostics:
 class VehicleModel(Protocol):
     """Protocol required by the quasi-steady lap-time solver.
 
-    Any vehicle model (bicycle, point-mass, twin-track, ...) can be used by the
+    Any vehicle model (single-track, point-mass, twin-track, ...) can be used by the
     simulation pipeline as long as it implements this interface.
     """
 

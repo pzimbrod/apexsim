@@ -14,7 +14,7 @@ from pylapsim.utils.constants import GRAVITY, SMALL_EPS
 from pylapsim.utils.exceptions import ConfigurationError
 
 NumbaPointMassProfileParameters = tuple[float, float, float, float, float, float]
-NumbaBicycleProfileParameters = tuple[
+NumbaSingleTrackProfileParameters = tuple[
     float,
     float,
     float,
@@ -41,13 +41,13 @@ NumbaBicycleProfileParameters = tuple[
     float,
     float,
 ]
-NumbaProfileParameters = NumbaPointMassProfileParameters | NumbaBicycleProfileParameters
+NumbaProfileParameters = NumbaPointMassProfileParameters | NumbaSingleTrackProfileParameters
 
 POINT_MASS_PARAMETER_COUNT = 6
-BICYCLE_PARAMETER_COUNT = 25
+SINGLE_TRACK_PARAMETER_COUNT = 25
 
 _COMPILED_NUMBA_KERNEL: Any | None = None
-_COMPILED_BICYCLE_NUMBA_KERNEL: Any | None = None
+_COMPILED_SINGLE_TRACK_NUMBA_KERNEL: Any | None = None
 
 
 class NumbaSpeedModel(Protocol):
@@ -251,7 +251,7 @@ def _point_mass_speed_profile_kernel(
     return v_profile, ax, ay, lateral_iterations, lap_time
 
 
-def _bicycle_speed_profile_kernel(
+def _single_track_speed_profile_kernel(
     arc_length: np.ndarray,
     curvature: np.ndarray,
     grade: np.ndarray,
@@ -286,7 +286,7 @@ def _bicycle_speed_profile_kernel(
     lateral_envelope_iterations_limit: int,
     lateral_envelope_convergence_tolerance: float,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, int, float]:
-    """Solve the bicycle profile in arc-length domain.
+    """Solve the single-track profile in arc-length domain.
 
     Args:
         arc_length: Cumulative arc-length samples [m].
@@ -616,19 +616,21 @@ def _compiled_numba_kernel() -> Any:
     return _COMPILED_NUMBA_KERNEL
 
 
-def _compiled_bicycle_numba_kernel() -> Any:
-    """Return cached ``njit``-compiled bicycle numba kernel callable.
+def _compiled_single_track_numba_kernel() -> Any:
+    """Return cached ``njit``-compiled single-track numba kernel callable.
 
     Returns:
         Compiled numba function object.
     """
-    global _COMPILED_BICYCLE_NUMBA_KERNEL
-    if _COMPILED_BICYCLE_NUMBA_KERNEL is not None:
-        return _COMPILED_BICYCLE_NUMBA_KERNEL
+    global _COMPILED_SINGLE_TRACK_NUMBA_KERNEL
+    if _COMPILED_SINGLE_TRACK_NUMBA_KERNEL is not None:
+        return _COMPILED_SINGLE_TRACK_NUMBA_KERNEL
 
     numba = _require_numba()
-    _COMPILED_BICYCLE_NUMBA_KERNEL = numba.njit(cache=False)(_bicycle_speed_profile_kernel)
-    return _COMPILED_BICYCLE_NUMBA_KERNEL
+    _COMPILED_SINGLE_TRACK_NUMBA_KERNEL = numba.njit(cache=False)(
+        _single_track_speed_profile_kernel
+    )
+    return _COMPILED_SINGLE_TRACK_NUMBA_KERNEL
 
 
 def solve_speed_profile_numba(
@@ -695,7 +697,7 @@ def solve_speed_profile_numba(
             int(config.numerics.lateral_envelope_max_iterations),
             float(config.numerics.lateral_envelope_convergence_tolerance),
         )
-    elif param_count == BICYCLE_PARAMETER_COUNT:
+    elif param_count == SINGLE_TRACK_PARAMETER_COUNT:
         (
             mass,
             downforce_scale,
@@ -705,9 +707,9 @@ def solve_speed_profile_numba(
             max_drive_accel,
             max_brake_accel,
             peak_slip_angle,
-            bicycle_min_lateral_accel_limit,
-            bicycle_lateral_limit_max_iterations,
-            bicycle_lateral_limit_convergence_tolerance,
+            single_track_min_lateral_accel_limit,
+            single_track_lateral_limit_max_iterations,
+            single_track_lateral_limit_convergence_tolerance,
             front_b,
             front_c,
             front_d,
@@ -722,8 +724,8 @@ def solve_speed_profile_numba(
             rear_reference_load,
             rear_load_sensitivity,
             rear_min_mu_scale,
-        ) = cast(NumbaBicycleProfileParameters, params)
-        kernel = _compiled_bicycle_numba_kernel()
+        ) = cast(NumbaSingleTrackProfileParameters, params)
+        kernel = _compiled_single_track_numba_kernel()
         speed, longitudinal_accel, lateral_accel, lateral_iterations, lap_time = kernel(
             np.asarray(track.arc_length, dtype=np.float64),
             np.asarray(track.curvature, dtype=np.float64),
@@ -737,9 +739,9 @@ def solve_speed_profile_numba(
             float(max_drive_accel),
             float(max_brake_accel),
             float(peak_slip_angle),
-            float(bicycle_min_lateral_accel_limit),
-            int(bicycle_lateral_limit_max_iterations),
-            float(bicycle_lateral_limit_convergence_tolerance),
+            float(single_track_min_lateral_accel_limit),
+            int(single_track_lateral_limit_max_iterations),
+            float(single_track_lateral_limit_convergence_tolerance),
             float(front_b),
             float(front_c),
             float(front_d),
@@ -763,7 +765,7 @@ def solve_speed_profile_numba(
         msg = (
             "numba_speed_profile_parameters returned unsupported parameter count: "
             f"{param_count}. Expected {POINT_MASS_PARAMETER_COUNT} (point-mass) "
-            f"or {BICYCLE_PARAMETER_COUNT} (bicycle)."
+            f"or {SINGLE_TRACK_PARAMETER_COUNT} (single-track)."
         )
         raise ConfigurationError(msg)
 

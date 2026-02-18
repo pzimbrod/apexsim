@@ -8,7 +8,7 @@ It is designed for race engineers and Students who want practical onboarding.
 After finishing all example pages, you should be able to:
 
 - set up a complete lap-time run from scratch,
-- choose between point-mass and bicycle model for a study goal,
+- choose between point-mass and single-track model for a study goal,
 - interpret key plots and KPI outputs correctly,
 - understand where model assumptions limit interpretation.
 
@@ -26,8 +26,8 @@ Reason:
 
 - `examples/synthetic_track_scenarios.py`
   - "Is my model setup physically consistent on canonical test geometries?"
-- `examples/spa_lap_bicycle.py`
-  - "What does the bicycle model predict on a realistic circuit?"
+- `examples/spa_lap_single_track.py`
+  - "What does the single-track model predict on a realistic circuit?"
 - `examples/spa_lap_point_mass.py`
   - "What is the low-complexity baseline on the same circuit?"
 - `examples/spa_model_comparison.py`

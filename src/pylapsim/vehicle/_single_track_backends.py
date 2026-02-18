@@ -1,4 +1,4 @@
-"""Backend adapters for the bicycle vehicle model."""
+"""Backend adapters for the single-track vehicle model."""
 
 from __future__ import annotations
 
@@ -8,34 +8,34 @@ from pylapsim.utils.constants import GRAVITY, SMALL_EPS
 from pylapsim.vehicle._point_mass_backends import PointMassTorchBackendMixin
 
 if TYPE_CHECKING:
-    from pylapsim.simulation.numba_profile import NumbaBicycleProfileParameters
+    from pylapsim.simulation.numba_profile import NumbaSingleTrackProfileParameters
     from pylapsim.tire.models import AxleTireParameters, PacejkaParameters
-    from pylapsim.vehicle._bicycle_physics import (
-        BicycleLateralPhysicsProtocol,
-        BicycleNumericsProtocol,
-    )
     from pylapsim.vehicle._physics_primitives import EnvelopePhysics
+    from pylapsim.vehicle._single_track_physics import (
+        SingleTrackLateralPhysicsProtocol,
+        SingleTrackNumericsProtocol,
+    )
     from pylapsim.vehicle.params import VehicleParameters
 
 
-class BicycleNumbaBackendMixin:
-    """Numba backend adapter methods for ``BicycleModel``."""
+class SingleTrackNumbaBackendMixin:
+    """Numba backend adapter methods for ``SingleTrackModel``."""
 
     if TYPE_CHECKING:
         vehicle: VehicleParameters
         tires: AxleTireParameters
-        numerics: BicycleNumericsProtocol
-        _bicycle_lateral_physics: BicycleLateralPhysicsProtocol
+        numerics: SingleTrackNumericsProtocol
+        _single_track_lateral_physics: SingleTrackLateralPhysicsProtocol
         envelope_physics: EnvelopePhysics
         _drag_force_scale: float
         _downforce_scale: float
         _front_downforce_share: float
 
-    def numba_speed_profile_parameters(self) -> NumbaBicycleProfileParameters:
-        """Return scalar coefficients consumed by the bicycle numba kernel.
+    def numba_speed_profile_parameters(self) -> NumbaSingleTrackProfileParameters:
+        """Return scalar coefficients consumed by the single-track numba kernel.
 
         Returns:
-            Tuple of bicycle kernel coefficients used by
+            Tuple of single-track kernel coefficients used by
             :func:`pylapsim.simulation.numba_profile.solve_speed_profile_numba`.
         """
         front = self.tires.front
@@ -48,7 +48,7 @@ class BicycleNumbaBackendMixin:
             float(self.vehicle.front_weight_fraction),
             float(self.envelope_physics.max_drive_accel),
             float(self.envelope_physics.max_brake_accel),
-            float(self._bicycle_lateral_physics.peak_slip_angle),
+            float(self._single_track_lateral_physics.peak_slip_angle),
             float(self.numerics.min_lateral_accel_limit),
             int(self.numerics.lateral_limit_max_iterations),
             float(self.numerics.lateral_limit_convergence_tolerance),
@@ -69,14 +69,14 @@ class BicycleNumbaBackendMixin:
         )
 
 
-class BicycleTorchBackendMixin(PointMassTorchBackendMixin):
-    """Torch backend adapter methods for ``BicycleModel``."""
+class SingleTrackTorchBackendMixin(PointMassTorchBackendMixin):
+    """Torch backend adapter methods for ``SingleTrackModel``."""
 
     if TYPE_CHECKING:
         vehicle: VehicleParameters
         tires: AxleTireParameters
-        numerics: BicycleNumericsProtocol
-        _bicycle_lateral_physics: BicycleLateralPhysicsProtocol
+        numerics: SingleTrackNumericsProtocol
+        _single_track_lateral_physics: SingleTrackLateralPhysicsProtocol
         envelope_physics: EnvelopePhysics
         _drag_force_scale: float
         _downforce_scale: float
@@ -159,7 +159,7 @@ class BicycleTorchBackendMixin(PointMassTorchBackendMixin):
         """
         torch = self._torch_module()
         front_tire_load, rear_tire_load = self._axle_tire_loads_torch(speed)
-        slip = self._bicycle_lateral_physics.peak_slip_angle
+        slip = self._single_track_lateral_physics.peak_slip_angle
 
         fy_front = 2.0 * self._magic_formula_lateral_torch(
             torch=torch,

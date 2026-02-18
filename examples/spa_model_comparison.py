@@ -1,4 +1,4 @@
-"""Compare bicycle and point-mass model lap simulations on Spa."""
+"""Compare single_track and point-mass model lap simulations on Spa."""
 
 from __future__ import annotations
 
@@ -19,12 +19,12 @@ from pylapsim.track import load_track_csv
 from pylapsim.utils import configure_logging
 from pylapsim.utils.constants import STANDARD_AIR_DENSITY
 from pylapsim.vehicle import (
-    BicyclePhysics,
     PointMassPhysics,
+    SingleTrackPhysics,
     VehicleParameters,
-    build_bicycle_model,
     build_point_mass_model,
-    calibrate_point_mass_friction_to_bicycle,
+    build_single_track_model,
+    calibrate_point_mass_friction_to_single_track,
 )
 
 
@@ -57,23 +57,23 @@ def _example_vehicle_parameters() -> VehicleParameters:
 
 
 def _export_speed_comparison_plot(
-    bicycle_result: LapResult,
+    single_track_result: LapResult,
     point_mass_result: LapResult,
     path: Path,
 ) -> None:
     """Export an overlay plot of speed traces for both vehicle models.
 
     Args:
-        bicycle_result: Lap simulation result from bicycle backend.
+        single_track_result: Lap simulation result from single_track backend.
         point_mass_result: Lap simulation result from point-mass backend.
         path: Output path for the figure.
     """
     fig, ax = plt.subplots(figsize=(10, 4.5), constrained_layout=True)
     ax.plot(
-        bicycle_result.track.arc_length,
-        bicycle_result.speed,
+        single_track_result.track.arc_length,
+        single_track_result.speed,
         lw=2.0,
-        label="Bicycle model",
+        label="SingleTrack model",
     )
     ax.plot(
         point_mass_result.track.arc_length,
@@ -91,24 +91,24 @@ def _export_speed_comparison_plot(
 
 
 def _kpi_delta_dict(
-    bicycle_result: LapResult,
+    single_track_result: LapResult,
     point_mass_result: LapResult,
 ) -> dict[str, float]:
-    """Compute comparison deltas between bicycle and point-mass outputs.
+    """Compute comparison deltas between single_track and point-mass outputs.
 
     Args:
-        bicycle_result: Lap simulation result from bicycle backend.
+        single_track_result: Lap simulation result from single_track backend.
         point_mass_result: Lap simulation result from point-mass backend.
 
     Returns:
         Dictionary with absolute and relative delta metrics.
     """
-    speed_delta = bicycle_result.speed - point_mass_result.speed
+    speed_delta = single_track_result.speed - point_mass_result.speed
     mean_point_speed = max(float(np.mean(point_mass_result.speed)), 1e-9)
     return {
-        "lap_time_delta": bicycle_result.lap_time - point_mass_result.lap_time,
+        "lap_time_delta": single_track_result.lap_time - point_mass_result.lap_time,
         "lap_time_delta_pct_of_point_mass": (
-            (bicycle_result.lap_time - point_mass_result.lap_time)
+            (single_track_result.lap_time - point_mass_result.lap_time)
             / point_mass_result.lap_time
             * 100.0
         ),
@@ -134,41 +134,44 @@ def main() -> None:
     vehicle = _example_vehicle_parameters()
     config = build_simulation_config()
     tires = default_axle_tire_parameters()
-    bicycle_physics = BicyclePhysics()
+    single_track_physics = SingleTrackPhysics()
 
-    bicycle_model = build_bicycle_model(
+    single_track_model = build_single_track_model(
         vehicle=vehicle,
         tires=tires,
-        physics=bicycle_physics,
+        physics=single_track_physics,
     )
-    bicycle_result = simulate_lap(track=track, model=bicycle_model, config=config)
-    calibration = calibrate_point_mass_friction_to_bicycle(
+    single_track_result = simulate_lap(track=track, model=single_track_model, config=config)
+    calibration = calibrate_point_mass_friction_to_single_track(
         vehicle=vehicle,
         tires=tires,
-        bicycle_physics=bicycle_physics,
-        speed_samples=bicycle_result.speed,
+        single_track_physics=single_track_physics,
+        speed_samples=single_track_result.speed,
     )
     point_mass_model = build_point_mass_model(
         vehicle=vehicle,
         physics=PointMassPhysics(
-            max_drive_accel=bicycle_physics.max_drive_accel,
-            max_brake_accel=bicycle_physics.max_brake_accel,
+            max_drive_accel=single_track_physics.max_drive_accel,
+            max_brake_accel=single_track_physics.max_brake_accel,
             friction_coefficient=calibration.friction_coefficient,
         ),
     )
     point_mass_result = simulate_lap(track=track, model=point_mass_model, config=config)
-    bicycle_kpis = compute_kpis(bicycle_result)
+    single_track_kpis = compute_kpis(single_track_result)
     point_mass_kpis = compute_kpis(point_mass_result)
-    delta = _kpi_delta_dict(bicycle_result=bicycle_result, point_mass_result=point_mass_result)
+    delta = _kpi_delta_dict(
+        single_track_result=single_track_result,
+        point_mass_result=point_mass_result,
+    )
 
-    bicycle_dir = output_dir / "bicycle"
+    single_track_dir = output_dir / "single_track"
     point_mass_dir = output_dir / "point_mass_calibrated"
-    export_standard_plots(bicycle_result, bicycle_dir)
+    export_standard_plots(single_track_result, single_track_dir)
     export_standard_plots(point_mass_result, point_mass_dir)
-    export_kpi_json(bicycle_kpis, bicycle_dir / "kpis.json")
+    export_kpi_json(single_track_kpis, single_track_dir / "kpis.json")
     export_kpi_json(point_mass_kpis, point_mass_dir / "kpis.json")
     _export_speed_comparison_plot(
-        bicycle_result=bicycle_result,
+        single_track_result=single_track_result,
         point_mass_result=point_mass_result,
         path=output_dir / "speed_trace_comparison.png",
     )
@@ -181,23 +184,23 @@ def main() -> None:
             "mu_max": float(np.max(calibration.mu_samples)),
             "sample_count": int(calibration.speed_samples.size),
         },
-        "bicycle_kpis": asdict(bicycle_kpis),
+        "single_track_kpis": asdict(single_track_kpis),
         "point_mass_kpis": asdict(point_mass_kpis),
-        "delta_bicycle_minus_point_mass": delta,
+        "delta_single_track_minus_point_mass": delta,
     }
     (output_dir / "comparison_kpis.json").write_text(
         json.dumps(comparison_payload, indent=2),
         encoding="utf-8",
     )
 
-    logger.info("Bicycle lap time: %.2f s", bicycle_kpis.lap_time)
+    logger.info("SingleTrack lap time: %.2f s", single_track_kpis.lap_time)
     logger.info(
         "Point-mass (calibrated) lap time: %.2f s | fitted mu: %.3f",
         point_mass_kpis.lap_time,
         calibration.friction_coefficient,
     )
     logger.info(
-        "Delta (bicycle - point-mass): %.2f s (%.2f %%)",
+        "Delta (single_track - point-mass): %.2f s (%.2f %%)",
         delta["lap_time_delta"],
         delta["lap_time_delta_pct_of_point_mass"],
     )

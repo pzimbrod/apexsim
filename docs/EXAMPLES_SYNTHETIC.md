@@ -49,7 +49,7 @@ Interpretation:
 - no explicit yaw state,
 - yaw moment output is structurally zero by design.
 
-If your study requires yaw-moment dynamics, switch to bicycle model.
+If your study requires yaw-moment dynamics, switch to single-track model.
 
 ### 2.3 Solver setup
 
@@ -154,7 +154,7 @@ Expected:
 ## 9. Common mistakes and fixes
 
 1. Expecting nonzero yaw moment with point-mass model.
-   - Use bicycle model if yaw diagnostics are required.
+   - Use single-track model if yaw diagnostics are required.
 2. Treating seam points as steady-state evidence.
    - trim boundary points before concluding.
 3. Assuming `max_speed` is always reached.

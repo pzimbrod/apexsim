@@ -1,6 +1,6 @@
 # Assumptions and Limitations
 
-- Base vehicle dynamics are 3-DOF (`vx`, `vy`, `yaw_rate`) with bicycle abstraction.
+- Base vehicle dynamics are 3-DOF (`vx`, `vy`, `yaw_rate`) with single-track abstraction.
 - Point-mass backend is available as an alternative model and assumes zero yaw moment
   in diagnostics by construction.
 - Tire model implements Pacejka-style lateral force only in this phase.

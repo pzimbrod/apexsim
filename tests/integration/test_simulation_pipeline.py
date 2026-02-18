@@ -18,7 +18,7 @@ from pylapsim.simulation.config import (
 from pylapsim.simulation.runner import simulate_lap
 from pylapsim.tire.models import default_axle_tire_parameters
 from pylapsim.track.io import load_track_csv
-from pylapsim.vehicle import BicycleModel, BicycleNumerics, BicyclePhysics
+from pylapsim.vehicle import SingleTrackModel, SingleTrackNumerics, SingleTrackPhysics
 from tests.helpers import sample_vehicle_parameters
 
 NUMBA_AVAILABLE = importlib.util.find_spec("numba") is not None
@@ -32,15 +32,15 @@ class SimulationPipelineTests(unittest.TestCase):
         """Verify that the full Spa pipeline returns plausible KPI ranges."""
         root = Path(__file__).resolve().parents[2]
         track = load_track_csv(root / "data" / "spa_francorchamps.csv")
-        model = BicycleModel(
+        model = SingleTrackModel(
             vehicle=sample_vehicle_parameters(),
             tires=default_axle_tire_parameters(),
-            physics=BicyclePhysics(
+            physics=SingleTrackPhysics(
                 max_drive_accel=8.0,
                 max_brake_accel=16.0,
                 peak_slip_angle=0.12,
             ),
-            numerics=BicycleNumerics(
+            numerics=SingleTrackNumerics(
                 min_lateral_accel_limit=0.5,
                 lateral_limit_max_iterations=12,
                 lateral_limit_convergence_tolerance=0.05,
@@ -72,15 +72,15 @@ class SimulationPipelineTests(unittest.TestCase):
         self.assertGreater(len(result.speed), 100)
 
     @unittest.skipUnless(NUMBA_AVAILABLE, "Numba not installed")
-    def test_numba_backend_matches_numpy_backend_for_bicycle(self) -> None:
-        """Match numba and NumPy solver outputs for bicycle backend."""
+    def test_numba_backend_matches_numpy_backend_for_single_track(self) -> None:
+        """Match numba and NumPy solver outputs for single_track backend."""
         root = Path(__file__).resolve().parents[2]
         track = load_track_csv(root / "data" / "spa_francorchamps.csv")
-        model = BicycleModel(
+        model = SingleTrackModel(
             vehicle=sample_vehicle_parameters(),
             tires=default_axle_tire_parameters(),
-            physics=BicyclePhysics(),
-            numerics=BicycleNumerics(),
+            physics=SingleTrackPhysics(),
+            numerics=SingleTrackNumerics(),
         )
 
         numpy_result = simulate_lap(
@@ -110,15 +110,15 @@ class SimulationPipelineTests(unittest.TestCase):
         self.assertAlmostEqual(numba_result.lap_time, numpy_result.lap_time, places=10)
 
     @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
-    def test_torch_backend_matches_numpy_backend_for_bicycle(self) -> None:
-        """Match torch and NumPy solver outputs for bicycle backend."""
+    def test_torch_backend_matches_numpy_backend_for_single_track(self) -> None:
+        """Match torch and NumPy solver outputs for single_track backend."""
         root = Path(__file__).resolve().parents[2]
         track = load_track_csv(root / "data" / "spa_francorchamps.csv")
-        model = BicycleModel(
+        model = SingleTrackModel(
             vehicle=sample_vehicle_parameters(),
             tires=default_axle_tire_parameters(),
-            physics=BicyclePhysics(),
-            numerics=BicycleNumerics(),
+            physics=SingleTrackPhysics(),
+            numerics=SingleTrackNumerics(),
         )
 
         numpy_result = simulate_lap(

@@ -8,7 +8,7 @@ Use this after the synthetic-track tutorial.
 ## What this tutorial helps you do
 
 - Run realistic full-lap simulations on Spa.
-- Understand the difference between bicycle and point-mass outputs.
+- Understand the difference between single-track and point-mass outputs.
 - Build a reproducible model-comparison workflow.
 - Interpret outputs within the limits of a quasi-steady solver.
 
@@ -24,7 +24,7 @@ Each script follows the same structure:
 
 Only the vehicle-model backend differs.
 
-## 2. `examples/spa_lap_bicycle.py` (bicycle baseline)
+## 2. `examples/spa_lap_single_track.py` (single-track baseline)
 
 ### 2.1 Why start here?
 
@@ -44,7 +44,7 @@ track = load_track_csv(project_root / "data" / "spa_francorchamps.csv")
 ```python
 vehicle = _example_vehicle_parameters()
 tires = default_axle_tire_parameters()
-model = build_bicycle_model(vehicle=vehicle, tires=tires, physics=BicyclePhysics())
+model = build_single_track_model(vehicle=vehicle, tires=tires, physics=SingleTrackPhysics())
 ```
 
 - Configure and run:
@@ -98,7 +98,7 @@ model = build_point_mass_model(
 
 ### 3.3 Interpretation
 
-- faster and simpler than bicycle,
+- faster and simpler than single-track,
 - no yaw-state dynamics,
 - yaw moment reported as zero by construction.
 
@@ -110,8 +110,8 @@ It demonstrates how to quantify value added by model complexity, not just compar
 
 ### 4.2 Sequence
 
-1. Run bicycle model.
-2. Calibrate point-mass friction to bicycle lateral envelope.
+1. Run single-track model.
+2. Calibrate point-mass friction to single-track lateral envelope.
 3. Run calibrated point-mass model.
 4. Export KPI deltas and speed overlay.
 
@@ -127,7 +127,7 @@ Recommended order:
 
 1. Vehicle mass and aero parameters.
 2. Tire parameters.
-3. Model physics limits (`BicyclePhysics` / `PointMassPhysics`).
+3. Model physics limits (`SingleTrackPhysics` / `PointMassPhysics`).
 4. Numerical solver settings (only if required for convergence robustness).
 
 This minimizes risk of hiding physical mis-modeling behind numerical tuning.
@@ -141,7 +141,7 @@ This minimizes risk of hiding physical mis-modeling behind numerical tuning.
 
 ## 7. Practical limitations to keep in mind
 
-Even with bicycle model, this remains a quasi-steady solver workflow.
+Even with single-track model, this remains a quasi-steady solver workflow.
 Use caution when drawing conclusions about:
 
 - highly transient driver actions,
@@ -150,7 +150,7 @@ Use caution when drawing conclusions about:
 
 ## 8. Suggested study workflow
 
-1. Start from `spa_lap_bicycle.py`.
+1. Start from `spa_lap_single_track.py`.
 2. Run `spa_lap_point_mass.py`.
 3. Run `spa_model_comparison.py`.
 4. Calibrate/adjust parameters and rerun all three for consistency.
@@ -158,7 +158,7 @@ Use caution when drawing conclusions about:
 ## Run commands
 
 ```bash
-python examples/spa_lap_bicycle.py
+python examples/spa_lap_single_track.py
 python examples/spa_lap_point_mass.py
 python examples/spa_model_comparison.py
 ```

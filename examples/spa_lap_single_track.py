@@ -12,7 +12,7 @@ from pylapsim.tire import default_axle_tire_parameters
 from pylapsim.track import load_track_csv
 from pylapsim.utils import configure_logging
 from pylapsim.utils.constants import STANDARD_AIR_DENSITY
-from pylapsim.vehicle import BicyclePhysics, VehicleParameters, build_bicycle_model
+from pylapsim.vehicle import SingleTrackPhysics, VehicleParameters, build_single_track_model
 
 
 def _example_vehicle_parameters() -> VehicleParameters:
@@ -53,10 +53,10 @@ def main() -> None:
 
     vehicle = _example_vehicle_parameters()
     tires = default_axle_tire_parameters()
-    model = build_bicycle_model(
+    model = build_single_track_model(
         vehicle=vehicle,
         tires=tires,
-        physics=BicyclePhysics(),
+        physics=SingleTrackPhysics(),
     )
     config = build_simulation_config()
 

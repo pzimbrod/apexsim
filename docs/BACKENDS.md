@@ -21,7 +21,12 @@ The runtime validator enforces this policy:
 Backend support is model-dependent:
 
 - `PointMassModel`: supports `numpy`, `numba`, `torch`.
-- `BicycleModel`: supports `numpy`, `numba`, `torch`.
+- `SingleTrackModel`: supports `numpy`, `numba`, `torch`.
+
+Terminology note:
+
+- `SingleTrackModel` corresponds to the "bicycle model" terminology often used
+  in literature.
 
 If you request a backend that a model does not implement, the solver raises a
 clear `ConfigurationError` describing the missing model-side methods.
@@ -31,7 +36,7 @@ clear `ConfigurationError` describing the missing model-side methods.
 Use this practical rule-set:
 
 1. Use `numpy` when you need robust baseline behavior and easiest debugging.
-2. Use `numba` for large CPU parameter sweeps with `PointMassModel` or `BicycleModel`.
+2. Use `numba` for large CPU parameter sweeps with `PointMassModel` or `SingleTrackModel`.
 3. Use `torch` when you need tensor-native workflows, GPU execution, or future
    differentiable optimization pipelines.
 

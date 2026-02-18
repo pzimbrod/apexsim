@@ -22,9 +22,9 @@ from pylapsim.track import (
 from pylapsim.utils import configure_logging
 from pylapsim.utils.constants import STANDARD_AIR_DENSITY
 from pylapsim.vehicle import (
-    BicyclePhysics,
+    SingleTrackPhysics,
     VehicleParameters,
-    build_bicycle_model,
+    build_single_track_model,
 )
 
 STRAIGHT_LENGTH = 1_000.0
@@ -93,7 +93,7 @@ def main() -> None:
 
     vehicle = _example_vehicle_parameters()
     tires = default_axle_tire_parameters()
-    model = build_bicycle_model(vehicle=vehicle, tires=tires, physics=BicyclePhysics())
+    model = build_single_track_model(vehicle=vehicle, tires=tires, physics=SingleTrackPhysics())
     config = build_simulation_config(max_speed=115.0)
 
     tracks = {

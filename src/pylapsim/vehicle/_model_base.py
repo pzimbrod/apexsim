@@ -15,7 +15,7 @@ from pylapsim.vehicle.params import VehicleParameters
 class EnvelopeVehicleModel(VehicleModelBase):
     """Shared base class for vehicle models with envelope-limited longitudinal force.
 
-    This base class centralizes common quasi-steady logic used by bicycle and
+    This base class centralizes common quasi-steady logic used by single_track and
     point-mass backends:
     - parameter validation layering,
     - friction-circle longitudinal scaling,

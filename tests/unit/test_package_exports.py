@@ -33,16 +33,16 @@ class PackageExportTests(unittest.TestCase):
 
     def test_vehicle_lazy_exports_resolve(self) -> None:
         """Resolve vehicle exports that are provided lazily."""
-        self.assertIsNotNone(vehicle_pkg.BicycleModel)
-        self.assertIsNotNone(vehicle_pkg.BicycleDynamicsModel)
-        self.assertIsNotNone(vehicle_pkg.BicyclePhysics)
-        self.assertIsNotNone(vehicle_pkg.BicycleNumerics)
-        self.assertIsNotNone(vehicle_pkg.build_bicycle_model)
+        self.assertIsNotNone(vehicle_pkg.SingleTrackModel)
+        self.assertIsNotNone(vehicle_pkg.SingleTrackDynamicsModel)
+        self.assertIsNotNone(vehicle_pkg.SingleTrackPhysics)
+        self.assertIsNotNone(vehicle_pkg.SingleTrackNumerics)
+        self.assertIsNotNone(vehicle_pkg.build_single_track_model)
         self.assertIsNotNone(vehicle_pkg.PointMassModel)
         self.assertIsNotNone(vehicle_pkg.PointMassPhysics)
         self.assertIsNotNone(vehicle_pkg.PointMassCalibrationResult)
         self.assertIsNotNone(vehicle_pkg.build_point_mass_model)
-        self.assertIsNotNone(vehicle_pkg.calibrate_point_mass_friction_to_bicycle)
+        self.assertIsNotNone(vehicle_pkg.calibrate_point_mass_friction_to_single_track)
 
     def test_lazy_export_raises_for_missing_symbol(self) -> None:
         """Raise ``AttributeError`` for unknown lazy export names."""

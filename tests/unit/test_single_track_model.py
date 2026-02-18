@@ -1,4 +1,4 @@
-"""Unit tests for the solver-facing bicycle model."""
+"""Unit tests for the solver-facing single_track model."""
 
 from __future__ import annotations
 
@@ -9,30 +9,30 @@ import numpy as np
 from pylapsim.tire.models import default_axle_tire_parameters
 from pylapsim.utils.exceptions import ConfigurationError
 from pylapsim.vehicle import (
-    BicycleModel,
-    BicycleNumerics,
-    BicyclePhysics,
-    build_bicycle_model,
+    SingleTrackModel,
+    SingleTrackNumerics,
+    SingleTrackPhysics,
+    build_single_track_model,
 )
 from tests.helpers import sample_vehicle_parameters
 
 
-def _build_bicycle_model() -> BicycleModel:
-    """Build a representative solver-facing bicycle model for tests.
+def _build_single_track_model() -> SingleTrackModel:
+    """Build a representative solver-facing single_track model for tests.
 
     Returns:
-        Configured bicycle model instance with explicit physical and numerical
+        Configured single_track model instance with explicit physical and numerical
         settings.
     """
-    return BicycleModel(
+    return SingleTrackModel(
         vehicle=sample_vehicle_parameters(),
         tires=default_axle_tire_parameters(),
-        physics=BicyclePhysics(
+        physics=SingleTrackPhysics(
             max_drive_accel=8.0,
             max_brake_accel=16.0,
             peak_slip_angle=0.12,
         ),
-        numerics=BicycleNumerics(
+        numerics=SingleTrackNumerics(
             min_lateral_accel_limit=0.5,
             lateral_limit_max_iterations=12,
             lateral_limit_convergence_tolerance=0.05,
@@ -40,25 +40,25 @@ def _build_bicycle_model() -> BicycleModel:
     )
 
 
-class BicycleModelTests(unittest.TestCase):
-    """Validate the model API implementation for the bicycle backend."""
+class SingleTrackModelTests(unittest.TestCase):
+    """Validate the model API implementation for the single_track backend."""
 
     def test_physics_validation_rejects_nonpositive_limits(self) -> None:
         """Reject non-positive configured drive and brake limits."""
         with self.assertRaises(ConfigurationError):
-            BicyclePhysics(
+            SingleTrackPhysics(
                 max_drive_accel=0.0,
                 max_brake_accel=16.0,
                 peak_slip_angle=0.12,
             ).validate()
         with self.assertRaises(ConfigurationError):
-            BicyclePhysics(
+            SingleTrackPhysics(
                 max_drive_accel=8.0,
                 max_brake_accel=0.0,
                 peak_slip_angle=0.12,
             ).validate()
         with self.assertRaises(ConfigurationError):
-            BicyclePhysics(
+            SingleTrackPhysics(
                 max_drive_accel=8.0,
                 max_brake_accel=16.0,
                 peak_slip_angle=0.0,
@@ -67,19 +67,19 @@ class BicycleModelTests(unittest.TestCase):
     def test_numerics_validation_rejects_invalid_values(self) -> None:
         """Reject invalid numerical settings for lateral limit iteration."""
         with self.assertRaises(ConfigurationError):
-            BicycleNumerics(
+            SingleTrackNumerics(
                 min_lateral_accel_limit=0.0,
                 lateral_limit_max_iterations=12,
                 lateral_limit_convergence_tolerance=0.05,
             ).validate()
         with self.assertRaises(ConfigurationError):
-            BicycleNumerics(
+            SingleTrackNumerics(
                 min_lateral_accel_limit=0.5,
                 lateral_limit_max_iterations=0,
                 lateral_limit_convergence_tolerance=0.05,
             ).validate()
         with self.assertRaises(ConfigurationError):
-            BicycleNumerics(
+            SingleTrackNumerics(
                 min_lateral_accel_limit=0.5,
                 lateral_limit_max_iterations=12,
                 lateral_limit_convergence_tolerance=0.0,
@@ -87,7 +87,7 @@ class BicycleModelTests(unittest.TestCase):
 
     def test_diagnostics_are_finite(self) -> None:
         """Return finite diagnostic signals for a representative operating point."""
-        model = _build_bicycle_model()
+        model = _build_single_track_model()
         diagnostics = model.diagnostics(
             speed=45.0,
             longitudinal_accel=1.2,
@@ -102,7 +102,7 @@ class BicycleModelTests(unittest.TestCase):
 
     def test_uphill_reduces_available_acceleration(self) -> None:
         """Reduce available forward acceleration on positive grade."""
-        model = _build_bicycle_model()
+        model = _build_single_track_model()
         ay_required = 0.0
         on_flat = model.max_longitudinal_accel(
             speed=50.0,
@@ -121,7 +121,7 @@ class BicycleModelTests(unittest.TestCase):
 
     def test_lateral_limit_batch_matches_scalar_api(self) -> None:
         """Match vectorized lateral-limit output against scalar API evaluation."""
-        model = _build_bicycle_model()
+        model = _build_single_track_model()
         speed = np.array([12.0, 37.0, 68.0], dtype=float)
         banking = np.array([0.01, 0.03, -0.02], dtype=float)
 
@@ -137,7 +137,7 @@ class BicycleModelTests(unittest.TestCase):
 
     def test_diagnostics_batch_matches_scalar_api(self) -> None:
         """Match vectorized diagnostics output against scalar API evaluation."""
-        model = _build_bicycle_model()
+        model = _build_single_track_model()
         speed = np.array([25.0, 44.0, 61.0], dtype=float)
         longitudinal_accel = np.array([1.0, 0.2, -1.4], dtype=float)
         lateral_accel = np.array([6.0, 9.0, 7.5], dtype=float)
@@ -172,24 +172,24 @@ class BicycleModelTests(unittest.TestCase):
 
     def test_friction_circle_returns_zero_when_limit_degenerates(self) -> None:
         """Return zero longitudinal capacity when lateral limit is degenerate."""
-        model = _build_bicycle_model()
+        model = _build_single_track_model()
         self.assertEqual(
             model._friction_circle_scale(lateral_accel_required=5.0, lateral_accel_limit=0.0),
             0.0,
         )
 
-    def test_build_bicycle_model_uses_default_numerics(self) -> None:
+    def test_build_single_track_model_uses_default_numerics(self) -> None:
         """Build a model with default numerical controls when omitted."""
-        model = build_bicycle_model(
+        model = build_single_track_model(
             vehicle=sample_vehicle_parameters(),
             tires=default_axle_tire_parameters(),
-            physics=BicyclePhysics(
+            physics=SingleTrackPhysics(
                 max_drive_accel=8.0,
                 max_brake_accel=16.0,
                 peak_slip_angle=0.12,
             ),
         )
-        self.assertEqual(model.numerics, BicycleNumerics())
+        self.assertEqual(model.numerics, SingleTrackNumerics())
 
 
 if __name__ == "__main__":
