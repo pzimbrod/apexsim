@@ -43,18 +43,20 @@ result = simulate_lap(track=track, model=model, config=config)
 The single-track model is a reduced planar vehicle model with front/rear axle
 representation. In quasi-steady use, the key balances are:
 
-- lateral acceleration balance:
-  $$
-  a_y = \frac{F_{y,f} + F_{y,r}}{m}
-  $$
-- yaw moment balance signal:
-  $$
-  M_z = l_f F_{y,f} - l_r F_{y,r}
-  $$
-- path-kinematics coupling:
-  $$
-  a_y = v^2 \kappa
-  $$
+Lateral acceleration balance:
+$$
+a_y = \frac{F_{y,f} + F_{y,r}}{m}
+$$
+
+Yaw moment balance signal:
+$$
+M_z = l_f F_{y,f} - l_r F_{y,r}
+$$
+
+Path-kinematics coupling:
+$$
+a_y = v^2 \kappa
+$$
 
 Tire forces are generated from the Pacejka-style lateral model with load
 sensitivity. This makes axle-load distribution and aero effects directly
