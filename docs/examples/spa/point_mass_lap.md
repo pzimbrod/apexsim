@@ -46,16 +46,19 @@ The point-mass model uses an isotropic acceleration envelope with aero coupling.
 Typical relations are:
 
 Normal-acceleration budget:
+
 $$
 a_n(v) = g + \frac{F_{\mathrm{down}}(v)}{m}
 $$
 
 Lateral limit (flat road simplification):
+
 $$
 a_{y,\mathrm{lim}}(v) = \mu \, a_n(v)
 $$
 
 Friction-circle coupling:
+
 $$
 a_{x,\mathrm{avail}} =
 a_{x,\max}\sqrt{1 - \left(\frac{a_{y,\mathrm{req}}}{a_{y,\mathrm{lim}}}\right)^2}
