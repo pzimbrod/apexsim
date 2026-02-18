@@ -18,8 +18,10 @@ from apexsim.analysis import (
     run_lap_sensitivity_study,
 )
 from apexsim.simulation import (
+    PidSpeedSchedule,
     TransientConfig,
     TransientNumericsConfig,
+    TransientPidGainSchedulingConfig,
     TransientRuntimeConfig,
     build_simulation_config,
     simulate_lap,
@@ -34,6 +36,9 @@ from apexsim.simulation.transient_numpy import (
     _decode_single_track_controls,
     _expand_mesh_controls,
     _require_scipy_optimize,
+    _resolve_pid_gain_scheduling,
+    _resolve_schedule_speed_nodes,
+    build_physics_informed_pid_gain_scheduling,
     solve_transient_lap_numpy,
 )
 from apexsim.simulation.transient_torch import solve_transient_lap_torch
@@ -99,6 +104,24 @@ def _patch_transient_dependency_specs() -> Any:
         side_effect=lambda name: (
             object() if name in {"scipy", "torchdiffeq"} else real_find_spec(name)
         ),
+    )
+
+
+def _custom_pid_schedule() -> TransientPidGainSchedulingConfig:
+    """Return compact custom PID schedule used by transient tests.
+
+    Returns:
+        Valid scheduling config with longitudinal and steering schedules.
+    """
+    nodes = (0.0, 20.0, 60.0)
+    return TransientPidGainSchedulingConfig(
+        longitudinal_kp=PidSpeedSchedule(nodes, (0.8, 0.75, 0.7)),
+        longitudinal_ki=PidSpeedSchedule(nodes, (0.02, 0.015, 0.01)),
+        longitudinal_kd=PidSpeedSchedule(nodes, (0.06, 0.055, 0.05)),
+        steer_kp=PidSpeedSchedule(nodes, (1.8, 1.4, 0.9)),
+        steer_ki=PidSpeedSchedule(nodes, (0.08, 0.05, 0.03)),
+        steer_kd=PidSpeedSchedule(nodes, (0.16, 0.12, 0.09)),
+        steer_vy_damping=PidSpeedSchedule(nodes, (0.2, 0.27, 0.35)),
     )
 
 
@@ -187,6 +210,190 @@ class TransientSolverTests(unittest.TestCase):
         self.assertGreater(profile.lap_time, 0.0)
         self.assertGreater(float(np.max(np.abs(profile.yaw_rate))), 0.0)
         self.assertGreater(float(np.max(np.abs(profile.steer_cmd))), 0.0)
+
+    def test_physics_informed_pid_scheduling_builder_is_deterministic(self) -> None:
+        """Build deterministic physics-informed schedules with expected trends."""
+        model = build_single_track_model(
+            vehicle=sample_vehicle_parameters(),
+            tires=default_axle_tire_parameters(),
+            physics=SingleTrackPhysics(),
+        )
+        numerics = TransientNumericsConfig()
+        schedule_a = build_physics_informed_pid_gain_scheduling(
+            model=model,
+            numerics=numerics,
+            max_speed=80.0,
+        )
+        schedule_b = build_physics_informed_pid_gain_scheduling(
+            model=model,
+            numerics=numerics,
+            max_speed=80.0,
+        )
+        self.assertEqual(schedule_a, schedule_b)
+        self.assertIsNotNone(schedule_a.steer_kp)
+        self.assertIsNotNone(schedule_a.steer_vy_damping)
+        self.assertIsNotNone(schedule_a.longitudinal_kp)
+        if (
+            schedule_a.steer_kp is None
+            or schedule_a.steer_vy_damping is None
+            or schedule_a.longitudinal_kp is None
+        ):
+            self.fail("Expected fully defined physics-informed schedule")
+        steer_kp_values = np.asarray(schedule_a.steer_kp.values, dtype=float)
+        steer_vy_values = np.asarray(schedule_a.steer_vy_damping.values, dtype=float)
+        self.assertTrue(np.all(np.diff(steer_kp_values) <= 1e-12))
+        self.assertTrue(np.all(np.diff(steer_vy_values) >= -1e-12))
+        self.assertEqual(
+            schedule_a.longitudinal_kp.speed_nodes_mps,
+            schedule_a.steer_kp.speed_nodes_mps,
+        )
+
+    def test_schedule_speed_node_resolution_covers_explicit_and_zero_speed_cases(self) -> None:
+        """Resolve schedule nodes for explicit grids and degenerate speed caps."""
+        explicit = _resolve_schedule_speed_nodes(
+            max_speed=80.0,
+            speed_nodes_mps=(0.0, 8.0, 16.0),
+        )
+        self.assertEqual(explicit, (0.0, 8.0, 16.0))
+        zero_cap = _resolve_schedule_speed_nodes(max_speed=0.0)
+        self.assertEqual(zero_cap, (0.0, 1.0))
+
+    def test_resolve_pid_gain_scheduling_mode_switches(self) -> None:
+        """Resolve off/physics/custom scheduling branches from runtime numerics."""
+        model = build_point_mass_model(vehicle=sample_vehicle_parameters())
+        off_config = build_simulation_config(
+            compute_backend="numpy",
+            solver_mode="transient_oc",
+            max_speed=60.0,
+            transient=TransientConfig(
+                numerics=TransientNumericsConfig(pid_gain_scheduling_mode="off"),
+            ),
+        )
+        self.assertIsNone(
+            _resolve_pid_gain_scheduling(model=model, config=off_config),
+        )
+
+        physics_config = build_simulation_config(
+            compute_backend="numpy",
+            solver_mode="transient_oc",
+            max_speed=60.0,
+            transient=TransientConfig(
+                numerics=TransientNumericsConfig(
+                    pid_gain_scheduling_mode="physics_informed",
+                ),
+            ),
+        )
+        resolved_physics = _resolve_pid_gain_scheduling(
+            model=model,
+            config=physics_config,
+        )
+        self.assertIsNotNone(resolved_physics)
+
+        custom_schedule = _custom_pid_schedule()
+        custom_config = build_simulation_config(
+            compute_backend="numpy",
+            solver_mode="transient_oc",
+            max_speed=60.0,
+            transient=TransientConfig(
+                numerics=TransientNumericsConfig(
+                    pid_gain_scheduling_mode="custom",
+                    pid_gain_scheduling=custom_schedule,
+                ),
+            ),
+        )
+        resolved_custom = _resolve_pid_gain_scheduling(model=model, config=custom_config)
+        self.assertEqual(resolved_custom, custom_schedule)
+
+    def test_require_scipy_optimize_success_path(self) -> None:
+        """Load scipy.optimize when dependency is available."""
+        optimize_module = _require_scipy_optimize()
+        self.assertTrue(hasattr(optimize_module, "minimize"))
+
+    def test_pid_off_mode_ignores_custom_schedule_object(self) -> None:
+        """Keep legacy PID behavior when scheduling mode is explicitly off."""
+        track = build_straight_track(length=200.0, sample_count=51)
+        model = build_point_mass_model(vehicle=sample_vehicle_parameters())
+        baseline_config = build_simulation_config(
+            compute_backend="numpy",
+            solver_mode="transient_oc",
+            max_speed=60.0,
+            initial_speed=10.0,
+            transient=TransientConfig(
+                numerics=TransientNumericsConfig(pid_gain_scheduling_mode="off"),
+            ),
+        )
+        off_with_schedule = build_simulation_config(
+            compute_backend="numpy",
+            solver_mode="transient_oc",
+            max_speed=60.0,
+            initial_speed=10.0,
+            transient=TransientConfig(
+                numerics=TransientNumericsConfig(
+                    pid_gain_scheduling_mode="off",
+                    pid_gain_scheduling=_custom_pid_schedule(),
+                ),
+            ),
+        )
+        profile_baseline = solve_transient_lap_numpy(
+            track=track,
+            model=model,
+            config=baseline_config,
+        )
+        profile_off_with_schedule = solve_transient_lap_numpy(
+            track=track,
+            model=model,
+            config=off_with_schedule,
+        )
+        self.assertTrue(np.allclose(profile_baseline.speed, profile_off_with_schedule.speed))
+        self.assertAlmostEqual(
+            profile_baseline.lap_time,
+            profile_off_with_schedule.lap_time,
+            places=10,
+        )
+
+    def test_single_track_pid_custom_scheduling_runs(self) -> None:
+        """Run single-track PID solver with explicit custom schedule tables."""
+        track = build_circular_track(radius=70.0, sample_count=121)
+        model = build_single_track_model(
+            vehicle=sample_vehicle_parameters(),
+            tires=default_axle_tire_parameters(),
+            physics=SingleTrackPhysics(),
+        )
+        config = build_simulation_config(
+            compute_backend="numpy",
+            solver_mode="transient_oc",
+            max_speed=75.0,
+            initial_speed=18.0,
+            transient=TransientConfig(
+                numerics=TransientNumericsConfig(
+                    pid_gain_scheduling_mode="custom",
+                    pid_gain_scheduling=_custom_pid_schedule(),
+                ),
+            ),
+        )
+        profile = solve_transient_lap_numpy(track=track, model=model, config=config)
+        self.assertTrue(np.isfinite(profile.lap_time))
+        self.assertTrue(np.all(np.isfinite(profile.speed)))
+        self.assertGreater(float(np.max(np.abs(profile.steer_cmd))), 0.0)
+
+    def test_point_mass_pid_physics_informed_scheduling_runs(self) -> None:
+        """Run point-mass PID path with physics-informed gain scheduling."""
+        track = build_straight_track(length=220.0, sample_count=61)
+        model = build_point_mass_model(vehicle=sample_vehicle_parameters())
+        config = build_simulation_config(
+            compute_backend="numpy",
+            solver_mode="transient_oc",
+            max_speed=60.0,
+            initial_speed=0.0,
+            transient=TransientConfig(
+                numerics=TransientNumericsConfig(
+                    pid_gain_scheduling_mode="physics_informed",
+                ),
+            ),
+        )
+        profile = solve_transient_lap_numpy(track=track, model=model, config=config)
+        self.assertGreater(profile.lap_time, 0.0)
+        self.assertTrue(np.all(np.isfinite(profile.longitudinal_accel)))
 
     def test_numba_transient_solver_rejects_wrong_backend(self) -> None:
         """Reject numba transient solver calls for non-numba runtime configs."""

@@ -29,7 +29,10 @@ class PackageExportTests(unittest.TestCase):
         self.assertIsNotNone(simulation_pkg.NumericsConfig)
         self.assertIsNotNone(simulation_pkg.TransientConfig)
         self.assertIsNotNone(simulation_pkg.TransientNumericsConfig)
+        self.assertIsNotNone(simulation_pkg.TransientPidGainSchedulingConfig)
+        self.assertIsNotNone(simulation_pkg.PidSpeedSchedule)
         self.assertIsNotNone(simulation_pkg.TransientRuntimeConfig)
+        self.assertIsNotNone(simulation_pkg.build_physics_informed_pid_gain_scheduling)
         self.assertIsNotNone(simulation_pkg.build_simulation_config)
 
     def test_track_exports_resolve(self) -> None:
@@ -79,6 +82,9 @@ class PackageExportTests(unittest.TestCase):
 
     def test_lazy_export_raises_for_missing_symbol(self) -> None:
         """Raise ``AttributeError`` for unknown lazy export names."""
+        self.assertIsNotNone(
+            simulation_pkg.__getattr__("build_physics_informed_pid_gain_scheduling")
+        )
         with self.assertRaises(AttributeError):
             _ = simulation_pkg.__getattr__("does_not_exist")
         with self.assertRaises(AttributeError):
