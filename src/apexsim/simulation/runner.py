@@ -10,6 +10,7 @@ import numpy as np
 from apexsim.simulation.config import SimulationConfig
 from apexsim.simulation.model_api import VehicleModel
 from apexsim.simulation.profile import SpeedProfileResult, solve_speed_profile
+from apexsim.simulation.transient_common import TransientProfileResult
 from apexsim.track.models import TrackData
 from apexsim.utils.exceptions import ConfigurationError
 
@@ -31,6 +32,13 @@ class LapResult:
         power: Tractive power trace [W].
         energy: Integrated positive tractive energy [J].
         lap_time: Integrated lap time [s].
+        solver_mode: Solver mode used for this lap result.
+        time: Optional cumulative time trace [s] for transient solver mode.
+        vx: Optional body-frame longitudinal speed trace [m/s].
+        vy: Optional body-frame lateral speed trace [m/s].
+        yaw_rate: Optional yaw-rate trace [rad/s].
+        steer_cmd: Optional steering command trace [rad].
+        ax_cmd: Optional longitudinal acceleration command trace [m/s^2].
     """
 
     track: TrackData
@@ -43,6 +51,13 @@ class LapResult:
     power: np.ndarray
     energy: float
     lap_time: float
+    solver_mode: str = "quasi_static"
+    time: np.ndarray | None = None
+    vx: np.ndarray | None = None
+    vy: np.ndarray | None = None
+    yaw_rate: np.ndarray | None = None
+    steer_cmd: np.ndarray | None = None
+    ax_cmd: np.ndarray | None = None
 
 
 def _compute_energy(power: np.ndarray, speed: np.ndarray, arc_length: np.ndarray) -> float:
@@ -91,6 +106,37 @@ def _solve_profile(
         return solve_speed_profile_numba(track=track, model=numba_model, config=config)
 
     return solve_speed_profile(track=track, model=model, config=config)
+
+
+def _solve_transient_profile(
+    track: TrackData,
+    model: VehicleModel,
+    config: SimulationConfig,
+) -> TransientProfileResult:
+    """Dispatch transient OC solve based on configured compute backend.
+
+    Args:
+        track: Track geometry and derived arc-length-domain quantities.
+        model: Vehicle-model backend implementing ``VehicleModel``.
+        config: Solver configuration containing runtime and numerical controls.
+
+    Returns:
+        Backend transient solve result.
+    """
+    if config.runtime.compute_backend == "torch":
+        from apexsim.simulation.transient_torch import solve_transient_lap_torch
+
+        torch_result = solve_transient_lap_torch(track=track, model=model, config=config)
+        return torch_result.to_numpy()
+
+    if config.runtime.compute_backend == "numba":
+        from apexsim.simulation.transient_numba import solve_transient_lap_numba
+
+        return solve_transient_lap_numba(track=track, model=model, config=config)
+
+    from apexsim.simulation.transient_numpy import solve_transient_lap_numpy
+
+    return solve_transient_lap_numpy(track=track, model=model, config=config)
 
 
 def _compute_diagnostics(
@@ -178,7 +224,7 @@ def simulate_lap(
     model: VehicleModel,
     config: SimulationConfig,
 ) -> LapResult:
-    """Run quasi-steady lap simulation against a vehicle-model API backend.
+    """Run lap simulation against a vehicle-model API backend.
 
     Args:
         track: Track geometry and derived arc-length-domain quantities.
@@ -186,13 +232,48 @@ def simulate_lap(
         config: Solver configuration containing runtime and numerical controls.
 
     Returns:
-        Full lap simulation result including profile arrays and diagnostics.
+        Full lap simulation result including profile arrays, diagnostics,
+        and (for transient mode) time/state/control traces.
 
     Raises:
         apexsim.utils.exceptions.TrackDataError: If track data is invalid.
         apexsim.utils.exceptions.ConfigurationError: If model or solver
             configuration is invalid.
     """
+    if config.runtime.solver_mode == "transient_oc":
+        transient_profile = _solve_transient_profile(track=track, model=model, config=config)
+        yaw_moment, front_axle_load, rear_axle_load, power = _compute_diagnostics(
+            track=track,
+            model=model,
+            profile=SpeedProfileResult(
+                speed=np.asarray(transient_profile.speed, dtype=float),
+                longitudinal_accel=np.asarray(transient_profile.longitudinal_accel, dtype=float),
+                lateral_accel=np.asarray(transient_profile.lateral_accel, dtype=float),
+                lateral_envelope_iterations=0,
+                lap_time=float(transient_profile.lap_time),
+            ),
+        )
+        energy = _compute_energy(power, transient_profile.speed, track.arc_length)
+        return LapResult(
+            track=track,
+            speed=np.asarray(transient_profile.speed, dtype=float),
+            longitudinal_accel=np.asarray(transient_profile.longitudinal_accel, dtype=float),
+            lateral_accel=np.asarray(transient_profile.lateral_accel, dtype=float),
+            yaw_moment=yaw_moment,
+            front_axle_load=front_axle_load,
+            rear_axle_load=rear_axle_load,
+            power=power,
+            energy=energy,
+            lap_time=float(transient_profile.lap_time),
+            solver_mode="transient_oc",
+            time=np.asarray(transient_profile.time, dtype=float),
+            vx=np.asarray(transient_profile.vx, dtype=float),
+            vy=np.asarray(transient_profile.vy, dtype=float),
+            yaw_rate=np.asarray(transient_profile.yaw_rate, dtype=float),
+            steer_cmd=np.asarray(transient_profile.steer_cmd, dtype=float),
+            ax_cmd=np.asarray(transient_profile.ax_cmd, dtype=float),
+        )
+
     profile = _solve_profile(track=track, model=model, config=config)
 
     yaw_moment, front_axle_load, rear_axle_load, power = _compute_diagnostics(
@@ -214,4 +295,5 @@ def simulate_lap(
         power=power,
         energy=energy,
         lap_time=profile.lap_time,
+        solver_mode="quasi_static",
     )

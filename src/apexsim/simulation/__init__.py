@@ -10,6 +10,12 @@ from apexsim.simulation.config import (
     SimulationConfig,
     build_simulation_config,
 )
+from apexsim.simulation.transient_common import (
+    TransientConfig,
+    TransientNumericsConfig,
+    TransientProfileResult,
+    TransientRuntimeConfig,
+)
 
 if TYPE_CHECKING:
     from apexsim.simulation.model_api import (
@@ -19,18 +25,25 @@ if TYPE_CHECKING:
     )
     from apexsim.simulation.runner import LapResult
     from apexsim.simulation.torch_profile import TorchSpeedProfileResult
+    from apexsim.simulation.transient_torch import TorchTransientProfileResult
 
 __all__ = [
     "LapResult",
+    "TransientProfileResult",
+    "TorchTransientProfileResult",
     "TorchSpeedProfileResult",
     "VehicleModelBase",
     "VehicleModel",
     "NumericsConfig",
     "RuntimeConfig",
     "SimulationConfig",
+    "TransientConfig",
+    "TransientNumericsConfig",
+    "TransientRuntimeConfig",
     "ModelDiagnostics",
     "build_simulation_config",
     "simulate_lap",
+    "solve_transient_lap_torch",
     "solve_speed_profile_torch",
 ]
 
@@ -71,9 +84,21 @@ def __getattr__(name: str) -> Any:
         from apexsim.simulation.torch_profile import TorchSpeedProfileResult
 
         return TorchSpeedProfileResult
+    if name == "TransientProfileResult":
+        from apexsim.simulation.transient_common import TransientProfileResult
+
+        return TransientProfileResult
+    if name == "TorchTransientProfileResult":
+        from apexsim.simulation.transient_torch import TorchTransientProfileResult
+
+        return TorchTransientProfileResult
     if name == "solve_speed_profile_torch":
         from apexsim.simulation.torch_profile import solve_speed_profile_torch
 
         return solve_speed_profile_torch
+    if name == "solve_transient_lap_torch":
+        from apexsim.simulation.transient_torch import solve_transient_lap_torch
+
+        return solve_transient_lap_torch
     msg = f"module {__name__!r} has no attribute {name!r}"
     raise AttributeError(msg)
