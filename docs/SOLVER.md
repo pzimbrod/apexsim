@@ -204,7 +204,7 @@ The same solver routine can be used with different backends implementing
 
 For gradient-based workflows (e.g. autodiff sensitivities), ApexSim exposes:
 
-- `apexsim.simulation.solve_speed_profile_torch_autodiff(track, model, config)`
+- `apexsim.simulation.solve_speed_profile_torch(track, model, config)`
 
 This API returns tensor-valued outputs (`TorchSpeedProfileResult`) and keeps the
 autograd graph intact for downstream `backward()` calls.
@@ -212,4 +212,4 @@ autograd graph intact for downstream `backward()` calls.
 Current constraint:
 
 - `RuntimeConfig.torch_compile` must be `False` for
-  `solve_speed_profile_torch_autodiff`.
+  `solve_speed_profile_torch`.

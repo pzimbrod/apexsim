@@ -41,7 +41,7 @@ class SensitivityPhysicalPlausibilityTests(unittest.TestCase):
         cls.circle_config = build_simulation_config(max_speed=115.0, compute_backend="numpy")
         cls.straight_config = build_simulation_config(
             max_speed=90.0,
-            initial_speed=10.0,
+            initial_speed=0.0,
             compute_backend="numpy",
         )
         cls.fd_runtime = SensitivityRuntime(method="finite_difference")

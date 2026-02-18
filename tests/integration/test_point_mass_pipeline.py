@@ -11,6 +11,7 @@ import numpy as np
 from apexsim.analysis.kpi import compute_kpis
 from apexsim.simulation import build_simulation_config, simulate_lap
 from apexsim.track.io import load_track_csv
+from apexsim.utils.exceptions import ConfigurationError
 from apexsim.vehicle import PointMassPhysics, build_point_mass_model
 from tests.helpers import sample_vehicle_parameters
 
@@ -123,8 +124,8 @@ class PointMassPipelineTests(unittest.TestCase):
         self.assertAlmostEqual(torch_result.lap_time, numpy_result.lap_time, places=9)
 
     @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
-    def test_torch_compile_matches_plain_torch_backend(self) -> None:
-        """Match compiled and non-compiled torch backend outputs."""
+    def test_torch_backend_rejects_torch_compile(self) -> None:
+        """Reject torch_compile to keep torch speed-profile solves AD-compatible."""
         root = Path(__file__).resolve().parents[2]
         track = load_track_csv(root / "data" / "spa_francorchamps.csv")
         model = build_point_mass_model(
@@ -136,40 +137,16 @@ class PointMassPipelineTests(unittest.TestCase):
             ),
         )
 
-        plain_torch = simulate_lap(
-            track=track,
-            model=model,
-            config=build_simulation_config(compute_backend="torch", torch_device="cpu"),
-        )
-        compiled_torch = simulate_lap(
-            track=track,
-            model=model,
-            config=build_simulation_config(
-                compute_backend="torch",
-                torch_device="cpu",
-                torch_compile=True,
-            ),
-        )
-
-        np.testing.assert_allclose(
-            compiled_torch.speed,
-            plain_torch.speed,
-            rtol=1e-9,
-            atol=1e-9,
-        )
-        np.testing.assert_allclose(
-            compiled_torch.longitudinal_accel,
-            plain_torch.longitudinal_accel,
-            rtol=1e-8,
-            atol=1e-8,
-        )
-        np.testing.assert_allclose(
-            compiled_torch.lateral_accel,
-            plain_torch.lateral_accel,
-            rtol=1e-9,
-            atol=1e-9,
-        )
-        self.assertAlmostEqual(compiled_torch.lap_time, plain_torch.lap_time, places=9)
+        with self.assertRaises(ConfigurationError):
+            simulate_lap(
+                track=track,
+                model=model,
+                config=build_simulation_config(
+                    compute_backend="torch",
+                    torch_device="cpu",
+                    torch_compile=True,
+                ),
+            )
 
 
 if __name__ == "__main__":

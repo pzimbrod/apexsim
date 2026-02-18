@@ -219,7 +219,8 @@ Do not compensate wrong physics by over-tuning numerics.
 
 `initial_speed` is optional. If omitted (`None`), the solver keeps the legacy
 start behavior. Set it explicitly when you need controlled acceleration phases
-from the first sample (for example, straight-line bottleneck studies).
+from the first sample (for example, straight-line bottleneck studies or
+standing starts with `initial_speed=0.0`).
 
 ## Step 5: Run the lap simulation
 
@@ -292,16 +293,16 @@ Optional: run the public differentiable torch speed-profile API directly
 for custom gradient workflows:
 
 ```python
-from apexsim.simulation import build_simulation_config, solve_speed_profile_torch_autodiff
+from apexsim.simulation import build_simulation_config, solve_speed_profile_torch
 
 torch_config = build_simulation_config(
     compute_backend="torch",
     torch_device="cpu",
-    torch_compile=False,  # required for solve_speed_profile_torch_autodiff
+    torch_compile=False,  # torch backend keeps AD-compatible behavior
     max_speed=115.0,
     initial_speed=20.0,
 )
-torch_result = solve_speed_profile_torch_autodiff(track=track, model=model, config=torch_config)
+torch_result = solve_speed_profile_torch(track=track, model=model, config=torch_config)
 lap_time_tensor = torch_result.lap_time
 ```
 

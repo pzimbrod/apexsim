@@ -58,18 +58,20 @@ Terminology note:
 - `apexsim.simulation.SimulationConfig`
 - `apexsim.simulation.build_simulation_config(...)`
 - `apexsim.simulation.simulate_lap(track, model, config) -> LapResult`
-- `apexsim.simulation.solve_speed_profile_torch_autodiff(track, model, config) -> TorchSpeedProfileResult`
+- `apexsim.simulation.solve_speed_profile_torch(track, model, config) -> TorchSpeedProfileResult`
 
 Backend runtime controls:
 
 - `RuntimeConfig.compute_backend`: `"numpy"`, `"numba"`, or `"torch"`
 - `RuntimeConfig.torch_device`: keep `"cpu"` for `numpy`/`numba`; use `"cpu"` or `"cuda:0"` for `torch`
-- `RuntimeConfig.torch_compile`: optional compile acceleration for `torch` only
+- `RuntimeConfig.torch_compile`: reserved flag, must currently remain `False` for simulation
 - `RuntimeConfig.initial_speed`: optional start speed at first track sample [m/s]
+  (supports `0.0` for standing starts)
 
 Constraint for differentiable solver use:
 
-- `solve_speed_profile_torch_autodiff(...)` requires `RuntimeConfig.torch_compile = False`
+- `solve_speed_profile_torch(...)` is the differentiable torch solver and requires
+  `RuntimeConfig.torch_compile = False`
 
 See [Compute Backends](BACKENDS.md) for selection guidance and benchmarks.
 

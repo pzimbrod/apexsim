@@ -20,7 +20,7 @@ from apexsim.analysis.sensitivity import (
     build_sensitivity_config,
     compute_sensitivities,
 )
-from apexsim.simulation import build_simulation_config, solve_speed_profile_torch_autodiff
+from apexsim.simulation import build_simulation_config, solve_speed_profile_torch
 from apexsim.track import build_straight_track
 from apexsim.utils.exceptions import ConfigurationError
 
@@ -344,7 +344,7 @@ class SensitivityApiTests(unittest.TestCase):
 
         def objective(parameters: dict[str, Any]) -> Any:
             model = _LapTimeObjectiveTorchModel(drive_gain=parameters["drive_gain"])
-            result = solve_speed_profile_torch_autodiff(track=track, model=model, config=config)
+            result = solve_speed_profile_torch(track=track, model=model, config=config)
             return result.lap_time
 
         parameters = [

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Protocol, cast
+from typing import Any, Protocol
 
 import numpy as np
 
@@ -358,39 +358,8 @@ def solve_speed_profile_torch(
     track: TrackData,
     model: TorchSpeedModel,
     config: SimulationConfig,
-) -> SpeedProfileResult:
-    """Solve lap speed profile with a torch-backed numerical backend.
-
-    Args:
-        track: Track geometry and derived arc-length-domain quantities.
-        model: Vehicle model implementing torch-native speed-limit methods.
-        config: Solver runtime and numerical controls.
-
-    Returns:
-        Converged speed profile and integrated lap metrics as NumPy arrays.
-
-    Raises:
-        apexsim.utils.exceptions.ConfigurationError: If backend selection is
-            incompatible with the provided model or runtime settings.
-    """
-    _validate_torch_solver_inputs(track=track, model=model, config=config)
-
-    solver = _compiled_solver(enable_compile=config.runtime.torch_compile)
-    result = solver(track=track, model=model, config=config)
-    torch_result = cast(TorchSpeedProfileResult, result)
-    return torch_result.to_numpy()
-
-
-def solve_speed_profile_torch_autodiff(
-    track: TrackData,
-    model: TorchSpeedModel,
-    config: SimulationConfig,
 ) -> TorchSpeedProfileResult:
-    """Solve lap speed profile and keep torch autograd graph intact.
-
-    This method is intended for sensitivity/gradient workflows and returns
-    tensor-valued outputs. ``torch_compile`` is rejected for this mode to keep
-    gradient behavior explicit and stable in the initial API version.
+    """Solve lap speed profile with a torch-backed differentiable backend.
 
     Args:
         track: Track geometry and derived arc-length-domain quantities.
@@ -408,8 +377,8 @@ def solve_speed_profile_torch_autodiff(
 
     if config.runtime.torch_compile:
         msg = (
-            "solve_speed_profile_torch_autodiff does not support torch_compile=True yet. "
-            "Disable torch_compile for differentiable solver runs."
+            "solve_speed_profile_torch does not support torch_compile=True. "
+            "Disable torch_compile for the torch simulation backend."
         )
         raise ConfigurationError(msg)
 

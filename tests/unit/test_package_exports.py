@@ -21,7 +21,7 @@ class PackageExportTests(unittest.TestCase):
         self.assertIsNotNone(simulation_pkg.LapResult)
         self.assertIsNotNone(simulation_pkg.TorchSpeedProfileResult)
         self.assertIsNotNone(simulation_pkg.simulate_lap)
-        self.assertIsNotNone(simulation_pkg.solve_speed_profile_torch_autodiff)
+        self.assertIsNotNone(simulation_pkg.solve_speed_profile_torch)
         self.assertIsNotNone(simulation_pkg.RuntimeConfig)
         self.assertIsNotNone(simulation_pkg.NumericsConfig)
         self.assertIsNotNone(simulation_pkg.build_simulation_config)

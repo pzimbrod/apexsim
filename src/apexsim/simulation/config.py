@@ -72,7 +72,8 @@ class RuntimeConfig:
             or ``torch``).
         torch_device: Torch device identifier. ``numpy`` and ``numba`` are
             CPU-only backends and therefore require ``torch_device='cpu'``.
-        torch_compile: Enable ``torch.compile`` for the ``torch`` backend.
+        torch_compile: Reserved flag for future compile support in the ``torch``
+            backend. Must currently remain ``False``.
     """
 
     max_speed: float
@@ -96,8 +97,8 @@ class RuntimeConfig:
             msg = "max_speed must be greater than numerics.min_speed"
             raise ConfigurationError(msg)
         if self.initial_speed is not None:
-            if self.initial_speed < numerics.min_speed:
-                msg = "initial_speed must be greater than or equal to numerics.min_speed"
+            if self.initial_speed < 0.0:
+                msg = "initial_speed must be greater than or equal to 0"
                 raise ConfigurationError(msg)
             if self.initial_speed > self.max_speed:
                 msg = "initial_speed must be less than or equal to max_speed"
@@ -130,6 +131,12 @@ class RuntimeConfig:
             self._validate_numba_runtime()
         if self.compute_backend == "torch":
             self._validate_torch_runtime()
+            if self.torch_compile:
+                msg = (
+                    "torch_compile is currently not supported for "
+                    "compute_backend='torch'. Keep torch_compile=False."
+                )
+                raise ConfigurationError(msg)
 
     def _validate_numba_runtime(self) -> None:
         """Validate availability of numba runtime.
@@ -216,7 +223,8 @@ def build_simulation_config(
             or ``torch``).
         torch_device: Torch device identifier. ``numpy`` and ``numba`` are
             CPU-only backends and therefore require ``torch_device='cpu'``.
-        torch_compile: Enable ``torch.compile`` for the ``torch`` backend.
+        torch_compile: Reserved flag for future compile support in the ``torch``
+            backend. Must currently remain ``False``.
 
     Returns:
         Fully validated simulation configuration.

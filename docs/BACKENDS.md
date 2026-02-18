@@ -14,7 +14,8 @@ Supported backends are intentionally restricted to:
 The runtime validator enforces this policy:
 
 - `numpy` and `numba` require `torch_device="cpu"`.
-- `torch_compile=True` is only valid with `compute_backend="torch"`.
+- `compute_backend="torch"` currently requires `torch_compile=False` so the
+  solver path remains AD-compatible by default.
 
 ## Current model support
 
@@ -106,8 +107,6 @@ Notes:
 - "First Call" includes startup/JIT/compile effects.
 - "Steady" values are from repeated post-warmup runs.
 - Use your own machine data for final backend decisions.
-- With some torch versions, `torch_compile=True` may print graph-break warnings
-  for scalar convergence checks; results remain valid, but timing includes this behavior.
 
 ## Benchmark snapshot (February 17, 2026)
 
@@ -124,20 +123,16 @@ Environment used for this snapshot:
 | `numpy` | 19.72 | 14.72 | 14.73 | 133.668234 |
 | `numba` | 1303.90 | 0.69 | 0.68 | 133.668234 |
 | `torch` (`cpu`) | 323.99 | 342.27 | 337.44 | 133.668234 |
-| `torch` (`cpu`, `compile=True`) | 5177.77 | 230.14 | 226.74 | 133.668234 |
 
 Interpretation of this snapshot:
 
 - `numba` steady-state is about 21x faster than `numpy` after JIT warmup.
 - `torch` on CPU is slower than `numpy` for single-lap workflows in this setup.
-- `torch_compile` improved torch steady-state by about 1.5x, but remained slower
-  than `numpy` in this CPU-only environment.
 - Identical lap times across backends confirm numerical consistency for this case.
 
 ## Reproducibility tips
 
 - Run each benchmark at least twice and compare medians.
 - Avoid other heavy processes during timing runs.
-- For GPU evaluation, include both `torch_device="cuda:0"` and
-  `torch_compile=True/False` variants.
+- For GPU evaluation, include `torch_device="cuda:0"` runs in addition to CPU runs.
 - Save your benchmark JSON using `--output` and keep it with your project notes.
