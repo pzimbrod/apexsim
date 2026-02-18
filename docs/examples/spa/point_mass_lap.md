@@ -40,17 +40,28 @@ model = build_point_mass_model(
 2. `examples/output/spa/point_mass/speed_trace.png`
 3. `examples/output/spa/point_mass/gg_diagram.png`
 
-## Interpretation hints for students
+## Theoretical foundation
 
-1. Treat this as a study baseline, not a final high-fidelity answer.
-2. Compare trend directions first (faster/slower, more/less aggressive),
-   then compare magnitudes.
-3. If you need yaw diagnostics, switch to single-track.
+The point-mass model uses an isotropic acceleration envelope with aero coupling.
+Typical relations are:
 
-## Suggested exercise
+- normal-acceleration budget:
+  `a_n(v) = g + F_down(v) / m`
+- lateral limit (flat road simplification):
+  `a_y,lim(v) = mu * a_n(v)`
+- friction-circle coupling:
+  `a_x,avail = a_x,max * sqrt(1 - (a_y,req / a_y,lim)^2)`
 
-Vary `friction_coefficient` in three steps and document:
+This structure is intentionally compact and efficient for fast sweeps.
 
-1. effect on lap time,
-2. effect on max lateral acceleration,
-3. sectors where speed profile changes the most.
+## Assumptions and limits
+
+1. Yaw dynamics and axle-specific tire behavior are not represented.
+2. Tire behavior is condensed into scalar friction/envelope parameters.
+3. Model fidelity is lower, but computational throughput is high.
+
+## Potential learnings from the data
+
+1. Use this model for baseline trends and wide parameter scans.
+2. Compare against single-track before drawing conclusions on yaw-sensitive effects.
+3. Separate differences caused by calibration (`mu`) from structural model differences.

@@ -20,6 +20,16 @@ Generate and interpret velocity-dependent G-G envelopes for both model families.
 - Supports parameter studies and sensitivity sweeps.
 - Makes speed dependence explicit in longitudinal/lateral coupling.
 
+## Theoretical definition
+
+For each speed sample `v_j`, the script evaluates a feasible acceleration set:
+
+`E(v_j) = {(a_y, a_x) | a_y in [-a_y,lim(v_j), +a_y,lim(v_j)], a_x in [a_x,min, a_x,max]}`
+
+In the exported arrays, this becomes a discretized family of G-G slices indexed
+by speed. The point-mass and single-track models provide `a_y,lim(v)` and
+longitudinal bounds via their own physical assumptions.
+
 ## Main artifacts
 
 1. `examples/output/spa/performance_envelope/single_track_envelope.npz`
@@ -28,23 +38,15 @@ Generate and interpret velocity-dependent G-G envelopes for both model families.
 4. `examples/output/spa/performance_envelope/summary.json`
 5. optional CSV files (if pandas is installed)
 
-## Interpreting the outputs (student view)
+## Potential learnings from the data
 
-1. At each speed, read the feasible `(a_y, a_x)` boundary.
-2. Compare max drive acceleration and max braking magnitude separately.
-3. Identify speeds where model disagreement becomes largest.
-4. Use these speeds as targeted cases for deeper model diagnostics.
+1. At each speed, interpret the upper/lower `a_x` bounds at equal `a_y`.
+2. Compare drive and braking envelopes separately.
+3. Identify speed ranges where model disagreement is systematically largest.
+4. Use these ranges as focused inputs for lap-level model comparisons.
 
 ## Common pitfalls
 
 1. Comparing envelopes at different speed grids.
 2. Mixing up signed `a_x` convention (braking is negative in exported minimum trace).
 3. Assuming envelope superiority at one speed implies lap-time superiority everywhere.
-
-## Suggested exercise
-
-Increase the envelope speed range and report:
-
-1. where drag starts dominating available forward acceleration,
-2. where single-track and point-mass limits diverge most,
-3. which result is most relevant for your intended study objective.

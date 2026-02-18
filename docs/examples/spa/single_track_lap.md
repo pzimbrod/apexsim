@@ -38,23 +38,31 @@ result = simulate_lap(track=track, model=model, config=config)
 3. `examples/output/spa/single_track/gg_diagram.png`
 4. `examples/output/spa/single_track/yaw_moment_vs_ay.png`
 
-## Interpretation hints for students
+## Theoretical foundation
 
-1. A low lap time alone is not enough; inspect the speed profile shape.
-2. Check whether high lateral acceleration regions align with curved sectors.
-3. Use yaw-moment plots qualitatively, not as direct controller targets.
-4. If magnitudes look unrealistic, re-check physics inputs before numerics.
+The single-track model is a reduced planar vehicle model with front/rear axle
+representation. In quasi-steady use, the key balances are:
 
-## Common beginner mistakes
+- lateral acceleration balance:
+  `a_y = (F_y,f + F_y,r) / m`
+- yaw moment balance signal:
+  `M_z = l_f F_y,f - l_r F_y,r`
+- path-kinematics coupling:
+  `a_y = v^2 * kappa`
 
-1. Over-tuning numerical parameters to fix bad physical parameters.
-2. Comparing absolute values without checking unit consistency.
-3. Interpreting seam points at lap closure as physical events.
+Tire forces are generated from the Pacejka-style lateral model with load
+sensitivity. This makes axle-load distribution and aero effects directly
+relevant for cornering limits.
 
-## Suggested exercise
+## Assumptions and limits
 
-Change only `max_speed` in `build_simulation_config(...)` and evaluate:
+1. Quasi-steady envelope solving does not capture full transient tire relaxation.
+2. The model is 3-DOF planar and omits full multibody compliance.
+3. Powertrain and control strategy are represented through simplified envelopes.
 
-1. lap-time change,
-2. max lateral acceleration change,
-3. whether speed trace shape changes mostly on straights or corners.
+## Potential learnings from the data
+
+1. Check lap-time and speed-trace shape together, not separately.
+2. Validate that high `|a_y|` regions align with curved track sectors.
+3. Use yaw-moment traces as consistency diagnostics for lateral balance.
+4. If output magnitudes are implausible, re-check physical inputs before changing numerics.

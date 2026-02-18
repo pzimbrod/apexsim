@@ -19,6 +19,17 @@ Without calibration, comparison can be biased by arbitrary friction settings.
 Calibration aligns lateral capability first, so differences are easier to
 attribute to model structure rather than parameter mismatch.
 
+## Theoretical calibration note
+
+The calibration step fits an effective point-mass friction value so that
+point-mass lateral limits approximate single-track lateral limits over a speed set.
+Conceptually, this is a least-squares fit:
+
+`mu* = argmin_mu sum_i (mu * a_n(v_i) - a_y,lim,single_track(v_i))^2`
+
+This keeps cross-model comparison focused on structure, not arbitrary parameter
+offsets.
+
 ## Main artifacts
 
 1. `examples/output/spa/comparison/comparison_kpis.json`
@@ -35,19 +46,10 @@ attribute to model structure rather than parameter mismatch.
 Interpretation rule:
 Use local speed differences along arc length to explain global KPI deltas.
 
-## Student-friendly analysis checklist
+## Neutral comparison protocol
 
-1. Identify top 3 sectors with largest speed difference.
-2. Check whether those sectors are braking-limited or cornering-limited.
-3. Decide whether point-mass is sufficient for your study question.
-4. Write one sentence for each model’s strongest use case.
-
-## Suggested exercise
-
-Repeat the comparison with:
-
-1. reduced downforce (`lift_coefficient` lower),
-2. unchanged tire parameters,
-3. same runtime config.
-
-Then document whether complexity benefits increase or decrease.
+1. Keep track data and runtime config identical for both models.
+2. Compare lap time, mean absolute speed delta, and local peak delta together.
+3. Attribute observed differences to specific mechanisms:
+   yaw/axle dynamics, tire-model detail, or simplified envelopes.
+4. State clearly where point-mass is sufficient and where single-track is required.
