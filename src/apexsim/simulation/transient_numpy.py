@@ -12,6 +12,8 @@ from apexsim.simulation.config import SimulationConfig
 from apexsim.simulation.integrator import rk4_step
 from apexsim.simulation.profile import solve_speed_profile
 from apexsim.simulation.transient_common import (
+    PidSpeedSchedule,
+    TransientPidGainSchedulingConfig,
     TransientProfileResult,
     segment_time_step,
 )
@@ -23,6 +25,23 @@ from apexsim.vehicle.single_track.dynamics import ControlInput, VehicleState
 _PROGRESS_BAR_WIDTH = 30
 _TRACK_PROGRESS_FRACTION_STEP = 0.10
 _TRACK_PROGRESS_EVAL_STRIDE = 20
+
+_DEFAULT_SCHEDULE_SPEED_NODES_MPS = (0.0, 10.0, 20.0, 35.0, 55.0)
+_SCHEDULE_REFERENCE_SPEED_MPS = 20.0
+_SCHEDULE_MIN_SPEED_FOR_STEER_MPS = 3.0
+_SCHEDULE_LONGITUDINAL_SCALE_MIN = 0.55
+_SCHEDULE_LONGITUDINAL_SCALE_MAX = 1.45
+_SCHEDULE_LONGITUDINAL_D_SCALE_MIN = 0.60
+_SCHEDULE_LONGITUDINAL_D_SCALE_MAX = 1.35
+_SCHEDULE_STEER_KP_SCALE_MIN = 0.35
+_SCHEDULE_STEER_KP_SCALE_MAX = 2.40
+_SCHEDULE_STEER_KI_SCALE_MIN = 0.35
+_SCHEDULE_STEER_KI_SCALE_MAX = 2.20
+_SCHEDULE_STEER_KD_SCALE_MIN = 0.40
+_SCHEDULE_STEER_KD_SCALE_MAX = 2.10
+_SCHEDULE_STEER_VY_SCALE_MIN = 0.75
+_SCHEDULE_STEER_VY_SCALE_MAX = 2.00
+_SCHEDULE_STEER_VY_GRADIENT = 0.50
 
 
 def _clamp_integral(value: float, limit: float) -> float:
@@ -36,6 +55,252 @@ def _clamp_integral(value: float, limit: float) -> float:
         Clamped integrator state.
     """
     return float(np.clip(value, -limit, limit))
+
+
+def _resolve_schedule_speed_nodes(
+    *,
+    max_speed: float,
+    speed_nodes_mps: tuple[float, ...] | None = None,
+) -> tuple[float, ...]:
+    """Build validated schedule speed nodes up to ``max_speed``.
+
+    Args:
+        max_speed: Runtime speed cap [m/s].
+        speed_nodes_mps: Optional explicit node set.
+
+    Returns:
+        Monotonic node tuple suitable for interpolation.
+    """
+    if speed_nodes_mps is not None:
+        schedule = PidSpeedSchedule(speed_nodes_mps=speed_nodes_mps, values=speed_nodes_mps)
+        schedule.validate()
+        return tuple(float(value) for value in speed_nodes_mps)
+
+    if max_speed <= 0.0:
+        return (0.0, 1.0)
+
+    nodes = [0.0]
+    nodes.extend(
+        float(value)
+        for value in _DEFAULT_SCHEDULE_SPEED_NODES_MPS[1:]
+        if float(value) < float(max_speed)
+    )
+    if float(max_speed) > nodes[-1]:
+        nodes.append(float(max_speed))
+    if len(nodes) == 1:
+        nodes.append(max(float(max_speed), SMALL_EPS))
+    return tuple(nodes)
+
+
+def _longitudinal_authority(model: Any, speed_mps: float) -> float:
+    """Return average accel/decel authority on flat road at ``speed_mps``.
+
+    Args:
+        model: Vehicle model implementing accel/decel limits.
+        speed_mps: Evaluation speed [m/s].
+
+    Returns:
+        Effective symmetric longitudinal acceleration authority [m/s^2].
+    """
+    accel = float(
+        model.max_longitudinal_accel(
+            speed=float(speed_mps),
+            lateral_accel_required=0.0,
+            grade=0.0,
+            banking=0.0,
+        )
+    )
+    decel = float(
+        model.max_longitudinal_decel(
+            speed=float(speed_mps),
+            lateral_accel_required=0.0,
+            grade=0.0,
+            banking=0.0,
+        )
+    )
+    return max(0.5 * (accel + decel), SMALL_EPS)
+
+
+def _schedule_or_default(
+    *,
+    schedule: PidSpeedSchedule | None,
+    default_value: float,
+    speed_mps: float,
+) -> float:
+    """Evaluate schedule at speed or return default scalar.
+
+    Args:
+        schedule: Optional speed schedule.
+        default_value: Fallback scalar value when ``schedule`` is ``None``.
+        speed_mps: Evaluation speed [m/s].
+
+    Returns:
+        Scheduled or fallback gain value.
+    """
+    if schedule is None:
+        return float(default_value)
+    return float(schedule.evaluate(speed_mps))
+
+
+def build_physics_informed_pid_gain_scheduling(
+    *,
+    model: Any,
+    numerics: Any,
+    max_speed: float,
+    speed_nodes_mps: tuple[float, ...] | None = None,
+) -> TransientPidGainSchedulingConfig:
+    """Build deterministic speed-dependent PID schedules from physics heuristics.
+
+    The generated schedule uses only model-based longitudinal authority on flat
+    road and speed normalization. It is deterministic and independent of track
+    geometry.
+
+    Args:
+        model: Vehicle model used for longitudinal authority estimation.
+        numerics: Object exposing baseline scalar PID gains.
+        max_speed: Runtime speed cap [m/s].
+        speed_nodes_mps: Optional custom speed nodes [m/s]. If omitted, uses
+            the package default node set.
+
+    Returns:
+        Fully specified gain-scheduling table set.
+    """
+    nodes = _resolve_schedule_speed_nodes(
+        max_speed=float(max_speed),
+        speed_nodes_mps=speed_nodes_mps,
+    )
+    reference_speed = float(
+        np.clip(
+            _SCHEDULE_REFERENCE_SPEED_MPS,
+            _SCHEDULE_MIN_SPEED_FOR_STEER_MPS,
+            max(float(max_speed), _SCHEDULE_MIN_SPEED_FOR_STEER_MPS),
+        )
+    )
+    authority_reference = _longitudinal_authority(model=model, speed_mps=reference_speed)
+
+    kp0_long = float(numerics.pid_longitudinal_kp)
+    ki0_long = float(numerics.pid_longitudinal_ki)
+    kd0_long = float(numerics.pid_longitudinal_kd)
+    kp0_steer = float(numerics.pid_steer_kp)
+    ki0_steer = float(numerics.pid_steer_ki)
+    kd0_steer = float(numerics.pid_steer_kd)
+    vy0_steer = float(numerics.pid_steer_vy_damping)
+
+    kp_long_values: list[float] = []
+    ki_long_values: list[float] = []
+    kd_long_values: list[float] = []
+    kp_steer_values: list[float] = []
+    ki_steer_values: list[float] = []
+    kd_steer_values: list[float] = []
+    vy_steer_values: list[float] = []
+
+    # Longitudinal gains scale with available accel/decel authority. Steering
+    # gains decrease with speed while lateral-velocity damping increases.
+    for speed_value in nodes:
+        authority = _longitudinal_authority(model=model, speed_mps=float(speed_value))
+        authority_scale = float(
+            np.clip(
+                authority / max(authority_reference, SMALL_EPS),
+                _SCHEDULE_LONGITUDINAL_SCALE_MIN,
+                _SCHEDULE_LONGITUDINAL_SCALE_MAX,
+            )
+        )
+        kp_long_values.append(kp0_long * authority_scale)
+        ki_long_values.append(ki0_long * authority_scale)
+        kd_long_values.append(
+            kd0_long
+            * float(
+                np.clip(
+                    np.sqrt(max(authority_scale, SMALL_EPS)),
+                    _SCHEDULE_LONGITUDINAL_D_SCALE_MIN,
+                    _SCHEDULE_LONGITUDINAL_D_SCALE_MAX,
+                )
+            )
+        )
+
+        speed_scale = reference_speed / max(float(speed_value), _SCHEDULE_MIN_SPEED_FOR_STEER_MPS)
+        kp_steer_values.append(
+            kp0_steer
+            * float(
+                np.clip(
+                    speed_scale,
+                    _SCHEDULE_STEER_KP_SCALE_MIN,
+                    _SCHEDULE_STEER_KP_SCALE_MAX,
+                )
+            )
+        )
+        ki_steer_values.append(
+            ki0_steer
+            * float(
+                np.clip(
+                    speed_scale,
+                    _SCHEDULE_STEER_KI_SCALE_MIN,
+                    _SCHEDULE_STEER_KI_SCALE_MAX,
+                )
+            )
+        )
+        kd_steer_values.append(
+            kd0_steer
+            * float(
+                np.clip(
+                    np.sqrt(max(speed_scale, SMALL_EPS)),
+                    _SCHEDULE_STEER_KD_SCALE_MIN,
+                    _SCHEDULE_STEER_KD_SCALE_MAX,
+                )
+            )
+        )
+        vy_steer_values.append(
+            vy0_steer
+            * float(
+                np.clip(
+                    1.0
+                    + _SCHEDULE_STEER_VY_GRADIENT
+                    * float(speed_value)
+                    / max(reference_speed, SMALL_EPS),
+                    _SCHEDULE_STEER_VY_SCALE_MIN,
+                    _SCHEDULE_STEER_VY_SCALE_MAX,
+                )
+            )
+        )
+
+    scheduling = TransientPidGainSchedulingConfig(
+        longitudinal_kp=PidSpeedSchedule(nodes, tuple(kp_long_values)),
+        longitudinal_ki=PidSpeedSchedule(nodes, tuple(ki_long_values)),
+        longitudinal_kd=PidSpeedSchedule(nodes, tuple(kd_long_values)),
+        steer_kp=PidSpeedSchedule(nodes, tuple(kp_steer_values)),
+        steer_ki=PidSpeedSchedule(nodes, tuple(ki_steer_values)),
+        steer_kd=PidSpeedSchedule(nodes, tuple(kd_steer_values)),
+        steer_vy_damping=PidSpeedSchedule(nodes, tuple(vy_steer_values)),
+    )
+    scheduling.validate()
+    return scheduling
+
+
+def _resolve_pid_gain_scheduling(
+    *,
+    model: Any,
+    config: SimulationConfig,
+) -> TransientPidGainSchedulingConfig | None:
+    """Resolve active PID scheduling strategy from config.
+
+    Args:
+        model: Vehicle model used for physics-informed schedule generation.
+        config: Simulation configuration.
+
+    Returns:
+        Active PID gain scheduling config or ``None`` when scheduling is off.
+    """
+    numerics = config.transient.numerics
+    mode = numerics.pid_gain_scheduling_mode
+    if mode == "off":
+        return None
+    if mode == "physics_informed":
+        return build_physics_informed_pid_gain_scheduling(
+            model=model,
+            numerics=numerics,
+            max_speed=float(config.runtime.max_speed),
+        )
+    return numerics.pid_gain_scheduling
 
 
 def _require_scipy_optimize() -> Any:
@@ -751,6 +1016,7 @@ def _simulate_point_mass_pid_driver(
     ki = float(config.transient.numerics.pid_longitudinal_ki)
     kd = float(config.transient.numerics.pid_longitudinal_kd)
     integral_limit = float(config.transient.numerics.pid_longitudinal_integral_limit)
+    gain_scheduling = _resolve_pid_gain_scheduling(model=model, config=config)
 
     speed[0] = max(start_speed, 0.0)
     vx[0] = speed[0]
@@ -801,12 +1067,39 @@ def _simulate_point_mass_pid_driver(
         )
         speed_error_derivative = (speed_error - previous_speed_error) / max(dt, SMALL_EPS)
         previous_speed_error = speed_error
+        kp_value = _schedule_or_default(
+            schedule=(
+                gain_scheduling.longitudinal_kp
+                if gain_scheduling is not None
+                else None
+            ),
+            default_value=kp,
+            speed_mps=speed_value,
+        )
+        ki_value = _schedule_or_default(
+            schedule=(
+                gain_scheduling.longitudinal_ki
+                if gain_scheduling is not None
+                else None
+            ),
+            default_value=ki,
+            speed_mps=speed_value,
+        )
+        kd_value = _schedule_or_default(
+            schedule=(
+                gain_scheduling.longitudinal_kd
+                if gain_scheduling is not None
+                else None
+            ),
+            default_value=kd,
+            speed_mps=speed_value,
+        )
 
         commanded_unbounded = (
             float(reference_ax[idx])
-            + kp * speed_error
-            + ki * speed_error_integral
-            + kd * speed_error_derivative
+            + kp_value * speed_error
+            + ki_value * speed_error_integral
+            + kd_value * speed_error_derivative
         )
         commanded = float(np.clip(commanded_unbounded, -max_brake, max_accel))
         ax_cmd[idx] = commanded
@@ -914,6 +1207,7 @@ def _simulate_single_track_pid_driver(
     steer_kd = float(config.transient.numerics.pid_steer_kd)
     steer_vy_damping = float(config.transient.numerics.pid_steer_vy_damping)
     steer_integral_limit = float(config.transient.numerics.pid_steer_integral_limit)
+    gain_scheduling = _resolve_pid_gain_scheduling(model=model, config=config)
 
     vx[0] = max(start_speed, SMALL_EPS)
     vy[0] = 0.0
@@ -976,11 +1270,38 @@ def _simulate_single_track_pid_driver(
         )
         speed_error_derivative = (speed_error - previous_speed_error) / max(dt, SMALL_EPS)
         previous_speed_error = speed_error
+        long_kp_value = _schedule_or_default(
+            schedule=(
+                gain_scheduling.longitudinal_kp
+                if gain_scheduling is not None
+                else None
+            ),
+            default_value=longitudinal_kp,
+            speed_mps=speed_value,
+        )
+        long_ki_value = _schedule_or_default(
+            schedule=(
+                gain_scheduling.longitudinal_ki
+                if gain_scheduling is not None
+                else None
+            ),
+            default_value=longitudinal_ki,
+            speed_mps=speed_value,
+        )
+        long_kd_value = _schedule_or_default(
+            schedule=(
+                gain_scheduling.longitudinal_kd
+                if gain_scheduling is not None
+                else None
+            ),
+            default_value=longitudinal_kd,
+            speed_mps=speed_value,
+        )
         commanded_unbounded = (
             float(reference_ax[idx])
-            + longitudinal_kp * speed_error
-            + longitudinal_ki * longitudinal_integral
-            + longitudinal_kd * speed_error_derivative
+            + long_kp_value * speed_error
+            + long_ki_value * longitudinal_integral
+            + long_kd_value * speed_error_derivative
         )
         commanded = float(np.clip(commanded_unbounded, -max_brake, max_accel))
         ax_cmd[idx] = commanded
@@ -995,12 +1316,36 @@ def _simulate_single_track_pid_driver(
         )
         yaw_error_derivative = (yaw_error - previous_yaw_error) / max(dt, SMALL_EPS)
         previous_yaw_error = yaw_error
+        steer_kp_value = _schedule_or_default(
+            schedule=(gain_scheduling.steer_kp if gain_scheduling is not None else None),
+            default_value=steer_kp,
+            speed_mps=speed_value,
+        )
+        steer_ki_value = _schedule_or_default(
+            schedule=(gain_scheduling.steer_ki if gain_scheduling is not None else None),
+            default_value=steer_ki,
+            speed_mps=speed_value,
+        )
+        steer_kd_value = _schedule_or_default(
+            schedule=(gain_scheduling.steer_kd if gain_scheduling is not None else None),
+            default_value=steer_kd,
+            speed_mps=speed_value,
+        )
+        steer_vy_damping_value = _schedule_or_default(
+            schedule=(
+                gain_scheduling.steer_vy_damping
+                if gain_scheduling is not None
+                else None
+            ),
+            default_value=steer_vy_damping,
+            speed_mps=speed_value,
+        )
         steer_target = (
             float(reference_steer[idx])
-            + steer_kp * yaw_error
-            + steer_ki * steer_integral
-            + steer_kd * yaw_error_derivative
-            - steer_vy_damping * float(vy[idx])
+            + steer_kp_value * yaw_error
+            + steer_ki_value * steer_integral
+            + steer_kd_value * yaw_error_derivative
+            - steer_vy_damping_value * float(vy[idx])
         )
         steer_target = float(np.clip(steer_target, -max_steer_angle, max_steer_angle))
 
