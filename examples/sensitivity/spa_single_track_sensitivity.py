@@ -13,7 +13,6 @@ from common import (
     spa_track_path,
 )
 
-from apexsim.analysis import SensitivityNumerics, SensitivityRuntime
 from apexsim.simulation import (
     TransientConfig,
     TransientNumericsConfig,
@@ -35,9 +34,10 @@ def main() -> None:
     track = load_track_csv(spa_track_path())
     root_output_dir = sensitivity_output_root() / "spa_single_track"
     quasi_output_dir = root_output_dir / "quasi_static"
-    transient_output_dir = root_output_dir / "transient_pid_fd"
+    transient_output_dir = root_output_dir / "transient_pid_ad"
     study_physics = SingleTrackPhysics(
-        max_steer_rate=1.0,
+        max_steer_angle=0.3,
+        max_steer_rate=2.0,
         reference_mass=example_vehicle_parameters().mass,
     )
 
@@ -69,14 +69,9 @@ def main() -> None:
     )
     transient_long_table, transient_pivot_table = run_single_track_sensitivity_study(
         track=track,
-        track_label=f"{TRACK_LABEL} (transient PID + finite differences)",
+        track_label=f"{TRACK_LABEL} (transient PID + autodiff)",
         output_dir=transient_output_dir,
         simulation_config=transient_simulation_config,
-        sensitivity_runtime=SensitivityRuntime(method="finite_difference"),
-        sensitivity_numerics=SensitivityNumerics(
-            finite_difference_relative_step=0.1,
-            finite_difference_absolute_step=1e-6,
-        ),
         physics=study_physics,
     )
     comparison_table = build_solver_comparison_table(

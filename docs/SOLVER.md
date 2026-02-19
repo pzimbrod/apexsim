@@ -6,9 +6,11 @@ This document explains the two solver modes available through
 - quasi-static speed-profile solver (`solver_mode="quasi_static"`)
 - transient dynamic solver (`solver_mode="transient_oc"`)
 
-Sections 1-10 cover the quasi-static formulation
-(`src/apexsim/simulation/profile.py`). Section 11 summarizes the transient
-formulations (`src/apexsim/simulation/transient_*.py`).
+Sections 1-10 cover the quasi-static formulation implemented in the shared
+core (`src/apexsim/simulation/_profile_core.py`) and backend adapters
+(`src/apexsim/simulation/profile.py`, `src/apexsim/simulation/torch_profile.py`).
+Section 11 summarizes the transient formulations
+(`src/apexsim/simulation/transient_*.py`).
 
 ## 1. Discretization and State
 
@@ -185,27 +187,27 @@ The same solver routine can be used with different backends implementing
 ## 9. Equation-to-Code Mapping
 
 - $a_{y,i} = v_i^2\kappa_i$:
-  - `src/apexsim/simulation/profile.py` (`solve_speed_profile`, `ay = ...`)
+  - `src/apexsim/simulation/_profile_core.py` (`solve_speed_profile_core`)
 - $v_{\text{lat},i} = \sqrt{a_{y,\text{lim},i}/|\kappa_i|}$ (with clipping):
-  - `src/apexsim/simulation/envelope.py` (`lateral_speed_limit`)
-  - `src/apexsim/simulation/profile.py` (`solve_speed_profile`, `v_lat[idx] = ...`)
+  - `src/apexsim/simulation/_profile_core.py` (`lateral_speed_limit_core`)
 - Friction-circle scaling $\lambda_i$ (vehicle-model dependent):
   - `src/apexsim/vehicle/single_track_model.py` (`_friction_circle_scale`)
 - Forward pass $v_{i+1}^2 = v_i^2 + 2a\Delta s$:
-  - `src/apexsim/simulation/profile.py` (`solve_speed_profile`, `next_speed_sq = ...`)
+  - `src/apexsim/simulation/_profile_core.py` (`solve_speed_profile_core`)
 - Backward pass braking feasibility:
-  - `src/apexsim/simulation/profile.py` (`solve_speed_profile`, `entry_speed_sq = ...`)
+  - `src/apexsim/simulation/_profile_core.py` (`solve_speed_profile_core`)
 - Lap-time accumulation $T = \sum \Delta t_i$:
-  - `src/apexsim/simulation/profile.py` (`lap_time += _segment_dt(...)`)
+  - `src/apexsim/simulation/_profile_core.py` (`solve_speed_profile_core`)
 - Segment time model $\Delta t_i = \Delta s_i / \bar v_i$:
-  - `src/apexsim/simulation/profile.py` (`_segment_dt`)
+  - `src/apexsim/simulation/_profile_core.py` (`solve_speed_profile_core`)
 - Lateral limit fixed-point update:
   - `src/apexsim/vehicle/single_track_model.py` (`lateral_accel_limit`)
 - Lateral envelope fixed-point convergence in speed domain:
-  - `src/apexsim/simulation/profile.py` (`for iteration_idx ...`, `max_delta_speed ...`)
+  - `src/apexsim/simulation/_profile_core.py` (`solve_speed_profile_core`)
 - Vehicle-model API contract consumed by the solver:
   - `src/apexsim/simulation/model_api.py` (`VehicleModel`)
-  - `src/apexsim/simulation/profile.py` (`solve_speed_profile`, calls on `model`)
+  - `src/apexsim/simulation/profile.py` and `src/apexsim/simulation/torch_profile.py`
+    (backend adapters calling shared core)
 
 ## 10. Differentiable Torch Solver API
 

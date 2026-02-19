@@ -24,7 +24,12 @@ from apexsim.analysis.sensitivity import (
     register_sensitivity_model_adapter,
     run_lap_sensitivity_study,
 )
-from apexsim.simulation import build_simulation_config, solve_speed_profile_torch
+from apexsim.simulation import (
+    TransientConfig,
+    TransientRuntimeConfig,
+    build_simulation_config,
+    solve_speed_profile_torch,
+)
 from apexsim.tire import default_axle_tire_parameters
 from apexsim.track import build_straight_track
 from apexsim.utils.exceptions import ConfigurationError
@@ -37,6 +42,21 @@ from apexsim.vehicle import (
 from tests.helpers import sample_vehicle_parameters
 
 TORCH_AVAILABLE = importlib.util.find_spec("torch") is not None
+
+
+def _patch_transient_dependency_specs() -> Any:
+    """Patch transient dependency discovery for deterministic unit tests.
+
+    Returns:
+        Active patch context manager.
+    """
+    real_find_spec = importlib.util.find_spec
+    return patch(
+        "apexsim.simulation.config.importlib.util.find_spec",
+        side_effect=lambda name: (
+            object() if name in {"scipy", "torchdiffeq"} else real_find_spec(name)
+        ),
+    )
 
 
 def _quadratic_objective_numpy(parameters: dict[str, float]) -> float:
@@ -746,7 +766,7 @@ class SensitivityStudyApiTests(unittest.TestCase):
             )
 
         class _BadPowerModel:
-            def tractive_power_torch(self, speed: Any, longitudinal_accel: Any) -> Any:
+            def tractive_power(self, speed: Any, longitudinal_accel: Any) -> Any:
                 del speed, longitudinal_accel
                 return torch.tensor([1.0], dtype=torch.float64)
 
@@ -761,7 +781,7 @@ class SensitivityStudyApiTests(unittest.TestCase):
             arc_length = np.array([0.0], dtype=float)
 
         class _ValidPowerModel:
-            def tractive_power_torch(self, speed: Any, longitudinal_accel: Any) -> Any:
+            def tractive_power(self, speed: Any, longitudinal_accel: Any) -> Any:
                 return speed + 0.0 * longitudinal_accel
 
         single_point_profile = _Profile(
@@ -1029,6 +1049,32 @@ class SensitivityStudyApiTests(unittest.TestCase):
                 simulation_config=config,
                 parameters=[SensitivityStudyParameter(name="mass", target="vehicle.mass")],
                 objectives=("lap_time_s", "unknown"),
+            )
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_run_lap_sensitivity_study_rejects_transient_optimal_control_autodiff(self) -> None:
+        """Reject AD sensitivity path for transient optimal-control solver mode."""
+        track = build_straight_track(length=180.0, sample_count=41)
+        model = self._single_track_model()
+        with _patch_transient_dependency_specs():
+            config = build_simulation_config(
+                compute_backend="torch",
+                torch_device="cpu",
+                torch_compile=False,
+                max_speed=60.0,
+                initial_speed=8.0,
+                solver_mode="transient_oc",
+                transient=TransientConfig(
+                    runtime=TransientRuntimeConfig(driver_model="optimal_control"),
+                ),
+            )
+
+        with self.assertRaises(ConfigurationError):
+            run_lap_sensitivity_study(
+                track=track,
+                model=model,
+                simulation_config=config,
+                parameters=[SensitivityStudyParameter(name="mass", target="vehicle.mass")],
             )
 
     @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")

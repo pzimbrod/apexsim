@@ -153,6 +153,9 @@ Vehicle-model solver contract:
 - multi-objective lap sensitivity outputs (`lap_time_s`, `energy_kwh`)
 - long-form tabular export via `.to_dataframe()`
 - compact parameter × objective table via `.to_pivot()`
+- AD-first evaluation on torch backend, including transient PID studies
+  (`solver_mode="transient_oc"`, `driver_model="pid"`).
+  - `driver_model="optimal_control"` currently requires explicit finite differences.
 
 ## 5. Minimal usage pattern
 

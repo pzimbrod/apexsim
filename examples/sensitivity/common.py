@@ -133,7 +133,7 @@ def run_single_track_sensitivity_study(
     """
     vehicle = example_vehicle_parameters()
     tires = default_axle_tire_parameters()
-    resolved_physics = physics or SingleTrackPhysics()
+    resolved_physics = physics or SingleTrackPhysics(reference_mass=vehicle.mass)
     resolved_simulation_config = simulation_config or build_simulation_config(
         compute_backend="torch",
         torch_device="cpu",
@@ -213,8 +213,8 @@ def build_solver_comparison_table(
         ]
     ].rename(
         columns={
-            "sensitivity_raw": "sensitivity_raw_transient_pid_fd",
-            "absolute_delta_plus": "absolute_delta_plus_transient_pid_fd",
+            "sensitivity_raw": "sensitivity_raw_transient_pid_ad",
+            "absolute_delta_plus": "absolute_delta_plus_transient_pid_ad",
         }
     )
 
@@ -224,11 +224,11 @@ def build_solver_comparison_table(
         how="inner",
     )
     comparison["sensitivity_raw_change"] = (
-        comparison["sensitivity_raw_transient_pid_fd"]
+        comparison["sensitivity_raw_transient_pid_ad"]
         - comparison["sensitivity_raw_quasi_static"]
     )
     comparison["absolute_delta_plus_change"] = (
-        comparison["absolute_delta_plus_transient_pid_fd"]
+        comparison["absolute_delta_plus_transient_pid_ad"]
         - comparison["absolute_delta_plus_quasi_static"]
     )
     return comparison.sort_values(by=["objective", "parameter"], kind="stable")
@@ -256,7 +256,7 @@ def plot_yaw_inertia_solver_comparison(
     for axis, objective in zip(axes, objectives, strict=True):
         row = subset[subset["objective"] == objective].iloc[0]
         quasi_value = float(row["absolute_delta_plus_quasi_static"])
-        transient_value = float(row["absolute_delta_plus_transient_pid_fd"])
+        transient_value = float(row["absolute_delta_plus_transient_pid_ad"])
         ylabel = "Delta lap time [s]"
         title = "Lap-time delta for +10% yaw inertia"
         if objective == "energy_kwh":
@@ -269,7 +269,7 @@ def plot_yaw_inertia_solver_comparison(
             [0, 1],
             [quasi_value, transient_value],
             color=["#1565c0", "#c62828"],
-            tick_label=["Quasi-static AD", "Transient PID+FD"],
+            tick_label=["Quasi-static AD", "Transient PID+AD"],
         )
         axis.set_title(title)
         axis.set_ylabel(ylabel)

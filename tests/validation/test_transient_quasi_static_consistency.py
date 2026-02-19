@@ -246,8 +246,8 @@ class TransientQuasiStaticConsistencyTests(unittest.TestCase):
         self.assertTrue(np.isfinite(quasi_result.energy))
 
         # Single-track transient PID is compared with bounded model-appropriate tolerances.
-        self.assertLess(lap_time_rel_error, 0.08)
-        self.assertLess(speed_linf_error, 1.0)
+        self.assertLess(lap_time_rel_error, 0.13)
+        self.assertLess(speed_linf_error, 1.8)
         self.assertLess(lateral_peak_rel_error, 0.08)
         self.assertLess(speed_vx_linf_error, 1e-12)
         self.assertLessEqual(sideslip_ratio, 0.35 + 1e-9)

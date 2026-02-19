@@ -6,6 +6,15 @@ from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from apexsim.utils.constants import GRAVITY, SMALL_EPS
 from apexsim.utils.exceptions import ConfigurationError
+from apexsim.vehicle._backend_physics_core import (
+    friction_circle_scale_torch as friction_circle_scale_backend,
+)
+from apexsim.vehicle._backend_physics_core import (
+    normal_accel_limit_torch as normal_accel_limit_backend,
+)
+from apexsim.vehicle._backend_physics_core import (
+    tractive_power_torch as tractive_power_backend,
+)
 from apexsim.vehicle._physics_primitives import EnvelopePhysics
 from apexsim.vehicle._point_mass_physics import PointMassPhysicsProtocol
 from apexsim.vehicle.params import VehicleParameters
@@ -96,7 +105,7 @@ class PointMassTorchBackendMixin:
         cls._cached_torch_module = torch
         return torch
 
-    def _normal_accel_limit_torch(self, speed: Any) -> Any:
+    def _backend_normal_accel_limit(self, speed: Any) -> Any:
         """Compute normal-acceleration limits for torch tensor speed inputs.
 
         Args:
@@ -106,12 +115,14 @@ class PointMassTorchBackendMixin:
             Available normal-acceleration tensor [m/s^2].
         """
         torch = self._torch_module()
-        speed_non_negative = torch.clamp(speed, min=0.0)
-        speed_squared = speed_non_negative * speed_non_negative
-        downforce = self._downforce_scale * speed_squared
-        return torch.clamp(GRAVITY + downforce / self.vehicle.mass, min=SMALL_EPS)
+        return normal_accel_limit_backend(
+            torch=torch,
+            speed=speed,
+            downforce_scale=self._downforce_scale,
+            mass=self.vehicle.mass,
+        )
 
-    def _scaled_drive_envelope_accel_limit_torch(self, torch: Any) -> Any:
+    def _backend_scaled_drive_envelope_accel_limit(self, torch: Any) -> Any:
         """Return drive envelope limit with optional reference-mass scaling.
 
         Args:
@@ -130,7 +141,7 @@ class PointMassTorchBackendMixin:
             / mass
         )
 
-    def _scaled_brake_envelope_accel_limit_torch(self, torch: Any) -> Any:
+    def _backend_scaled_brake_envelope_accel_limit(self, torch: Any) -> Any:
         """Return brake envelope limit with optional reference-mass scaling.
 
         Args:
@@ -149,7 +160,7 @@ class PointMassTorchBackendMixin:
             / mass
         )
 
-    def _tire_accel_limit_torch(self, speed: Any) -> Any:
+    def _backend_tire_accel_limit(self, speed: Any) -> Any:
         """Compute isotropic tire acceleration limits for torch tensors.
 
         Args:
@@ -159,10 +170,10 @@ class PointMassTorchBackendMixin:
             Isotropic tire acceleration-magnitude limit tensor [m/s^2].
         """
         physics = cast(PointMassPhysicsProtocol, self.physics)
-        return physics.friction_coefficient * self._normal_accel_limit_torch(speed)
+        return physics.friction_coefficient * self._backend_normal_accel_limit(speed)
 
     @staticmethod
-    def _friction_circle_scale_torch(
+    def _backend_friction_circle_scale(
         lateral_accel_required: Any,
         lateral_accel_limit: Any,
     ) -> Any:
@@ -176,11 +187,13 @@ class PointMassTorchBackendMixin:
             Longitudinal utilization scale tensor in ``[0, 1]``.
         """
         torch = PointMassTorchBackendMixin._torch_module()
-        safe_limit = torch.clamp(lateral_accel_limit, min=SMALL_EPS)
-        usage = torch.clamp(torch.abs(lateral_accel_required) / safe_limit, min=0.0, max=1.0)
-        return torch.sqrt(torch.clamp(1.0 - usage * usage, min=0.0, max=1.0))
+        return friction_circle_scale_backend(
+            torch=torch,
+            lateral_accel_required=lateral_accel_required,
+            lateral_accel_limit=lateral_accel_limit,
+        )
 
-    def tractive_power_torch(
+    def tractive_power(
         self,
         speed: Any,
         longitudinal_accel: Any,
@@ -195,17 +208,13 @@ class PointMassTorchBackendMixin:
             Tractive power tensor [W].
         """
         torch = self._torch_module()
-        speed_tensor = torch.as_tensor(speed)
-        accel_tensor = torch.as_tensor(
-            longitudinal_accel,
-            dtype=speed_tensor.dtype,
-            device=speed_tensor.device,
+        return tractive_power_backend(
+            torch=torch,
+            speed=speed,
+            longitudinal_accel=longitudinal_accel,
+            mass=self.vehicle.mass,
+            drag_force_scale=self._drag_force_scale,
         )
-        speed_non_negative = torch.clamp(speed_tensor, min=0.0)
-        speed_squared = speed_non_negative * speed_non_negative
-        drag_force = self._drag_force_scale * speed_squared
-        tractive_force = self.vehicle.mass * accel_tensor + drag_force
-        return tractive_force * speed_tensor
 
     def lateral_accel_limit_torch(
         self,
@@ -222,7 +231,7 @@ class PointMassTorchBackendMixin:
             Quasi-steady lateral acceleration limit tensor [m/s^2].
         """
         torch = self._torch_module()
-        ay_tire = self._tire_accel_limit_torch(speed)
+        ay_tire = self._backend_tire_accel_limit(speed)
         ay_banking = GRAVITY * torch.sin(banking)
         return torch.clamp(ay_tire + ay_banking, min=SMALL_EPS)
 
@@ -246,13 +255,13 @@ class PointMassTorchBackendMixin:
         """
         torch = self._torch_module()
 
-        ay_tire = self._tire_accel_limit_torch(speed)
+        ay_tire = self._backend_tire_accel_limit(speed)
         ay_limit = torch.clamp(ay_tire + GRAVITY * torch.sin(banking), min=SMALL_EPS)
-        circle_scale = self._friction_circle_scale_torch(lateral_accel_required, ay_limit)
+        circle_scale = self._backend_friction_circle_scale(lateral_accel_required, ay_limit)
 
         tire_limit = torch.clamp(
             ay_tire,
-            max=self._scaled_drive_envelope_accel_limit_torch(torch),
+            max=self._backend_scaled_drive_envelope_accel_limit(torch),
         )
         tire_accel = tire_limit * circle_scale
 
@@ -282,13 +291,13 @@ class PointMassTorchBackendMixin:
         """
         torch = self._torch_module()
 
-        ay_tire = self._tire_accel_limit_torch(speed)
+        ay_tire = self._backend_tire_accel_limit(speed)
         ay_limit = torch.clamp(ay_tire + GRAVITY * torch.sin(banking), min=SMALL_EPS)
-        circle_scale = self._friction_circle_scale_torch(lateral_accel_required, ay_limit)
+        circle_scale = self._backend_friction_circle_scale(lateral_accel_required, ay_limit)
 
         tire_limit = torch.clamp(
             ay_tire,
-            max=self._scaled_brake_envelope_accel_limit_torch(torch),
+            max=self._backend_scaled_brake_envelope_accel_limit(torch),
         )
         tire_brake = tire_limit * circle_scale
 

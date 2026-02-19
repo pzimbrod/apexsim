@@ -397,7 +397,12 @@ long_table = study.to_dataframe()
 pivot_table = study.to_pivot()
 ```
 
-To force finite differences (for regression checks), pass:
+For transient studies, AD is supported with PID driver mode. AD for
+`solver_mode="transient_oc"` with `driver_model="optimal_control"` is currently
+not supported.
+
+To force finite differences (for regression checks or transient
+`optimal_control` studies), pass:
 
 ```python
 study_fd = run_lap_sensitivity_study(

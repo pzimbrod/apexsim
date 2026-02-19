@@ -3,6 +3,27 @@
 ApexSim separates physical modeling from numerical execution backends.
 This page helps you choose the right backend for your study.
 
+## Shared Core Architecture
+
+Solver backends intentionally share one algorithmic core where possible:
+
+- Quasi-static speed profile:
+  - shared core: `src/apexsim/simulation/_profile_core.py`
+  - numpy adapter: `src/apexsim/simulation/profile.py`
+  - torch adapter: `src/apexsim/simulation/torch_profile.py`
+  - numba keeps specialized kernels in `src/apexsim/simulation/numba_profile.py`
+    with parity checks against shared semantics.
+- Transient PID infrastructure:
+  - shared helpers: `src/apexsim/simulation/_transient_pid_core.py`
+  - shared control mesh/encoding: `src/apexsim/simulation/_transient_controls_core.py`
+  - shared progress reporting: `src/apexsim/simulation/_progress.py`
+- Vehicle backend physics primitives:
+  - shared formulas: `src/apexsim/vehicle/_backend_physics_core.py`
+  - consumed by point-mass and single-track backend adapters.
+
+This reduces backend-specific formula drift while preserving specialized
+performance paths (especially numba kernels).
+
 ## Backend policy
 
 Supported backends are intentionally restricted to:
@@ -113,10 +134,13 @@ config_gpu = build_simulation_config(
 
 ## Benchmark methodology
 
-Reference script:
+Reference scripts:
 
 ```bash
 python examples/backend_benchmarks.py --warmup-runs 5 --timed-runs 20
+python scripts/benchmark_solver_matrix.py --warmup-runs 2 --timed-runs 5 --output baseline.json
+python scripts/benchmark_solver_matrix.py --warmup-runs 2 --timed-runs 5 --output candidate.json
+python scripts/compare_solver_benchmarks.py --baseline baseline.json --candidate candidate.json --max-slowdown-pct 5 --require-same-cases
 ```
 
 Notes:
@@ -125,6 +149,12 @@ Notes:
 - "First Call" includes startup/JIT/compile effects.
 - "Steady" values are from repeated post-warmup runs.
 - Use your own machine data for final backend decisions.
+- The solver matrix script covers:
+  - models: `PointMassModel`, `SingleTrackModel`
+  - solver modes: `quasi_static`, `transient_oc` (PID)
+  - tracks: straight, circle, plus Spa smoke (unless `--skip-spa`).
+- `compare_solver_benchmarks.py` is intended as a PR gate for the
+  5%-slowdown policy.
 
 ## Benchmark snapshot (February 17, 2026)
 

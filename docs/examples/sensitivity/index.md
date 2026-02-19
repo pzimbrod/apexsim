@@ -26,7 +26,7 @@ Two objective metrics are evaluated:
 - It highlights which parameters matter globally (lap time) vs. energetically.
 - It uses one compact, model-agnostic API with clear parameter targets.
 - The Spa notebook additionally compares quasi-static and transient sensitivities
-  to expose solver-path limitations (notably for yaw inertia).
+  in an AD-first workflow to expose solver-path limitations (notably for yaw inertia).
 
 ## Output artifacts
 

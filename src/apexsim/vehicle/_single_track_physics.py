@@ -9,7 +9,8 @@ import numpy as np
 from apexsim.simulation.model_api import ModelDiagnostics
 from apexsim.tire.models import AxleTireParameters
 from apexsim.tire.pacejka import magic_formula_lateral
-from apexsim.utils.constants import GRAVITY, SMALL_EPS
+from apexsim.utils.constants import GRAVITY
+from apexsim.vehicle._backend_physics_core import axle_tire_loads_numpy
 from apexsim.vehicle._point_mass_physics import PointMassPhysicalMixin, PointMassPhysicalState
 from apexsim.vehicle.single_track.dynamics import (
     ControlInput,
@@ -95,26 +96,13 @@ class SingleTrackPhysicalMixin(PointMassPhysicalMixin):
         Returns:
             Tuple ``(front_tire_load, rear_tire_load)`` [N].
         """
-        speed_array = np.asarray(speed, dtype=float)
-        downforce_total = self._downforce_total_batch(speed_array)
-        front_downforce = downforce_total * self._front_downforce_share
-
-        weight = self.vehicle.mass * GRAVITY
-        total_vertical_load = weight + downforce_total
-        front_static_load = weight * self.vehicle.front_weight_fraction
-
-        min_axle_load = 2.0 * SMALL_EPS
-        front_axle_raw = front_static_load + front_downforce
-        front_axle_load = np.clip(
-            front_axle_raw,
-            min_axle_load,
-            total_vertical_load - min_axle_load,
+        return axle_tire_loads_numpy(
+            speed=np.asarray(speed, dtype=float),
+            mass=self.vehicle.mass,
+            downforce_scale=self._downforce_scale,
+            front_downforce_share=self._front_downforce_share,
+            front_weight_fraction=self.vehicle.front_weight_fraction,
         )
-        rear_axle_load = total_vertical_load - front_axle_load
-
-        front_tire_load = np.maximum(front_axle_load * 0.5, SMALL_EPS)
-        rear_tire_load = np.maximum(rear_axle_load * 0.5, SMALL_EPS)
-        return np.asarray(front_tire_load, dtype=float), np.asarray(rear_tire_load, dtype=float)
 
     def _iterate_lateral_limit(
         self,

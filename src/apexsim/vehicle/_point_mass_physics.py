@@ -8,6 +8,11 @@ import numpy as np
 
 from apexsim.simulation.model_api import ModelDiagnostics
 from apexsim.utils.constants import GRAVITY, SMALL_EPS
+from apexsim.vehicle._backend_physics_core import (
+    downforce_total_numpy,
+    normal_accel_limit_numpy,
+    tractive_power_numpy,
+)
 from apexsim.vehicle._physics_primitives import EnvelopePhysics
 from apexsim.vehicle.params import VehicleParameters
 
@@ -86,10 +91,10 @@ class PointMassPhysicalMixin:
         Returns:
             Total downforce samples [N].
         """
-        speed_non_negative = np.maximum(np.asarray(speed, dtype=float), 0.0)
-        speed_squared = speed_non_negative * speed_non_negative
-        downforce = self._downforce_scale * speed_squared
-        return np.asarray(downforce, dtype=float)
+        return downforce_total_numpy(
+            speed=np.asarray(speed, dtype=float),
+            downforce_scale=self._downforce_scale,
+        )
 
     def _normal_accel_limit(self, speed: float) -> float:
         """Compute normal-acceleration budget from gravity and downforce.
@@ -100,8 +105,13 @@ class PointMassPhysicalMixin:
         Returns:
             Available normal-acceleration budget [m/s^2].
         """
-        downforce = self._downforce_total(speed)
-        return float(max(GRAVITY + downforce / self.vehicle.mass, SMALL_EPS))
+        return float(
+            normal_accel_limit_numpy(
+                speed=speed,
+                downforce_scale=self._downforce_scale,
+                mass=self.vehicle.mass,
+            )
+        )
 
     def _normal_accel_limit_batch(self, speed: np.ndarray) -> np.ndarray:
         """Compute vectorized normal-acceleration budget samples.
@@ -112,9 +122,11 @@ class PointMassPhysicalMixin:
         Returns:
             Available normal-acceleration budget samples [m/s^2].
         """
-        downforce = self._downforce_total_batch(speed)
-        normal_accel = GRAVITY + downforce / self.vehicle.mass
-        return np.maximum(normal_accel, SMALL_EPS)
+        return normal_accel_limit_numpy(
+            speed=np.asarray(speed, dtype=float),
+            downforce_scale=self._downforce_scale,
+            mass=self.vehicle.mass,
+        )
 
     def _tire_accel_limit(self, speed: float) -> float:
         """Compute isotropic tire acceleration limit for scalar speed.
@@ -214,8 +226,14 @@ class PointMassPhysicalMixin:
         Returns:
             Tractive power [W].
         """
-        tractive_force = self.vehicle.mass * longitudinal_accel + self._drag_force(speed)
-        return float(tractive_force * speed)
+        return float(
+            tractive_power_numpy(
+                speed=speed,
+                longitudinal_accel=longitudinal_accel,
+                mass=self.vehicle.mass,
+                drag_force_scale=self._drag_force_scale,
+            )
+        )
 
     def _tractive_power_batch(
         self,
@@ -231,13 +249,12 @@ class PointMassPhysicalMixin:
         Returns:
             Tractive power samples [W].
         """
-        speed_array = np.asarray(speed, dtype=float)
-        accel_array = np.asarray(longitudinal_accel, dtype=float)
-        speed_non_negative = np.maximum(speed_array, 0.0)
-        speed_squared = speed_non_negative * speed_non_negative
-        drag_force = self._drag_force_scale * speed_squared
-        tractive_force = self.vehicle.mass * accel_array + drag_force
-        return np.asarray(tractive_force * speed_array, dtype=float)
+        return tractive_power_numpy(
+            speed=np.asarray(speed, dtype=float),
+            longitudinal_accel=np.asarray(longitudinal_accel, dtype=float),
+            mass=self.vehicle.mass,
+            drag_force_scale=self._drag_force_scale,
+        )
 
     def lateral_accel_limit(
         self,

@@ -13,6 +13,7 @@ from unittest.mock import patch
 import numpy as np
 
 from apexsim.analysis import (
+    SensitivityNumerics,
     SensitivityRuntime,
     SensitivityStudyParameter,
     run_lap_sensitivity_study,
@@ -41,7 +42,10 @@ from apexsim.simulation.transient_numpy import (
     build_physics_informed_pid_gain_scheduling,
     solve_transient_lap_numpy,
 )
-from apexsim.simulation.transient_torch import solve_transient_lap_torch
+from apexsim.simulation.transient_torch import (
+    _build_control_node_count,
+    solve_transient_lap_torch,
+)
 from apexsim.tire import default_axle_tire_parameters
 from apexsim.track import build_circular_track, build_straight_track
 from apexsim.utils.exceptions import ConfigurationError
@@ -257,6 +261,10 @@ class TransientSolverTests(unittest.TestCase):
         self.assertEqual(explicit, (0.0, 8.0, 16.0))
         zero_cap = _resolve_schedule_speed_nodes(max_speed=0.0)
         self.assertEqual(zero_cap, (0.0, 1.0))
+
+    def test_torch_control_node_count_handles_single_sample(self) -> None:
+        """Cover single-sample control node sizing branch in torch helper."""
+        self.assertEqual(_build_control_node_count(sample_count=1, control_interval=8), 1)
 
     def test_resolve_pid_gain_scheduling_mode_switches(self) -> None:
         """Resolve off/physics/custom scheduling branches from runtime numerics."""
@@ -604,8 +612,70 @@ class TransientSolverTests(unittest.TestCase):
 
     @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
     def test_solve_transient_lap_torch_pid_default_skips_torchdiffeq(self) -> None:
-        """Use transient PID mode on torch backend without torchdiffeq dependency."""
+        """Use transient PID mode on torch backend without fallback dependencies."""
         track = build_straight_track(length=180.0, sample_count=41)
+        model = build_point_mass_model(vehicle=sample_vehicle_parameters())
+        with (
+            _patch_transient_dependency_specs(),
+            patch(
+                "apexsim.simulation.transient_torch._require_torchdiffeq",
+                side_effect=AssertionError("torchdiffeq should not be required in pid mode"),
+            ),
+            patch(
+                "apexsim.simulation.transient_numpy.solve_transient_lap_numpy",
+                side_effect=AssertionError("numpy fallback should not be used in torch pid mode"),
+            ),
+        ):
+            config = build_simulation_config(
+                compute_backend="torch",
+                solver_mode="transient_oc",
+                max_speed=60.0,
+                initial_speed=10.0,
+            )
+            profile = solve_transient_lap_torch(track=track, model=model, config=config)
+            profile_np = profile.to_numpy()
+        self.assertGreater(profile_np.lap_time, 0.0)
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_solve_transient_lap_torch_pid_supports_custom_gain_scheduling(self) -> None:
+        """Run torch PID path with explicit custom speed-dependent gain tables."""
+        track = build_circular_track(radius=70.0, sample_count=121)
+        model = build_single_track_model(
+            vehicle=sample_vehicle_parameters(),
+            tires=default_axle_tire_parameters(),
+            physics=SingleTrackPhysics(),
+        )
+        with (
+            _patch_transient_dependency_specs(),
+            patch(
+                "apexsim.simulation.transient_torch._require_torchdiffeq",
+                side_effect=AssertionError("torchdiffeq should not be required in pid mode"),
+            ),
+        ):
+            config = build_simulation_config(
+                compute_backend="torch",
+                solver_mode="transient_oc",
+                max_speed=75.0,
+                initial_speed=18.0,
+                torch_device="cpu",
+                torch_compile=False,
+                transient=TransientConfig(
+                    numerics=TransientNumericsConfig(
+                        pid_gain_scheduling_mode="custom",
+                        pid_gain_scheduling=_custom_pid_schedule(),
+                    ),
+                ),
+            )
+            profile = solve_transient_lap_torch(track=track, model=model, config=config)
+        profile_np = profile.to_numpy()
+        self.assertTrue(np.isfinite(profile_np.lap_time))
+        self.assertTrue(np.all(np.isfinite(profile_np.speed)))
+        self.assertGreater(float(np.max(np.abs(profile_np.steer_cmd))), 0.0)
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_solve_transient_lap_torch_pid_supports_physics_informed_gain_scheduling(self) -> None:
+        """Run torch PID path with deterministic physics-informed scheduling."""
+        track = build_straight_track(length=220.0, sample_count=61)
         model = build_point_mass_model(vehicle=sample_vehicle_parameters())
         with (
             _patch_transient_dependency_specs(),
@@ -618,11 +688,160 @@ class TransientSolverTests(unittest.TestCase):
                 compute_backend="torch",
                 solver_mode="transient_oc",
                 max_speed=60.0,
-                initial_speed=10.0,
+                initial_speed=0.0,
+                torch_device="cpu",
+                torch_compile=False,
+                transient=TransientConfig(
+                    numerics=TransientNumericsConfig(
+                        pid_gain_scheduling_mode="physics_informed",
+                    ),
+                ),
             )
             profile = solve_transient_lap_torch(track=track, model=model, config=config)
-            profile_np = profile.to_numpy()
+        profile_np = profile.to_numpy()
         self.assertGreater(profile_np.lap_time, 0.0)
+        self.assertTrue(np.all(np.isfinite(profile_np.longitudinal_accel)))
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_transient_pid_autodiff_sensitivity_runs_for_single_track_parameters(self) -> None:
+        """Compute transient PID AD sensitivities for key single-track parameters."""
+        track = build_straight_track(length=180.0, sample_count=41)
+        model = build_single_track_model(
+            vehicle=sample_vehicle_parameters(),
+            tires=default_axle_tire_parameters(),
+            physics=SingleTrackPhysics(),
+        )
+        with _patch_transient_dependency_specs():
+            config = build_simulation_config(
+                compute_backend="torch",
+                solver_mode="transient_oc",
+                max_speed=60.0,
+                initial_speed=8.0,
+                transient=TransientConfig(
+                    numerics=TransientNumericsConfig(max_time_step=1.0),
+                    runtime=TransientRuntimeConfig(driver_model="pid", verbosity=0),
+                ),
+                torch_device="cpu",
+                torch_compile=False,
+            )
+            study = run_lap_sensitivity_study(
+                track=track,
+                model=model,
+                simulation_config=config,
+                parameters=[
+                    SensitivityStudyParameter(name="mass", target="vehicle.mass"),
+                    SensitivityStudyParameter(name="cg_height", target="vehicle.cg_height"),
+                    SensitivityStudyParameter(name="yaw_inertia", target="vehicle.yaw_inertia"),
+                    SensitivityStudyParameter(
+                        name="drag_coefficient",
+                        target="vehicle.drag_coefficient",
+                    ),
+                ],
+                objectives=("lap_time_s", "energy_kwh"),
+            )
+        self.assertEqual(study.sensitivity_results["lap_time_s"].method, "autodiff")
+        self.assertEqual(study.sensitivity_results["energy_kwh"].method, "autodiff")
+        for objective in ("lap_time_s", "energy_kwh"):
+            result = study.sensitivity_results[objective]
+            for name in ("mass", "cg_height", "yaw_inertia", "drag_coefficient"):
+                self.assertTrue(np.isfinite(result.sensitivities[name]))
+        lap_time_sensitivities = study.sensitivity_results["lap_time_s"].sensitivities
+        self.assertLess(abs(lap_time_sensitivities["mass"]), 1.0)
+        self.assertLess(abs(lap_time_sensitivities["drag_coefficient"]), 5.0)
+        self.assertLess(abs(lap_time_sensitivities["yaw_inertia"]), 0.1)
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_transient_pid_autodiff_matches_fd_for_single_track_on_straight(self) -> None:
+        """Keep transient single-track AD sensitivities aligned with FD on straight laps."""
+        track = build_straight_track(length=180.0, sample_count=41)
+        model = build_single_track_model(
+            vehicle=sample_vehicle_parameters(),
+            tires=default_axle_tire_parameters(),
+            physics=SingleTrackPhysics(),
+        )
+        with _patch_transient_dependency_specs():
+            config = build_simulation_config(
+                compute_backend="torch",
+                solver_mode="transient_oc",
+                max_speed=60.0,
+                initial_speed=8.0,
+                transient=TransientConfig(
+                    numerics=TransientNumericsConfig(max_time_step=1.0),
+                    runtime=TransientRuntimeConfig(driver_model="pid", verbosity=0),
+                ),
+                torch_device="cpu",
+                torch_compile=False,
+            )
+            parameters = [
+                SensitivityStudyParameter(name="mass", target="vehicle.mass"),
+                SensitivityStudyParameter(
+                    name="drag_coefficient",
+                    target="vehicle.drag_coefficient",
+                ),
+            ]
+            ad = run_lap_sensitivity_study(
+                track=track,
+                model=model,
+                simulation_config=config,
+                parameters=parameters,
+                objectives=("lap_time_s",),
+                runtime=SensitivityRuntime(method="autodiff"),
+            )
+            fd = run_lap_sensitivity_study(
+                track=track,
+                model=model,
+                simulation_config=config,
+                parameters=parameters,
+                objectives=("lap_time_s",),
+                runtime=SensitivityRuntime(method="finite_difference"),
+                numerics=SensitivityNumerics(finite_difference_relative_step=1e-4),
+            )
+
+        ad_values = ad.sensitivity_results["lap_time_s"].sensitivities
+        fd_values = fd.sensitivity_results["lap_time_s"].sensitivities
+        for name in ("mass", "drag_coefficient"):
+            tolerance = max(1e-6, 5e-3 * abs(fd_values[name]))
+            self.assertAlmostEqual(ad_values[name], fd_values[name], delta=tolerance)
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_transient_pid_autodiff_sensitivity_runs_for_point_mass_parameters(self) -> None:
+        """Compute transient PID AD sensitivities for key point-mass parameters."""
+        track = build_straight_track(length=180.0, sample_count=41)
+        model = build_point_mass_model(vehicle=sample_vehicle_parameters())
+        with _patch_transient_dependency_specs():
+            config = build_simulation_config(
+                compute_backend="torch",
+                solver_mode="transient_oc",
+                max_speed=60.0,
+                initial_speed=8.0,
+                transient=TransientConfig(
+                    numerics=TransientNumericsConfig(max_time_step=1.0),
+                    runtime=TransientRuntimeConfig(driver_model="pid", verbosity=0),
+                ),
+                torch_device="cpu",
+                torch_compile=False,
+            )
+            study = run_lap_sensitivity_study(
+                track=track,
+                model=model,
+                simulation_config=config,
+                parameters=[
+                    SensitivityStudyParameter(name="mass", target="vehicle.mass"),
+                    SensitivityStudyParameter(name="cg_height", target="vehicle.cg_height"),
+                    SensitivityStudyParameter(name="yaw_inertia", target="vehicle.yaw_inertia"),
+                    SensitivityStudyParameter(
+                        name="drag_coefficient",
+                        target="vehicle.drag_coefficient",
+                    ),
+                ],
+                objectives=("lap_time_s", "energy_kwh"),
+            )
+        self.assertEqual(study.sensitivity_results["lap_time_s"].method, "autodiff")
+        self.assertEqual(study.sensitivity_results["energy_kwh"].method, "autodiff")
+        for objective in ("lap_time_s", "energy_kwh"):
+            result = study.sensitivity_results[objective]
+            for name in ("mass", "cg_height", "yaw_inertia", "drag_coefficient"):
+                self.assertTrue(np.isfinite(result.sensitivities[name]))
 
     def test_simulate_lap_transient_populates_extended_fields(self) -> None:
         """Return transient result with populated state/control traces."""

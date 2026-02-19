@@ -763,6 +763,19 @@ def run_lap_sensitivity_study(
         )
         raise ConfigurationError(msg)
 
+    if (
+        resolved_config.runtime.method == "autodiff"
+        and simulation_config.runtime.solver_mode == "transient_oc"
+        and simulation_config.transient.runtime.driver_model == "optimal_control"
+    ):
+        msg = (
+            "Autodiff lap sensitivities are currently unsupported for "
+            "solver_mode='transient_oc' with driver_model='optimal_control'. "
+            "Use transient PID mode for autodiff, or select "
+            "SensitivityRuntime(method='finite_difference') for optimal-control studies."
+        )
+        raise ConfigurationError(msg)
+
     base_parameters = [
         SensitivityParameter(
             name=parameter.name,
@@ -1311,29 +1324,35 @@ def _compute_lap_energy_kwh_torch(
 
     Args:
         track: Track used for speed-profile solve.
-        model: Vehicle model exposing ``tractive_power_torch``.
+        model: Vehicle model exposing ``tractive_power``.
         speed_profile: Torch speed-profile output with speed and acceleration.
 
     Returns:
         Differentiable scalar energy value in ``kWh``.
     """
     torch = _require_torch()
-    tractive_power_torch = getattr(model, "tractive_power_torch", None)
-    if not callable(tractive_power_torch):
-        msg = (
-            "energy_kwh lap sensitivity objective requires model to implement "
-            "`tractive_power_torch(speed, longitudinal_accel)`."
-        )
-        raise ConfigurationError(msg)
+    tractive_power = getattr(model, "tractive_power", None)
+    method_name = "tractive_power"
+    if not callable(tractive_power):
+        legacy_tractive_power = getattr(model, "tractive_power_torch", None)
+        if callable(legacy_tractive_power):
+            tractive_power = legacy_tractive_power
+            method_name = "tractive_power_torch"
+        else:
+            msg = (
+                "energy_kwh lap sensitivity objective requires model to implement "
+                "`tractive_power(speed, longitudinal_accel)`."
+            )
+            raise ConfigurationError(msg)
 
     speed = speed_profile.speed
     longitudinal_accel = speed_profile.longitudinal_accel
-    power = tractive_power_torch(speed=speed, longitudinal_accel=longitudinal_accel)
+    power = tractive_power(speed=speed, longitudinal_accel=longitudinal_accel)
     power_tensor = torch.as_tensor(power, dtype=speed.dtype, device=speed.device)
 
     if tuple(power_tensor.shape) != tuple(speed.shape):
         msg = (
-            "tractive_power_torch must return tensor with same shape as speed, "
+            f"{method_name} must return tensor with same shape as speed, "
             f"expected {tuple(speed.shape)}, got {tuple(power_tensor.shape)}"
         )
         raise ConfigurationError(msg)

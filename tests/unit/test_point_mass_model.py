@@ -253,8 +253,8 @@ class PointMassModelTests(unittest.TestCase):
         import torch
 
         model_without_reference = _build_point_mass_model()
-        drive_unscaled = model_without_reference._scaled_drive_envelope_accel_limit_torch(torch)
-        brake_unscaled = model_without_reference._scaled_brake_envelope_accel_limit_torch(torch)
+        drive_unscaled = model_without_reference._backend_scaled_drive_envelope_accel_limit(torch)
+        brake_unscaled = model_without_reference._backend_scaled_brake_envelope_accel_limit(torch)
         self.assertAlmostEqual(
             float(drive_unscaled.item()),
             model_without_reference.envelope_physics.max_drive_accel,
@@ -277,8 +277,8 @@ class PointMassModelTests(unittest.TestCase):
                 friction_coefficient=1.7,
             ),
         )
-        drive_scaled = model_with_reference._scaled_drive_envelope_accel_limit_torch(torch)
-        brake_scaled = model_with_reference._scaled_brake_envelope_accel_limit_torch(torch)
+        drive_scaled = model_with_reference._backend_scaled_drive_envelope_accel_limit(torch)
+        brake_scaled = model_with_reference._backend_scaled_brake_envelope_accel_limit(torch)
         self.assertAlmostEqual(
             float(drive_scaled.item()),
             model_with_reference.envelope_physics.max_drive_accel * reference_mass / vehicle.mass,

@@ -2,12 +2,45 @@
 
 from __future__ import annotations
 
-import sys
 from dataclasses import replace
 from typing import Any
 
 import numpy as np
 
+from apexsim.simulation._progress import (
+    DEFAULT_TRACK_PROGRESS_FRACTION_STEP,
+)
+from apexsim.simulation._progress import (
+    maybe_emit_track_progress as _maybe_emit_track_progress,
+)
+from apexsim.simulation._progress import (
+    render_progress_line as _render_progress_line,
+)
+from apexsim.simulation._transient_controls_core import (
+    ControlInterpolationMap,
+    build_control_interpolation_map,
+)
+from apexsim.simulation._transient_controls_core import (
+    bounded_artanh as _bounded_artanh,
+)
+from apexsim.simulation._transient_controls_core import (
+    build_control_mesh_positions as _build_control_mesh_positions,
+)
+from apexsim.simulation._transient_controls_core import (
+    expand_mesh_controls as _expand_mesh_controls,
+)
+from apexsim.simulation._transient_controls_core import (
+    sample_seed_on_mesh as _sample_seed_on_mesh,
+)
+from apexsim.simulation._transient_pid_core import (
+    clamp_integral_scalar as _clamp_integral,
+)
+from apexsim.simulation._transient_pid_core import (
+    resolve_initial_speed,
+)
+from apexsim.simulation._transient_pid_core import (
+    segment_time_partition as _segment_time_partition,
+)
 from apexsim.simulation.config import SimulationConfig
 from apexsim.simulation.integrator import rk4_step
 from apexsim.simulation.profile import solve_speed_profile
@@ -22,10 +55,10 @@ from apexsim.utils.constants import SMALL_EPS
 from apexsim.utils.exceptions import ConfigurationError
 from apexsim.vehicle.single_track.dynamics import ControlInput, VehicleState
 
-_PROGRESS_BAR_WIDTH = 30
-_TRACK_PROGRESS_FRACTION_STEP = 0.10
+_TRACK_PROGRESS_FRACTION_STEP = DEFAULT_TRACK_PROGRESS_FRACTION_STEP
 _TRACK_PROGRESS_EVAL_STRIDE = 20
 _MAX_TRANSIENT_SIDESLIP_RATIO = 0.35
+_MAX_SINGLE_TRACK_PID_INTEGRATION_STEP = 0.05
 
 _DEFAULT_SCHEDULE_SPEED_NODES_MPS = (0.0, 10.0, 20.0, 35.0, 55.0)
 _SCHEDULE_REFERENCE_SPEED_MPS = 20.0
@@ -43,19 +76,6 @@ _SCHEDULE_STEER_KD_SCALE_MAX = 2.10
 _SCHEDULE_STEER_VY_SCALE_MIN = 0.75
 _SCHEDULE_STEER_VY_SCALE_MAX = 2.00
 _SCHEDULE_STEER_VY_GRADIENT = 0.50
-
-
-def _clamp_integral(value: float, limit: float) -> float:
-    """Clamp PID integrator state to a symmetric finite interval.
-
-    Args:
-        value: Integrator state value.
-        limit: Absolute integrator limit.
-
-    Returns:
-        Clamped integrator state.
-    """
-    return float(np.clip(value, -limit, limit))
 
 
 def _resolve_schedule_speed_nodes(
@@ -324,73 +344,6 @@ def _require_scipy_optimize() -> Any:
     return optimize
 
 
-def _render_progress_line(
-    *,
-    prefix: str,
-    fraction: float,
-    suffix: str,
-    final: bool = False,
-) -> None:
-    """Render one in-place text progress line to stderr.
-
-    Args:
-        prefix: Prefix shown before the progress bar.
-        fraction: Progress fraction in ``[0, 1]``.
-        suffix: Additional information shown after percentage.
-        final: If ``True``, terminate the line with a newline.
-    """
-    clamped = float(np.clip(fraction, 0.0, 1.0))
-    filled = int(clamped * _PROGRESS_BAR_WIDTH)
-    bar = "#" * filled + "-" * (_PROGRESS_BAR_WIDTH - filled)
-    end = "\n" if final else ""
-    print(
-        f"\r{prefix} [{bar}] {100.0 * clamped:5.1f}% {suffix}",
-        end=end,
-        file=sys.stderr,
-        flush=True,
-    )
-
-
-def _maybe_emit_track_progress(
-    *,
-    progress_prefix: str | None,
-    segment_idx: int,
-    segment_count: int,
-    next_fraction_threshold: float,
-) -> float:
-    """Emit throttled track-integration progress updates.
-
-    Args:
-        progress_prefix: Progress prefix or ``None`` to disable reporting.
-        segment_idx: Current segment index (0-based).
-        segment_count: Total number of segments.
-        next_fraction_threshold: Next fraction threshold triggering output.
-
-    Returns:
-        Updated next fraction threshold.
-    """
-    if progress_prefix is None or segment_count <= 0:
-        return next_fraction_threshold
-
-    completed = segment_idx + 1
-    fraction = completed / segment_count
-    is_final = completed == segment_count
-    if fraction < next_fraction_threshold and not is_final:
-        return next_fraction_threshold
-
-    _render_progress_line(
-        prefix=progress_prefix,
-        fraction=fraction,
-        suffix=f"segment {completed}/{segment_count}",
-        final=is_final,
-    )
-
-    threshold = next_fraction_threshold
-    while threshold <= fraction:
-        threshold += _TRACK_PROGRESS_FRACTION_STEP
-    return threshold
-
-
 def _is_single_track_model(model: Any) -> bool:
     """Return whether model exposes single-track transient dynamics internals.
 
@@ -406,78 +359,6 @@ def _is_single_track_model(model: Any) -> bool:
         and hasattr(model.physics, "max_steer_angle")
         and hasattr(model.physics, "max_steer_rate")
     )
-
-
-def _build_control_mesh_positions(
-    *,
-    sample_count: int,
-    control_interval: int,
-) -> np.ndarray:
-    """Build evenly spaced control-node positions for optimization.
-
-    Args:
-        sample_count: Number of full track samples.
-        control_interval: Desired spacing between control nodes in samples.
-
-    Returns:
-        Monotonic control-node positions over sample indices.
-    """
-    if sample_count <= 1:
-        return np.zeros(1, dtype=float)
-    control_count = int(np.ceil((sample_count - 1) / max(control_interval, 1))) + 1
-    control_count = min(max(control_count, 2), sample_count)
-    return np.linspace(0.0, float(sample_count - 1), control_count, dtype=float)
-
-
-def _sample_seed_on_mesh(seed: np.ndarray, mesh_positions: np.ndarray) -> np.ndarray:
-    """Sample a full-resolution seed signal onto the control mesh.
-
-    Args:
-        seed: Full-resolution seed signal.
-        mesh_positions: Control-node positions in sample index coordinates.
-
-    Returns:
-        Seed values at control-node positions.
-    """
-    sample_positions = np.arange(seed.size, dtype=float)
-    return np.asarray(np.interp(mesh_positions, sample_positions, seed), dtype=float)
-
-
-def _expand_mesh_controls(
-    *,
-    node_values: np.ndarray,
-    sample_count: int,
-    mesh_positions: np.ndarray,
-) -> np.ndarray:
-    """Expand control-node values to full track resolution by interpolation.
-
-    Args:
-        node_values: Control values at mesh nodes.
-        sample_count: Full sample count.
-        mesh_positions: Control-node positions in sample index coordinates.
-
-    Returns:
-        Full-resolution control signal.
-    """
-    if sample_count <= 1:
-        return np.asarray(node_values[:1], dtype=float)
-    sample_positions = np.arange(sample_count, dtype=float)
-    return np.asarray(np.interp(sample_positions, mesh_positions, node_values), dtype=float)
-
-
-def _bounded_artanh(value: np.ndarray, eps: float = 1e-6) -> np.ndarray:
-    """Return stable inverse-tanh transform for bounded control seeds.
-
-    Args:
-        value: Input vector in ``[-1, 1]``.
-        eps: Clipping epsilon away from the interval boundaries.
-
-    Returns:
-        Inverse-tanh transformed values.
-    """
-    clipped = np.clip(value, -1.0 + eps, 1.0 - eps)
-    return np.asarray(np.arctanh(clipped), dtype=float)
-
 
 def _transient_reference_profile(
     track: TrackData,
@@ -511,6 +392,7 @@ def _decode_point_mass_controls(
     *,
     sample_count: int | None = None,
     mesh_positions: np.ndarray | None = None,
+    interpolation_map: ControlInterpolationMap | None = None,
 ) -> np.ndarray:
     """Decode bounded point-mass acceleration controls from raw variables.
 
@@ -520,6 +402,8 @@ def _decode_point_mass_controls(
         sample_count: Optional full track sample count.
         mesh_positions: Optional control-node positions in sample index
             coordinates.
+        interpolation_map: Optional precomputed mesh-to-sample interpolation
+            map used to avoid rebuilding interpolation weights.
 
     Returns:
         Bounded acceleration command vector [m/s^2].
@@ -543,6 +427,7 @@ def _decode_point_mass_controls(
         node_values=node_values,
         sample_count=sample_count,
         mesh_positions=mesh_positions,
+        interpolation_map=interpolation_map,
     )
 
 
@@ -582,6 +467,7 @@ def _decode_single_track_controls(
     *,
     sample_count: int | None = None,
     mesh_positions: np.ndarray | None = None,
+    interpolation_map: ControlInterpolationMap | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Decode bounded single-track acceleration and steering controls.
 
@@ -591,6 +477,8 @@ def _decode_single_track_controls(
         sample_count: Optional full track sample count.
         mesh_positions: Optional control-node positions in sample index
             coordinates.
+        interpolation_map: Optional precomputed mesh-to-sample interpolation
+            map used to avoid rebuilding interpolation weights.
 
     Returns:
         Tuple ``(ax_cmd, steer_target)``.
@@ -604,6 +492,7 @@ def _decode_single_track_controls(
         raw_ax=raw_ax,
         sample_count=sample_count,
         mesh_positions=mesh_positions,
+        interpolation_map=interpolation_map,
     )
     steer_nodes = float(model.physics.max_steer_angle) * np.tanh(raw_steer)
     if sample_count is None:
@@ -620,6 +509,7 @@ def _decode_single_track_controls(
         node_values=np.asarray(steer_nodes, dtype=float),
         sample_count=sample_count,
         mesh_positions=mesh_positions,
+        interpolation_map=interpolation_map,
     )
     return ax_cmd, steer_target
 
@@ -695,10 +585,9 @@ def _simulate_point_mass_controls(
     min_time_step = config.transient.numerics.min_time_step
     max_time_step = config.transient.numerics.max_time_step
     max_speed = float(config.runtime.max_speed)
-    start_speed = (
-        max_speed
-        if config.runtime.initial_speed is None
-        else float(config.runtime.initial_speed)
+    start_speed = resolve_initial_speed(
+        max_speed=max_speed,
+        initial_speed=config.runtime.initial_speed,
     )
 
     speed[0] = max(start_speed, 0.0)
@@ -821,10 +710,9 @@ def _simulate_single_track_controls(
     ax_cmd = np.zeros(n, dtype=float)
 
     max_speed = float(config.runtime.max_speed)
-    start_speed = (
-        max_speed
-        if config.runtime.initial_speed is None
-        else float(config.runtime.initial_speed)
+    start_speed = resolve_initial_speed(
+        max_speed=max_speed,
+        initial_speed=config.runtime.initial_speed,
     )
     min_time_step = config.transient.numerics.min_time_step
     max_time_step = config.transient.numerics.max_time_step
@@ -1008,10 +896,9 @@ def _simulate_point_mass_pid_driver(
     ax_cmd = np.zeros(n, dtype=float)
 
     max_speed = float(config.runtime.max_speed)
-    start_speed = (
-        max_speed
-        if config.runtime.initial_speed is None
-        else float(config.runtime.initial_speed)
+    start_speed = resolve_initial_speed(
+        max_speed=max_speed,
+        initial_speed=config.runtime.initial_speed,
     )
     min_time_step = float(config.transient.numerics.min_time_step)
     max_time_step = float(config.transient.numerics.max_time_step)
@@ -1057,7 +944,7 @@ def _simulate_point_mass_pid_driver(
             )
         )
 
-        dt = segment_time_step(
+        dt_total, integration_dt, integration_substeps = _segment_time_partition(
             segment_length=float(ds[idx]),
             speed=max(speed_value, SMALL_EPS),
             min_time_step=min_time_step,
@@ -1065,10 +952,10 @@ def _simulate_point_mass_pid_driver(
         )
         speed_error = float(reference_speed[idx] - speed_value)
         speed_error_integral = _clamp_integral(
-            speed_error_integral + speed_error * dt,
+            speed_error_integral + speed_error * dt_total,
             integral_limit,
         )
-        speed_error_derivative = (speed_error - previous_speed_error) / max(dt, SMALL_EPS)
+        speed_error_derivative = (speed_error - previous_speed_error) / max(dt_total, SMALL_EPS)
         previous_speed_error = speed_error
         kp_value = _schedule_or_default(
             schedule=(
@@ -1109,10 +996,12 @@ def _simulate_point_mass_pid_driver(
         longitudinal_accel[idx] = commanded
         lateral_accel[idx] = speed_value * speed_value * curvature
 
-        next_speed = np.clip(speed_value + commanded * dt, 0.0, max_speed)
+        next_speed = speed_value
+        for _ in range(integration_substeps):
+            next_speed = float(np.clip(next_speed + commanded * integration_dt, 0.0, max_speed))
         speed[idx + 1] = float(next_speed)
         vx[idx + 1] = speed[idx + 1]
-        time[idx + 1] = time[idx] + dt
+        time[idx + 1] = time[idx] + dt_total
         next_track_progress = _maybe_emit_track_progress(
             progress_prefix=track_progress_prefix,
             segment_idx=idx,
@@ -1187,10 +1076,9 @@ def _simulate_single_track_pid_driver(
     ax_cmd = np.zeros(n, dtype=float)
 
     max_speed = float(config.runtime.max_speed)
-    start_speed = (
-        max_speed
-        if config.runtime.initial_speed is None
-        else float(config.runtime.initial_speed)
+    start_speed = resolve_initial_speed(
+        max_speed=max_speed,
+        initial_speed=config.runtime.initial_speed,
     )
     min_time_step = float(config.transient.numerics.min_time_step)
     max_time_step = float(config.transient.numerics.max_time_step)
@@ -1260,19 +1148,20 @@ def _simulate_single_track_pid_driver(
             )
         )
 
-        dt = segment_time_step(
+        dt_total, integration_dt, integration_substeps = _segment_time_partition(
             segment_length=float(ds[idx]),
             speed=progress_speed,
             min_time_step=min_time_step,
             max_time_step=max_time_step,
+            max_integration_step=_MAX_SINGLE_TRACK_PID_INTEGRATION_STEP,
         )
 
         speed_error = float(reference_speed[idx] - progress_speed)
         longitudinal_integral = _clamp_integral(
-            longitudinal_integral + speed_error * dt,
+            longitudinal_integral + speed_error * dt_total,
             longitudinal_integral_limit,
         )
-        speed_error_derivative = (speed_error - previous_speed_error) / max(dt, SMALL_EPS)
+        speed_error_derivative = (speed_error - previous_speed_error) / max(dt_total, SMALL_EPS)
         previous_speed_error = speed_error
         long_kp_value = _schedule_or_default(
             schedule=(
@@ -1315,10 +1204,10 @@ def _simulate_single_track_pid_driver(
         yaw_rate_reference = float(reference_speed[idx] * curvature)
         yaw_error = yaw_rate_reference - float(yaw_rate[idx])
         steer_integral = _clamp_integral(
-            steer_integral + yaw_error * dt,
+            steer_integral + yaw_error * dt_total,
             steer_integral_limit,
         )
-        yaw_error_derivative = (yaw_error - previous_yaw_error) / max(dt, SMALL_EPS)
+        yaw_error_derivative = (yaw_error - previous_yaw_error) / max(dt_total, SMALL_EPS)
         previous_yaw_error = yaw_error
         steer_kp_value = _schedule_or_default(
             schedule=(gain_scheduling.steer_kp if gain_scheduling is not None else None),
@@ -1353,8 +1242,8 @@ def _simulate_single_track_pid_driver(
         )
         steer_target = float(np.clip(steer_target, -max_steer_angle, max_steer_angle))
 
-        max_delta_steer = max_steer_rate * dt
-        steer_prev = steer_cmd[idx]
+        max_delta_steer = max_steer_rate * dt_total
+        steer_prev = steer_cmd[idx - 1] if idx > 0 else steer_cmd[0]
         steer_rate_limited = np.clip(
             steer_target,
             steer_prev - max_delta_steer,
@@ -1387,17 +1276,24 @@ def _simulate_single_track_pid_driver(
                 dtype=np.float64,
             )
 
-        if method == "euler":
-            next_state = state + dt * rhs(0.0, state)
-        else:
-            next_state = rk4_step(rhs=rhs, time=0.0, state=state, dtime=dt)
+        next_state = state
+        for _ in range(integration_substeps):
+            if method == "euler":
+                next_state = next_state + integration_dt * rhs(0.0, next_state)
+            else:
+                next_state = rk4_step(
+                    rhs=rhs,
+                    time=0.0,
+                    state=next_state,
+                    dtime=integration_dt,
+                )
 
         vx[idx + 1] = float(np.clip(next_state[0], SMALL_EPS, max_speed))
         vy_limit = _MAX_TRANSIENT_SIDESLIP_RATIO * max(vx[idx + 1], SMALL_EPS)
         vy[idx + 1] = float(np.clip(next_state[1], -vy_limit, vy_limit))
         yaw_rate[idx + 1] = float(next_state[2])
         speed[idx + 1] = float(vx[idx + 1])
-        time[idx + 1] = time[idx] + dt
+        time[idx + 1] = time[idx] + dt_total
         next_track_progress = _maybe_emit_track_progress(
             progress_prefix=track_progress_prefix,
             segment_idx=idx,
@@ -1528,6 +1424,10 @@ def solve_transient_lap_numpy(
         sample_count=sample_count,
         control_interval=int(config.transient.numerics.control_interval),
     )
+    interpolation_map = build_control_interpolation_map(
+        sample_count=sample_count,
+        mesh_positions=mesh_positions,
+    )
     control_node_count = int(mesh_positions.size)
 
     ax_seed = reference_ax
@@ -1571,6 +1471,7 @@ def solve_transient_lap_numpy(
                 raw_controls,
                 sample_count=sample_count,
                 mesh_positions=mesh_positions,
+                interpolation_map=interpolation_map,
             )
             profile = _simulate_single_track_controls(
                 track=track,
@@ -1588,6 +1489,7 @@ def solve_transient_lap_numpy(
             raw_ax=raw_controls,
             sample_count=sample_count,
             mesh_positions=mesh_positions,
+            interpolation_map=interpolation_map,
         )
         profile = _simulate_point_mass_controls(
             track=track,
@@ -1651,6 +1553,7 @@ def solve_transient_lap_numpy(
             best_controls,
             sample_count=sample_count,
             mesh_positions=mesh_positions,
+            interpolation_map=interpolation_map,
         )
         return _simulate_single_track_controls(
             track=track,
@@ -1665,6 +1568,7 @@ def solve_transient_lap_numpy(
         raw_ax=best_controls,
         sample_count=sample_count,
         mesh_positions=mesh_positions,
+        interpolation_map=interpolation_map,
     )
     return _simulate_point_mass_controls(
         track=track,

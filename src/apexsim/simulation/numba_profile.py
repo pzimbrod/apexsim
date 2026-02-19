@@ -7,6 +7,7 @@ from typing import Any, Protocol, cast
 
 import numpy as np
 
+from apexsim.simulation._profile_core import resolve_profile_start_speed
 from apexsim.simulation.config import SimulationConfig
 from apexsim.simulation.profile import SpeedProfileResult
 from apexsim.track.models import TrackData
@@ -674,10 +675,9 @@ def solve_speed_profile_numba(
 
     params = cast(tuple[float | int, ...], param_method())
     param_count = len(params)
-    start_speed = (
-        float(config.runtime.max_speed)
-        if config.runtime.initial_speed is None
-        else float(config.runtime.initial_speed)
+    start_speed = resolve_profile_start_speed(
+        max_speed=float(config.runtime.max_speed),
+        initial_speed=config.runtime.initial_speed,
     )
 
     if param_count == POINT_MASS_PARAMETER_COUNT:
