@@ -1058,6 +1058,10 @@ def _simulate_single_track_pid_torch(
     method = config.transient.numerics.integration_method
     max_steer_angle = float(model.physics.max_steer_angle)
     max_steer_rate = float(model.physics.max_steer_rate)
+    yaw_rate_limit = max(
+        4.0 * max_speed / max(float(model.vehicle.wheelbase), SMALL_EPS),
+        1.0,
+    )
 
     longitudinal_kp = float(config.transient.numerics.pid_longitudinal_kp)
     longitudinal_ki = float(config.transient.numerics.pid_longitudinal_ki)
@@ -1267,10 +1271,26 @@ def _simulate_single_track_pid_torch(
             steer_input: Any = steer_value,
             commanded_input: Any = commanded,
         ) -> Any:
+            vx_state = torch.clamp(current_state[0], min=SMALL_EPS, max=max_speed)
+            vy_state_limit = _MAX_TRANSIENT_SIDESLIP_RATIO * torch.clamp(
+                vx_state,
+                min=SMALL_EPS,
+            )
+            vy_state = torch.clamp(
+                current_state[1],
+                min=-vy_state_limit,
+                max=vy_state_limit,
+            )
+            yaw_state = torch.clamp(
+                current_state[2],
+                min=-yaw_rate_limit,
+                max=yaw_rate_limit,
+            )
+            clipped_state = torch.stack((vx_state, vy_state, yaw_state))
             return _single_track_derivatives_torch(
                 torch=torch,
                 model=model,
-                state=current_state,
+                state=clipped_state,
                 steer=steer_input,
                 longitudinal_accel_cmd=commanded_input,
             )
@@ -1289,7 +1309,8 @@ def _simulate_single_track_pid_torch(
         next_vx = torch.clamp(next_state[0], min=SMALL_EPS, max=max_speed)
         vy_limit = _MAX_TRANSIENT_SIDESLIP_RATIO * torch.clamp(next_vx, min=SMALL_EPS)
         next_vy = torch.clamp(next_state[1], min=-vy_limit, max=vy_limit)
-        next_state = torch.stack((next_vx, next_vy, next_state[2]))
+        next_yaw_rate = torch.clamp(next_state[2], min=-yaw_rate_limit, max=yaw_rate_limit)
+        next_state = torch.stack((next_vx, next_vy, next_yaw_rate))
         state_values.append(next_state)
         speed_values.append(torch.clamp(next_state[0], min=SMALL_EPS, max=max_speed))
         time_values.append(time_values[-1] + dt_total)
@@ -1350,6 +1371,8 @@ def _simulate_point_mass_torch(
     model: Any,
     config: SimulationConfig,
     ax_signal: Any,
+    reference_speed: Any | None = None,
+    reference_ax: Any | None = None,
     track_progress_prefix: str | None = None,
 ) -> TorchTransientProfileResult:
     """Simulate point-mass transient lap from bounded control sequence.
@@ -1360,6 +1383,10 @@ def _simulate_point_mass_torch(
         model: Point-mass model.
         config: Simulation configuration.
         ax_signal: Bounded acceleration command tensor [m/s^2].
+        reference_speed: Optional quasi-static reference speed tensor [m/s]
+            used for OC tracking regularization.
+        reference_ax: Optional quasi-static reference longitudinal-acceleration
+            tensor [m/s^2] used for OC tracking regularization.
         track_progress_prefix: Optional progress prefix shown during
             arc-length integration.
 
@@ -1392,6 +1419,7 @@ def _simulate_point_mass_torch(
     ax_cmd_values: list[Any] = []
 
     lateral_penalty = torch.zeros((), dtype=dtype, device=device)
+    tracking_penalty = torch.zeros((), dtype=dtype, device=device)
     next_track_progress = _TRACK_PROGRESS_FRACTION_STEP
     for idx in range(int(ds.numel())):
         speed = speed_values[-1]
@@ -1415,12 +1443,27 @@ def _simulate_point_mass_torch(
         ax_cmd_values.append(commanded)
         ax_values.append(commanded)
         ay_values.append(speed * speed * curvature[idx])
+        if reference_speed is not None:
+            tracking_penalty = tracking_penalty + (speed - reference_speed[idx]) ** 2
+        if reference_ax is not None:
+            tracking_penalty = tracking_penalty + (commanded - reference_ax[idx]) ** 2
 
-        dt = ds[idx] / torch.clamp(torch.abs(speed), min=SMALL_EPS)
-        dt = torch.clamp(dt, min=min_time_step, max=max_time_step)
-        next_speed = torch.clamp(speed + commanded * dt, min=0.0, max=max_speed)
+        dt_total, integration_dt, integration_substeps = _segment_time_partition_torch(
+            torch=torch,
+            segment_length=ds[idx],
+            speed=torch.clamp(torch.abs(speed), min=SMALL_EPS),
+            min_time_step=min_time_step,
+            max_time_step=max_time_step,
+        )
+        next_speed = speed
+        for _ in range(integration_substeps):
+            next_speed = torch.clamp(
+                next_speed + commanded * integration_dt,
+                min=0.0,
+                max=max_speed,
+            )
         speed_values.append(next_speed)
-        time_values.append(time_values[-1] + dt)
+        time_values.append(time_values[-1] + dt_total)
         next_track_progress = _maybe_emit_track_progress(
             progress_prefix=track_progress_prefix,
             segment_idx=idx,
@@ -1443,6 +1486,7 @@ def _simulate_point_mass_torch(
     objective = (
         time_tensor[-1]
         + config.transient.numerics.lateral_constraint_weight * lateral_penalty
+        + config.transient.numerics.tracking_weight * tracking_penalty
         + config.transient.numerics.control_smoothness_weight * smooth_penalty
     )
 
@@ -1470,6 +1514,9 @@ def _simulate_single_track_torch(
     config: SimulationConfig,
     ax_signal: Any,
     steer_target: Any,
+    reference_speed: Any | None = None,
+    reference_ax: Any | None = None,
+    reference_steer: Any | None = None,
     track_progress_prefix: str | None = None,
 ) -> TorchTransientProfileResult:
     """Simulate single-track transient lap from bounded control sequences.
@@ -1482,6 +1529,12 @@ def _simulate_single_track_torch(
         config: Simulation configuration.
         ax_signal: Bounded acceleration-command tensor [m/s^2].
         steer_target: Bounded steering-target tensor [rad].
+        reference_speed: Optional quasi-static reference speed tensor [m/s]
+            used for OC tracking regularization.
+        reference_ax: Optional quasi-static reference longitudinal-acceleration
+            tensor [m/s^2] used for OC tracking regularization.
+        reference_steer: Optional quasi-static reference steering tensor [rad]
+            used for OC tracking regularization.
         track_progress_prefix: Optional progress prefix shown during
             arc-length integration.
 
@@ -1505,6 +1558,10 @@ def _simulate_single_track_torch(
     max_time_step = float(config.transient.numerics.max_time_step)
     max_steer_angle = float(model.physics.max_steer_angle)
     max_steer_rate = float(model.physics.max_steer_rate)
+    yaw_rate_limit = max(
+        4.0 * max_speed / max(float(model.vehicle.wheelbase), SMALL_EPS),
+        1.0,
+    )
 
     state = torch.tensor(
         [max(start_speed, SMALL_EPS), 0.0, max(start_speed, SMALL_EPS) * track.curvature[0]],
@@ -1541,6 +1598,8 @@ def _simulate_single_track_torch(
             + (state[2] - progress_speed * curvature[idx]) ** 2
             + state[1] ** 2
         )
+        if reference_speed is not None:
+            tracking_penalty = tracking_penalty + (progress_speed - reference_speed[idx]) ** 2
 
         max_accel = model.max_longitudinal_accel_torch(
             speed=body_speed,
@@ -1558,11 +1617,18 @@ def _simulate_single_track_torch(
         ax_cmd_values.append(commanded)
         ax_values.append(commanded)
         ay_values.append(progress_speed * progress_speed * curvature[idx])
+        if reference_ax is not None:
+            tracking_penalty = tracking_penalty + (commanded - reference_ax[idx]) ** 2
 
-        dt = ds[idx] / torch.clamp(progress_speed, min=SMALL_EPS)
-        dt = torch.clamp(dt, min=min_time_step, max=max_time_step)
+        dt_total, integration_dt, integration_substeps = _segment_time_partition_torch(
+            torch=torch,
+            segment_length=ds[idx],
+            speed=progress_speed,
+            min_time_step=min_time_step,
+            max_time_step=max_time_step,
+        )
         steer_prev = steer_values[-1]
-        steer_delta = max_steer_rate * dt
+        steer_delta = max_steer_rate * dt_total
         steer_value = torch.clamp(
             steer_target[idx],
             min=steer_prev - steer_delta,
@@ -1570,6 +1636,8 @@ def _simulate_single_track_torch(
         )
         steer_value = torch.clamp(steer_value, min=-max_steer_angle, max=max_steer_angle)
         steer_values.append(steer_value)
+        if reference_steer is not None:
+            tracking_penalty = tracking_penalty + (steer_value - reference_steer[idx]) ** 2
 
         steer_sample = steer_value
         command_sample = commanded
@@ -1580,28 +1648,39 @@ def _simulate_single_track_torch(
             steer_input: Any = steer_sample,
             longitudinal_command: Any = command_sample,
         ) -> Any:
+            vx_state = torch.clamp(values[0], min=SMALL_EPS, max=max_speed)
+            vy_state_limit = _MAX_TRANSIENT_SIDESLIP_RATIO * torch.clamp(
+                vx_state,
+                min=SMALL_EPS,
+            )
+            vy_state = torch.clamp(values[1], min=-vy_state_limit, max=vy_state_limit)
+            yaw_state = torch.clamp(values[2], min=-yaw_rate_limit, max=yaw_rate_limit)
+            clipped_values = torch.stack((vx_state, vy_state, yaw_state))
             return _single_track_derivatives_torch(
                 torch=torch,
                 model=model,
-                state=values,
+                state=clipped_values,
                 steer=steer_input,
                 longitudinal_accel_cmd=longitudinal_command,
             )
 
-        integration_times = torch.stack(
-            (
-                torch.zeros((), dtype=dtype, device=device),
-                dt,
+        next_state = state
+        for _ in range(integration_substeps):
+            integration_times = torch.stack(
+                (
+                    torch.zeros((), dtype=dtype, device=device),
+                    integration_dt,
+                )
             )
-        )
-        next_state = odeint(rhs, state, integration_times, method=ode_method)[-1]
+            next_state = odeint(rhs, next_state, integration_times, method=ode_method)[-1]
         next_vx = torch.clamp(next_state[0], min=SMALL_EPS, max=max_speed)
         vy_limit = _MAX_TRANSIENT_SIDESLIP_RATIO * torch.clamp(next_vx, min=SMALL_EPS)
         next_vy = torch.clamp(next_state[1], min=-vy_limit, max=vy_limit)
-        next_state = torch.stack((next_vx, next_vy, next_state[2]))
+        next_yaw_rate = torch.clamp(next_state[2], min=-yaw_rate_limit, max=yaw_rate_limit)
+        next_state = torch.stack((next_vx, next_vy, next_yaw_rate))
         state_values.append(next_state)
         speed_values.append(torch.clamp(next_state[0], min=SMALL_EPS, max=max_speed))
-        time_values.append(time_values[-1] + dt)
+        time_values.append(time_values[-1] + dt_total)
         next_track_progress = _maybe_emit_track_progress(
             progress_prefix=track_progress_prefix,
             segment_idx=idx,
@@ -1741,12 +1820,25 @@ def solve_transient_lap_torch(
 
     odeint = _require_torchdiffeq().odeint
 
-    ax_seed, steer_seed = _transient_seed_profile_torch(
+    reference_profile = _transient_reference_profile_torch(
         track=track,
         model=model,
         config=config,
-        torch=torch,
     )
+    reference_speed = reference_profile.speed
+    reference_ax = reference_profile.longitudinal_accel
+    if is_single_track:
+        curvature = torch.as_tensor(track.curvature, dtype=dtype, device=device)
+        reference_steer = torch.atan(model.vehicle.wheelbase * curvature)
+        reference_steer = torch.clamp(
+            reference_steer,
+            min=-float(model.physics.max_steer_angle),
+            max=float(model.physics.max_steer_angle),
+        )
+    else:
+        reference_steer = torch.zeros_like(reference_ax)
+    ax_seed = reference_ax.detach()
+    steer_seed = reference_steer.detach()
 
     sample_count = int(track.arc_length.size)
     control_count = _build_control_node_count(
@@ -1823,6 +1915,9 @@ def solve_transient_lap_torch(
                 config=config,
                 ax_signal=ax_signal,
                 steer_target=steer_target,
+                reference_speed=reference_speed,
+                reference_ax=reference_ax,
+                reference_steer=reference_steer,
                 track_progress_prefix=track_progress_prefix,
             )
         ax_signal = _decode_point_mass_controls_torch(
@@ -1838,6 +1933,8 @@ def solve_transient_lap_torch(
             model=model,
             config=config,
             ax_signal=ax_signal,
+            reference_speed=reference_speed,
+            reference_ax=reference_ax,
             track_progress_prefix=track_progress_prefix,
         )
 
@@ -1902,6 +1999,14 @@ def solve_transient_lap_torch(
                 )
 
     final_profile = evaluate_profile()
+    if (
+        not bool(torch.isfinite(final_profile.lap_time).all().item())
+        or not bool(torch.isfinite(final_profile.speed).all().item())
+        or not bool(torch.isfinite(final_profile.longitudinal_accel).all().item())
+        or not bool(torch.isfinite(final_profile.lateral_accel).all().item())
+    ):
+        msg = "Transient optimal-control solver produced a non-finite torch profile."
+        raise ConfigurationError(msg)
     if show_iteration_progress:
         final_objective = float(final_profile.objective_value.detach().cpu().item())
         _render_progress_line(

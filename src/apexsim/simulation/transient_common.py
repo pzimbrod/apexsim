@@ -519,16 +519,17 @@ def segment_time_step(
     min_time_step: float,
     max_time_step: float,
 ) -> float:
-    """Convert arc-length step to bounded integration time step.
+    """Convert one arc-length step to total segment travel time.
 
     Args:
         segment_length: Arc-length step [m].
         speed: Positive speed [m/s].
-        min_time_step: Lower integration step bound [s].
-        max_time_step: Upper integration step bound [s].
+        min_time_step: Lower segment travel-time bound [s].
+        max_time_step: Deprecated upper integration-step bound [s].
 
     Returns:
-        Bounded integration time step [s].
+        Segment travel time [s].
     """
+    del max_time_step
     raw_step = segment_length / max(abs(speed), SMALL_EPS)
-    return float(np.clip(raw_step, min_time_step, max_time_step))
+    return float(max(raw_step, min_time_step))

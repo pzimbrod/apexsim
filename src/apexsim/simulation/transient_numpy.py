@@ -48,7 +48,6 @@ from apexsim.simulation.transient_common import (
     PidSpeedSchedule,
     TransientPidGainSchedulingConfig,
     TransientProfileResult,
-    segment_time_step,
 )
 from apexsim.track.models import TrackData
 from apexsim.utils.constants import SMALL_EPS
@@ -59,6 +58,7 @@ _TRACK_PROGRESS_FRACTION_STEP = DEFAULT_TRACK_PROGRESS_FRACTION_STEP
 _TRACK_PROGRESS_EVAL_STRIDE = 20
 _MAX_TRANSIENT_SIDESLIP_RATIO = 0.35
 _MAX_SINGLE_TRACK_PID_INTEGRATION_STEP = 0.05
+_INVALID_TRANSIENT_OBJECTIVE = 1.0e18
 
 _DEFAULT_SCHEDULE_SPEED_NODES_MPS = (0.0, 10.0, 20.0, 35.0, 55.0)
 _SCHEDULE_REFERENCE_SPEED_MPS = 20.0
@@ -554,6 +554,8 @@ def _simulate_point_mass_controls(
     model: Any,
     config: SimulationConfig,
     ax_signal: np.ndarray,
+    reference_speed: np.ndarray | None = None,
+    reference_ax: np.ndarray | None = None,
     track_progress_prefix: str | None = None,
 ) -> TransientProfileResult:
     """Simulate point-mass transient lap from bounded control sequence.
@@ -563,6 +565,10 @@ def _simulate_point_mass_controls(
         model: Point-mass model.
         config: Simulation config.
         ax_signal: Bounded acceleration-command sequence [m/s^2].
+        reference_speed: Optional quasi-static reference speed [m/s] used for
+            OC tracking regularization.
+        reference_ax: Optional quasi-static reference longitudinal acceleration
+            [m/s^2] used for OC tracking regularization.
         track_progress_prefix: Optional progress prefix shown during
             arc-length integration.
 
@@ -594,6 +600,7 @@ def _simulate_point_mass_controls(
     vx[0] = speed[0]
 
     lateral_penalty = 0.0
+    tracking_penalty = 0.0
     next_track_progress = _TRACK_PROGRESS_FRACTION_STEP
     for idx in range(n - 1):
         speed_value = float(speed[idx])
@@ -627,17 +634,25 @@ def _simulate_point_mass_controls(
         ax_cmd[idx] = commanded
         longitudinal_accel[idx] = commanded
         lateral_accel[idx] = speed_value * speed_value * curvature
+        if reference_speed is not None:
+            tracking_penalty += (speed_value - float(reference_speed[idx])) ** 2
+        if reference_ax is not None:
+            tracking_penalty += (commanded - float(reference_ax[idx])) ** 2
 
-        dt = segment_time_step(
+        dt_total, integration_dt, integration_substeps = _segment_time_partition(
             segment_length=float(ds[idx]),
             speed=max(speed_value, SMALL_EPS),
             min_time_step=min_time_step,
             max_time_step=max_time_step,
         )
-        next_speed = np.clip(speed_value + commanded * dt, 0.0, max_speed)
+        next_speed = speed_value
+        for _ in range(integration_substeps):
+            next_speed = float(
+                np.clip(next_speed + commanded * integration_dt, 0.0, max_speed)
+            )
         speed[idx + 1] = float(next_speed)
         vx[idx + 1] = speed[idx + 1]
-        time[idx + 1] = time[idx] + dt
+        time[idx + 1] = time[idx] + dt_total
         next_track_progress = _maybe_emit_track_progress(
             progress_prefix=track_progress_prefix,
             segment_idx=idx,
@@ -655,6 +670,7 @@ def _simulate_point_mass_controls(
     objective = (
         lap_time
         + config.transient.numerics.lateral_constraint_weight * lateral_penalty
+        + config.transient.numerics.tracking_weight * tracking_penalty
         + config.transient.numerics.control_smoothness_weight * smooth_penalty
     )
 
@@ -680,6 +696,9 @@ def _simulate_single_track_controls(
     config: SimulationConfig,
     ax_signal: np.ndarray,
     steer_target: np.ndarray,
+    reference_speed: np.ndarray | None = None,
+    reference_ax: np.ndarray | None = None,
+    reference_steer: np.ndarray | None = None,
     track_progress_prefix: str | None = None,
 ) -> TransientProfileResult:
     """Simulate single-track transient lap from bounded control sequences.
@@ -690,6 +709,12 @@ def _simulate_single_track_controls(
         config: Simulation config.
         ax_signal: Bounded acceleration-command sequence [m/s^2].
         steer_target: Bounded steering-target sequence [rad].
+        reference_speed: Optional quasi-static reference speed [m/s] used for
+            OC tracking regularization.
+        reference_ax: Optional quasi-static reference longitudinal acceleration
+            [m/s^2] used for OC tracking regularization.
+        reference_steer: Optional quasi-static reference steering [rad] used
+            for OC tracking regularization.
         track_progress_prefix: Optional progress prefix shown during
             arc-length integration.
 
@@ -719,6 +744,10 @@ def _simulate_single_track_controls(
     method = config.transient.numerics.integration_method
     max_steer_angle = float(model.physics.max_steer_angle)
     max_steer_rate = float(model.physics.max_steer_rate)
+    yaw_rate_limit = max(
+        4.0 * max_speed / max(float(model.vehicle.wheelbase), SMALL_EPS),
+        1.0,
+    )
 
     vx[0] = max(start_speed, SMALL_EPS)
     vy[0] = 0.0
@@ -746,6 +775,8 @@ def _simulate_single_track_controls(
         tracking_penalty += (
             (yaw_rate[idx] - progress_speed * curvature) ** 2 + vy[idx] * vy[idx]
         )
+        if reference_speed is not None:
+            tracking_penalty += (progress_speed - float(reference_speed[idx])) ** 2
 
         max_accel = float(
             model.max_longitudinal_accel(
@@ -767,14 +798,16 @@ def _simulate_single_track_controls(
         ax_cmd[idx] = commanded
         longitudinal_accel[idx] = commanded
         lateral_accel[idx] = progress_speed * progress_speed * curvature
+        if reference_ax is not None:
+            tracking_penalty += (commanded - float(reference_ax[idx])) ** 2
 
-        dt = segment_time_step(
+        dt_total, integration_dt, integration_substeps = _segment_time_partition(
             segment_length=float(ds[idx]),
             speed=progress_speed,
             min_time_step=min_time_step,
             max_time_step=max_time_step,
         )
-        max_delta_steer = max_steer_rate * dt
+        max_delta_steer = max_steer_rate * dt_total
         steer_prev = steer_cmd[idx]
         steer_rate_limited = np.clip(
             steer_target[idx],
@@ -782,6 +815,8 @@ def _simulate_single_track_controls(
             steer_prev + max_delta_steer,
         )
         steer_cmd[idx] = float(np.clip(steer_rate_limited, -max_steer_angle, max_steer_angle))
+        if reference_steer is not None:
+            tracking_penalty += (steer_cmd[idx] - float(reference_steer[idx])) ** 2
 
         state = np.array([vx[idx], vy[idx], yaw_rate[idx]], dtype=np.float64)
 
@@ -794,10 +829,14 @@ def _simulate_single_track_controls(
             steer_value: float = steer_sample,
             longitudinal_command: float = command_sample,
         ) -> np.ndarray:
+            vx_value = float(np.clip(values[0], SMALL_EPS, max_speed))
+            vy_limit_value = _MAX_TRANSIENT_SIDESLIP_RATIO * max(vx_value, SMALL_EPS)
+            vy_value = float(np.clip(values[1], -vy_limit_value, vy_limit_value))
+            yaw_rate_value = float(np.clip(values[2], -yaw_rate_limit, yaw_rate_limit))
             state_value = VehicleState(
-                vx=float(values[0]),
-                vy=float(values[1]),
-                yaw_rate=float(values[2]),
+                vx=vx_value,
+                vy=vy_value,
+                yaw_rate=yaw_rate_value,
             )
             control_value = ControlInput(
                 steer=steer_value,
@@ -809,17 +848,24 @@ def _simulate_single_track_controls(
                 dtype=np.float64,
             )
 
-        if method == "euler":
-            next_state = state + dt * rhs(0.0, state)
-        else:
-            next_state = rk4_step(rhs=rhs, time=0.0, state=state, dtime=dt)
+        next_state = state
+        for _ in range(integration_substeps):
+            if method == "euler":
+                next_state = next_state + integration_dt * rhs(0.0, next_state)
+            else:
+                next_state = rk4_step(
+                    rhs=rhs,
+                    time=0.0,
+                    state=next_state,
+                    dtime=integration_dt,
+                )
 
         vx[idx + 1] = float(np.clip(next_state[0], SMALL_EPS, max_speed))
         vy_limit = _MAX_TRANSIENT_SIDESLIP_RATIO * max(vx[idx + 1], SMALL_EPS)
         vy[idx + 1] = float(np.clip(next_state[1], -vy_limit, vy_limit))
-        yaw_rate[idx + 1] = float(next_state[2])
+        yaw_rate[idx + 1] = float(np.clip(next_state[2], -yaw_rate_limit, yaw_rate_limit))
         speed[idx + 1] = float(vx[idx + 1])
-        time[idx + 1] = time[idx] + dt
+        time[idx + 1] = time[idx] + dt_total
         next_track_progress = _maybe_emit_track_progress(
             progress_prefix=track_progress_prefix,
             segment_idx=idx,
@@ -1085,6 +1131,10 @@ def _simulate_single_track_pid_driver(
     method = config.transient.numerics.integration_method
     max_steer_angle = float(model.physics.max_steer_angle)
     max_steer_rate = float(model.physics.max_steer_rate)
+    yaw_rate_limit = max(
+        4.0 * max_speed / max(float(model.vehicle.wheelbase), SMALL_EPS),
+        1.0,
+    )
 
     longitudinal_kp = float(config.transient.numerics.pid_longitudinal_kp)
     longitudinal_ki = float(config.transient.numerics.pid_longitudinal_ki)
@@ -1261,10 +1311,14 @@ def _simulate_single_track_pid_driver(
             steer_value: float = steer_sample,
             longitudinal_command: float = command_sample,
         ) -> np.ndarray:
+            vx_value = float(np.clip(values[0], SMALL_EPS, max_speed))
+            vy_limit_value = _MAX_TRANSIENT_SIDESLIP_RATIO * max(vx_value, SMALL_EPS)
+            vy_value = float(np.clip(values[1], -vy_limit_value, vy_limit_value))
+            yaw_rate_value = float(np.clip(values[2], -yaw_rate_limit, yaw_rate_limit))
             state_value = VehicleState(
-                vx=float(values[0]),
-                vy=float(values[1]),
-                yaw_rate=float(values[2]),
+                vx=vx_value,
+                vy=vy_value,
+                yaw_rate=yaw_rate_value,
             )
             control_value = ControlInput(
                 steer=steer_value,
@@ -1291,7 +1345,7 @@ def _simulate_single_track_pid_driver(
         vx[idx + 1] = float(np.clip(next_state[0], SMALL_EPS, max_speed))
         vy_limit = _MAX_TRANSIENT_SIDESLIP_RATIO * max(vx[idx + 1], SMALL_EPS)
         vy[idx + 1] = float(np.clip(next_state[1], -vy_limit, vy_limit))
-        yaw_rate[idx + 1] = float(next_state[2])
+        yaw_rate[idx + 1] = float(np.clip(next_state[2], -yaw_rate_limit, yaw_rate_limit))
         speed[idx + 1] = float(vx[idx + 1])
         time[idx + 1] = time[idx] + dt_total
         next_track_progress = _maybe_emit_track_progress(
@@ -1465,40 +1519,51 @@ def solve_transient_lap_numpy(
             if enable_track_progress
             else None
         )
-        if is_single_track:
-            ax_signal, steer_target = _decode_single_track_controls(
-                model,
-                raw_controls,
-                sample_count=sample_count,
-                mesh_positions=mesh_positions,
-                interpolation_map=interpolation_map,
-            )
-            profile = _simulate_single_track_controls(
-                track=track,
-                model=model,
-                config=config,
-                ax_signal=ax_signal,
-                steer_target=steer_target,
-                track_progress_prefix=track_progress_prefix,
-            )
-            latest_objective = float(profile.objective_value)
+        try:
+            if is_single_track:
+                ax_signal, steer_target = _decode_single_track_controls(
+                    model,
+                    raw_controls,
+                    sample_count=sample_count,
+                    mesh_positions=mesh_positions,
+                    interpolation_map=interpolation_map,
+                )
+                profile = _simulate_single_track_controls(
+                    track=track,
+                    model=model,
+                    config=config,
+                    ax_signal=ax_signal,
+                    steer_target=steer_target,
+                    reference_speed=reference_speed,
+                    reference_ax=reference_ax,
+                    reference_steer=np.asarray(reference_steer, dtype=float),
+                    track_progress_prefix=track_progress_prefix,
+                )
+                latest_objective = float(profile.objective_value)
+            else:
+                ax_signal = _decode_point_mass_controls(
+                    model=model,
+                    raw_ax=raw_controls,
+                    sample_count=sample_count,
+                    mesh_positions=mesh_positions,
+                    interpolation_map=interpolation_map,
+                )
+                profile = _simulate_point_mass_controls(
+                    track=track,
+                    model=model,
+                    config=config,
+                    ax_signal=ax_signal,
+                    reference_speed=reference_speed,
+                    reference_ax=reference_ax,
+                    track_progress_prefix=track_progress_prefix,
+                )
+                latest_objective = float(profile.objective_value)
+        except Exception:
+            latest_objective = _INVALID_TRANSIENT_OBJECTIVE
             return latest_objective
 
-        ax_signal = _decode_point_mass_controls(
-            model=model,
-            raw_ax=raw_controls,
-            sample_count=sample_count,
-            mesh_positions=mesh_positions,
-            interpolation_map=interpolation_map,
-        )
-        profile = _simulate_point_mass_controls(
-            track=track,
-            model=model,
-            config=config,
-            ax_signal=ax_signal,
-            track_progress_prefix=track_progress_prefix,
-        )
-        latest_objective = float(profile.objective_value)
+        if not np.isfinite(latest_objective):
+            latest_objective = _INVALID_TRANSIENT_OBJECTIVE
         return latest_objective
 
     def optimization_callback(_: np.ndarray) -> None:
@@ -1541,11 +1606,17 @@ def solve_transient_lap_numpy(
             final=True,
         )
 
-    best_controls = (
-        np.asarray(result.x, dtype=float)
-        if np.isfinite(result.fun)
-        else np.asarray(initial_raw, dtype=float)
-    )
+    if not bool(getattr(result, "success", False)):
+        msg = (
+            "Transient optimal-control solver failed to converge with SciPy "
+            f"L-BFGS-B: {getattr(result, 'message', 'unknown error')}"
+        )
+        raise ConfigurationError(msg)
+    if not np.isfinite(float(getattr(result, "fun", np.nan))):
+        msg = "Transient optimal-control solver returned a non-finite objective value."
+        raise ConfigurationError(msg)
+
+    best_controls = np.asarray(result.x, dtype=float)
 
     if is_single_track:
         ax_signal, steer_target = _decode_single_track_controls(
@@ -1555,13 +1626,25 @@ def solve_transient_lap_numpy(
             mesh_positions=mesh_positions,
             interpolation_map=interpolation_map,
         )
-        return _simulate_single_track_controls(
+        profile = _simulate_single_track_controls(
             track=track,
             model=model,
             config=config,
             ax_signal=ax_signal,
             steer_target=steer_target,
+            reference_speed=reference_speed,
+            reference_ax=reference_ax,
+            reference_steer=np.asarray(reference_steer, dtype=float),
         )
+        if (
+            not np.isfinite(profile.lap_time)
+            or np.any(~np.isfinite(profile.speed))
+            or np.any(~np.isfinite(profile.longitudinal_accel))
+            or np.any(~np.isfinite(profile.lateral_accel))
+        ):
+            msg = "Transient optimal-control solver produced a non-finite single-track profile."
+            raise ConfigurationError(msg)
+        return profile
 
     ax_signal = _decode_point_mass_controls(
         model=model,
@@ -1570,9 +1653,20 @@ def solve_transient_lap_numpy(
         mesh_positions=mesh_positions,
         interpolation_map=interpolation_map,
     )
-    return _simulate_point_mass_controls(
+    profile = _simulate_point_mass_controls(
         track=track,
         model=model,
         config=config,
         ax_signal=ax_signal,
+        reference_speed=reference_speed,
+        reference_ax=reference_ax,
     )
+    if (
+        not np.isfinite(profile.lap_time)
+        or np.any(~np.isfinite(profile.speed))
+        or np.any(~np.isfinite(profile.longitudinal_accel))
+        or np.any(~np.isfinite(profile.lateral_accel))
+    ):
+        msg = "Transient optimal-control solver produced a non-finite point-mass profile."
+        raise ConfigurationError(msg)
+    return profile

@@ -9,6 +9,8 @@ import numpy as np
 
 from apexsim.utils.constants import SMALL_EPS
 
+_MAX_TRANSIENT_SEGMENT_SUBSTEPS = 64
+
 
 def resolve_initial_speed(*, max_speed: float, initial_speed: float | None) -> float:
     """Resolve transient start speed from runtime settings.
@@ -144,13 +146,21 @@ def segment_time_partition(
         Tuple of total segment time [s], integration substep [s], and substep
         count.
     """
+    if not np.isfinite(speed):
+        speed = SMALL_EPS
     raw_time = segment_length / max(abs(speed), SMALL_EPS)
-    total_time = float(np.clip(raw_time, min_time_step, max_time_step))
+    if not np.isfinite(raw_time):
+        raw_time = max_time_step
+    # Preserve physical segment travel time and use max_time_step only as an
+    # integration-substep limit. This avoids changing lap-time physics through
+    # numerical-stability controls.
+    total_time = float(max(raw_time, min_time_step))
     step_limit = max_time_step
     if max_integration_step is not None:
         step_limit = min(step_limit, max_integration_step)
     step_limit = max(step_limit, SMALL_EPS)
     substeps = max(1, int(np.ceil(total_time / step_limit)))
+    substeps = min(substeps, _MAX_TRANSIENT_SEGMENT_SUBSTEPS)
     integration_step = total_time / substeps
     return float(total_time), float(integration_step), int(substeps)
 
@@ -180,7 +190,15 @@ def segment_time_partition_torch(
     """
     safe_speed = torch.clamp(torch.abs(speed), min=SMALL_EPS)
     raw_time = segment_length / safe_speed
-    total_time = torch.clamp(raw_time, min=min_time_step, max=max_time_step)
+    finite_raw_time = torch.where(
+        torch.isfinite(raw_time),
+        raw_time,
+        torch.full_like(raw_time, float(max_time_step)),
+    )
+    # Preserve physical segment travel time and use max_time_step only as an
+    # integration-substep limit. This keeps time semantics aligned with the
+    # NumPy path and avoids max_time_step-dependent lap-time drift.
+    total_time = torch.clamp(finite_raw_time, min=min_time_step)
 
     step_limit = max_time_step
     if max_integration_step is not None:
@@ -189,5 +207,6 @@ def segment_time_partition_torch(
 
     total_seconds = float(total_time.detach().cpu().item())
     substeps = max(1, int(np.ceil(total_seconds / step_limit)))
+    substeps = min(substeps, _MAX_TRANSIENT_SEGMENT_SUBSTEPS)
     integration_step = total_time / substeps
     return total_time, integration_step, int(substeps)
