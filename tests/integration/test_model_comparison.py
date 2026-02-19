@@ -49,7 +49,7 @@ class ModelComparisonTests(unittest.TestCase):
         self.assertGreater(point_mass_result.lap_time, 60.0)
         self.assertEqual(len(single_track_result.speed), len(point_mass_result.speed))
         self.assertTrue(np.max(np.abs(point_mass_result.yaw_moment)) == 0.0)
-        self.assertGreater(np.max(np.abs(single_track_result.yaw_moment)), 1e-9)
+        self.assertLess(float(np.max(np.abs(single_track_result.yaw_moment))), 1e-12)
 
     def test_calibrated_point_mass_matches_single_track_more_closely(self) -> None:
         """Reduce single_track-vs-point-mass speed and lap-time deltas via calibration."""

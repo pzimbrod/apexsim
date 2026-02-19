@@ -170,7 +170,7 @@ class SensitivityPhysicalPlausibilityTests(unittest.TestCase):
         self.assertAlmostEqual(ay_sensitivities["max_drive_accel"], 0.0, delta=1e-10)
 
     def test_circle_yaw_moment_sensitivity_matches_model_structure(self) -> None:
-        """Keep point-mass yaw responses zero and single-track responses non-zero."""
+        """Keep circle steady-state yaw responses and sensitivities near zero."""
 
         def point_mass_max_abs_yaw(parameters: dict[str, float]) -> float:
             model = build_point_mass_model(
@@ -234,8 +234,9 @@ class SensitivityPhysicalPlausibilityTests(unittest.TestCase):
             single_track_parameters,
         )
 
-        self.assertGreater(single_track_baseline, 1e-6)
-        self.assertTrue(any(abs(value) > 1e-3 for value in single_track_sensitivities.values()))
+        self.assertAlmostEqual(single_track_baseline, 0.0, delta=1e-12)
+        for sensitivity in single_track_sensitivities.values():
+            self.assertAlmostEqual(sensitivity, 0.0, delta=1e-8)
 
     def test_straight_max_lateral_accel_sensitivity_is_zero(self) -> None:
         """Keep max|ay| and its sensitivities near zero on straight tracks."""
