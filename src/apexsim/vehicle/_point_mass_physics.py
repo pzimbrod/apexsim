@@ -163,14 +163,22 @@ class PointMassPhysicalMixin:
         return float(self._tire_accel_limit(speed))
 
     def _scaled_drive_envelope_accel_limit(self) -> float:
-        """Return drive acceleration envelope scaled by optional reference mass."""
+        """Return drive acceleration envelope scaled by optional reference mass.
+
+        Returns:
+            Drive acceleration envelope limit [m/s^2].
+        """
         reference_mass = self.envelope_physics.reference_mass
         if reference_mass is None:
             return float(self.envelope_physics.max_drive_accel)
         return float(self.envelope_physics.max_drive_accel * reference_mass / self.vehicle.mass)
 
     def _scaled_brake_envelope_accel_limit(self) -> float:
-        """Return brake deceleration envelope scaled by optional reference mass."""
+        """Return brake deceleration envelope scaled by optional reference mass.
+
+        Returns:
+            Brake deceleration envelope limit [m/s^2].
+        """
         reference_mass = self.envelope_physics.reference_mass
         if reference_mass is None:
             return float(self.envelope_physics.max_brake_accel)

@@ -23,9 +23,21 @@ class PointMassBackendState(Protocol):
     _drag_force_scale: float
     _downforce_scale: float
 
-    def _scaled_drive_envelope_accel_limit(self) -> float: ...
+    def _scaled_drive_envelope_accel_limit(self) -> float:
+        """Return drive envelope limit scaled by optional reference mass.
 
-    def _scaled_brake_envelope_accel_limit(self) -> float: ...
+        Returns:
+            Drive acceleration envelope limit [m/s^2].
+        """
+        ...
+
+    def _scaled_brake_envelope_accel_limit(self) -> float:
+        """Return brake envelope limit scaled by optional reference mass.
+
+        Returns:
+            Brake deceleration envelope limit [m/s^2].
+        """
+        ...
 
 
 class PointMassNumbaBackendMixin:
@@ -100,7 +112,14 @@ class PointMassTorchBackendMixin:
         return torch.clamp(GRAVITY + downforce / self.vehicle.mass, min=SMALL_EPS)
 
     def _scaled_drive_envelope_accel_limit_torch(self, torch: Any) -> Any:
-        """Return drive envelope limit with optional reference-mass scaling."""
+        """Return drive envelope limit with optional reference-mass scaling.
+
+        Args:
+            torch: Imported ``torch`` module.
+
+        Returns:
+            Drive acceleration envelope tensor [m/s^2].
+        """
         reference_mass = self.envelope_physics.reference_mass
         if reference_mass is None:
             return torch.as_tensor(self.envelope_physics.max_drive_accel)
@@ -112,7 +131,14 @@ class PointMassTorchBackendMixin:
         )
 
     def _scaled_brake_envelope_accel_limit_torch(self, torch: Any) -> Any:
-        """Return brake envelope limit with optional reference-mass scaling."""
+        """Return brake envelope limit with optional reference-mass scaling.
+
+        Args:
+            torch: Imported ``torch`` module.
+
+        Returns:
+            Brake deceleration envelope tensor [m/s^2].
+        """
         reference_mass = self.envelope_physics.reference_mass
         if reference_mass is None:
             return torch.as_tensor(self.envelope_physics.max_brake_accel)
