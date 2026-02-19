@@ -44,6 +44,9 @@ from apexsim.simulation.transient_numpy import (
 )
 from apexsim.simulation.transient_torch import (
     _build_control_node_count,
+    _require_torch,
+    _require_torchdiffeq,
+    _transient_seed_profile_torch,
     solve_transient_lap_torch,
 )
 from apexsim.tire import default_axle_tire_parameters
@@ -266,6 +269,52 @@ class TransientSolverTests(unittest.TestCase):
         """Cover single-sample control node sizing branch in torch helper."""
         self.assertEqual(_build_control_node_count(sample_count=1, control_interval=8), 1)
 
+    @unittest.skipUnless(TORCH_AVAILABLE, "torch backend not available")
+    def test_transient_torch_seed_profile_helper_covers_point_mass_and_single_track(self) -> None:
+        """Build torch transient seeds for point-mass and single-track models."""
+        import torch
+
+        point_mass_track = build_straight_track(length=200.0, sample_count=31)
+        point_mass_model = build_point_mass_model(vehicle=sample_vehicle_parameters())
+        point_mass_config = build_simulation_config(
+            compute_backend="torch",
+            solver_mode="transient_oc",
+            max_speed=40.0,
+            initial_speed=12.0,
+        )
+        point_ax, point_steer = _transient_seed_profile_torch(
+            track=point_mass_track,
+            model=point_mass_model,
+            config=point_mass_config,
+            torch=torch,
+        )
+        self.assertEqual(point_ax.shape, point_mass_track.arc_length.shape)
+        self.assertEqual(point_steer.shape, point_mass_track.arc_length.shape)
+        self.assertTrue(torch.allclose(point_steer, torch.zeros_like(point_steer)))
+
+        single_track = build_circular_track(radius=70.0, sample_count=41)
+        single_model = build_single_track_model(
+            vehicle=sample_vehicle_parameters(),
+            tires=default_axle_tire_parameters(),
+            physics=SingleTrackPhysics(),
+        )
+        single_config = build_simulation_config(
+            compute_backend="torch",
+            solver_mode="transient_oc",
+            max_speed=40.0,
+            initial_speed=12.0,
+        )
+        single_ax, single_steer = _transient_seed_profile_torch(
+            track=single_track,
+            model=single_model,
+            config=single_config,
+            torch=torch,
+        )
+        self.assertEqual(single_ax.shape, single_track.arc_length.shape)
+        self.assertEqual(single_steer.shape, single_track.arc_length.shape)
+        self.assertTrue(torch.all(torch.isfinite(single_steer)))
+        self.assertGreater(float(torch.max(torch.abs(single_steer)).item()), 0.0)
+
     def test_resolve_pid_gain_scheduling_mode_switches(self) -> None:
         """Resolve off/physics/custom scheduling branches from runtime numerics."""
         model = build_point_mass_model(vehicle=sample_vehicle_parameters())
@@ -316,6 +365,315 @@ class TransientSolverTests(unittest.TestCase):
         """Load scipy.optimize when dependency is available."""
         optimize_module = _require_scipy_optimize()
         self.assertTrue(hasattr(optimize_module, "minimize"))
+
+    def test_solve_transient_lap_numpy_raises_on_optimizer_failure(self) -> None:
+        """Fail fast when SciPy optimizer reports non-convergence."""
+        track = build_straight_track(length=120.0, sample_count=31)
+        model = build_point_mass_model(vehicle=sample_vehicle_parameters())
+
+        class _FailingOptimize:
+            @staticmethod
+            def minimize(
+                objective: Any,
+                x0: np.ndarray,
+                method: str,
+                options: dict[str, Any],
+                callback: Any | None = None,
+            ) -> Any:
+                del method, options, callback
+                objective(np.asarray(x0, dtype=float))
+                return SimpleNamespace(
+                    x=np.asarray(x0, dtype=float),
+                    fun=0.0,
+                    success=False,
+                    nit=1,
+                    message="forced failure",
+                )
+
+        with (
+            _patch_transient_dependency_specs(),
+            patch(
+                "apexsim.simulation.transient_numpy._require_scipy_optimize",
+                return_value=_FailingOptimize(),
+            ),
+            patch(
+                "apexsim.simulation.transient_numpy._decode_point_mass_controls",
+                side_effect=RuntimeError("forced objective failure"),
+            ),
+        ):
+            config = build_simulation_config(
+                compute_backend="numpy",
+                solver_mode="transient_oc",
+                max_speed=40.0,
+                initial_speed=12.0,
+                transient=TransientConfig(
+                    runtime=TransientRuntimeConfig(driver_model="optimal_control"),
+                ),
+            )
+            with self.assertRaises(ConfigurationError):
+                solve_transient_lap_numpy(track=track, model=model, config=config)
+
+    def test_solve_transient_lap_numpy_penalizes_nonfinite_objective_samples(self) -> None:
+        """Map non-finite objective samples to a finite penalty value."""
+        track = build_straight_track(length=120.0, sample_count=31)
+        model = build_point_mass_model(vehicle=sample_vehicle_parameters())
+
+        class _ProbeObjectiveOptimize:
+            @staticmethod
+            def minimize(
+                objective: Any,
+                x0: np.ndarray,
+                method: str,
+                options: dict[str, Any],
+                callback: Any | None = None,
+            ) -> Any:
+                del method, options, callback
+                probed = float(objective(np.asarray(x0, dtype=float)))
+                if probed < 1.0e10:
+                    raise AssertionError("expected non-finite objective penalty mapping")
+                return SimpleNamespace(
+                    x=np.asarray(x0, dtype=float),
+                    fun=0.0,
+                    success=False,
+                    nit=1,
+                    message="forced failure",
+                )
+
+        n = track.arc_length.size
+        bad_objective_profile = SimpleNamespace(
+            speed=np.ones(n, dtype=float),
+            longitudinal_accel=np.zeros(n, dtype=float),
+            lateral_accel=np.zeros(n, dtype=float),
+            lap_time=1.0,
+            time=np.zeros(n, dtype=float),
+            vx=np.ones(n, dtype=float),
+            vy=np.zeros(n, dtype=float),
+            yaw_rate=np.zeros(n, dtype=float),
+            steer_cmd=np.zeros(n, dtype=float),
+            ax_cmd=np.zeros(n, dtype=float),
+            objective_value=float("nan"),
+        )
+
+        with (
+            _patch_transient_dependency_specs(),
+            patch(
+                "apexsim.simulation.transient_numpy._require_scipy_optimize",
+                return_value=_ProbeObjectiveOptimize(),
+            ),
+            patch(
+                "apexsim.simulation.transient_numpy._simulate_point_mass_controls",
+                return_value=bad_objective_profile,
+            ),
+        ):
+            config = build_simulation_config(
+                compute_backend="numpy",
+                solver_mode="transient_oc",
+                max_speed=40.0,
+                initial_speed=12.0,
+                transient=TransientConfig(
+                    runtime=TransientRuntimeConfig(driver_model="optimal_control"),
+                ),
+            )
+            with self.assertRaises(ConfigurationError):
+                solve_transient_lap_numpy(track=track, model=model, config=config)
+
+    def test_solve_transient_lap_numpy_raises_on_nonfinite_optimizer_objective(self) -> None:
+        """Fail fast when SciPy optimizer reports a non-finite objective."""
+        track = build_straight_track(length=120.0, sample_count=31)
+        model = build_point_mass_model(vehicle=sample_vehicle_parameters())
+
+        class _NonFiniteObjectiveOptimize:
+            @staticmethod
+            def minimize(
+                objective: Any,
+                x0: np.ndarray,
+                method: str,
+                options: dict[str, Any],
+                callback: Any | None = None,
+            ) -> Any:
+                del objective, method, options, callback
+                return SimpleNamespace(
+                    x=np.asarray(x0, dtype=float),
+                    fun=float("nan"),
+                    success=True,
+                    nit=1,
+                    message="forced nan",
+                )
+
+        with (
+            _patch_transient_dependency_specs(),
+            patch(
+                "apexsim.simulation.transient_numpy._require_scipy_optimize",
+                return_value=_NonFiniteObjectiveOptimize(),
+            ),
+        ):
+            config = build_simulation_config(
+                compute_backend="numpy",
+                solver_mode="transient_oc",
+                max_speed=40.0,
+                initial_speed=12.0,
+                transient=TransientConfig(
+                    runtime=TransientRuntimeConfig(driver_model="optimal_control"),
+                ),
+            )
+            with self.assertRaises(ConfigurationError):
+                solve_transient_lap_numpy(track=track, model=model, config=config)
+
+    def test_solve_transient_lap_numpy_raises_on_nonfinite_final_profile(self) -> None:
+        """Fail fast when final decoded point-mass profile is non-finite."""
+        track = build_straight_track(length=120.0, sample_count=31)
+        model = build_point_mass_model(vehicle=sample_vehicle_parameters())
+
+        class _SuccessfulOptimizeNoObjective:
+            @staticmethod
+            def minimize(
+                objective: Any,
+                x0: np.ndarray,
+                method: str,
+                options: dict[str, Any],
+                callback: Any | None = None,
+            ) -> Any:
+                del objective, method, options, callback
+                return SimpleNamespace(
+                    x=np.asarray(x0, dtype=float),
+                    fun=0.0,
+                    success=True,
+                    nit=1,
+                    message="ok",
+                )
+
+        n = track.arc_length.size
+        bad_profile = SimpleNamespace(
+            speed=np.full(n, np.nan, dtype=float),
+            longitudinal_accel=np.zeros(n, dtype=float),
+            lateral_accel=np.zeros(n, dtype=float),
+            lap_time=float("nan"),
+            time=np.zeros(n, dtype=float),
+            vx=np.zeros(n, dtype=float),
+            vy=np.zeros(n, dtype=float),
+            yaw_rate=np.zeros(n, dtype=float),
+            steer_cmd=np.zeros(n, dtype=float),
+            ax_cmd=np.zeros(n, dtype=float),
+            objective_value=0.0,
+        )
+
+        with (
+            _patch_transient_dependency_specs(),
+            patch(
+                "apexsim.simulation.transient_numpy._require_scipy_optimize",
+                return_value=_SuccessfulOptimizeNoObjective(),
+            ),
+            patch(
+                "apexsim.simulation.transient_numpy._simulate_point_mass_controls",
+                return_value=bad_profile,
+            ),
+        ):
+            config = build_simulation_config(
+                compute_backend="numpy",
+                solver_mode="transient_oc",
+                max_speed=40.0,
+                initial_speed=12.0,
+                transient=TransientConfig(
+                    runtime=TransientRuntimeConfig(driver_model="optimal_control"),
+                ),
+            )
+            with self.assertRaises(ConfigurationError):
+                solve_transient_lap_numpy(track=track, model=model, config=config)
+
+    def test_solve_transient_lap_numpy_raises_on_nonfinite_final_single_track_profile(self) -> None:
+        """Fail fast when final decoded single-track profile is non-finite."""
+        track = build_straight_track(length=120.0, sample_count=31)
+        model = build_single_track_model(
+            vehicle=sample_vehicle_parameters(),
+            tires=default_axle_tire_parameters(),
+            physics=SingleTrackPhysics(),
+        )
+
+        class _SuccessfulOptimizeNoObjective:
+            @staticmethod
+            def minimize(
+                objective: Any,
+                x0: np.ndarray,
+                method: str,
+                options: dict[str, Any],
+                callback: Any | None = None,
+            ) -> Any:
+                del objective, method, options, callback
+                return SimpleNamespace(
+                    x=np.asarray(x0, dtype=float),
+                    fun=0.0,
+                    success=True,
+                    nit=1,
+                    message="ok",
+                )
+
+        n = track.arc_length.size
+        bad_profile = SimpleNamespace(
+            speed=np.full(n, np.nan, dtype=float),
+            longitudinal_accel=np.zeros(n, dtype=float),
+            lateral_accel=np.zeros(n, dtype=float),
+            lap_time=float("nan"),
+            time=np.zeros(n, dtype=float),
+            vx=np.zeros(n, dtype=float),
+            vy=np.zeros(n, dtype=float),
+            yaw_rate=np.zeros(n, dtype=float),
+            steer_cmd=np.zeros(n, dtype=float),
+            ax_cmd=np.zeros(n, dtype=float),
+            objective_value=0.0,
+        )
+
+        with (
+            _patch_transient_dependency_specs(),
+            patch(
+                "apexsim.simulation.transient_numpy._require_scipy_optimize",
+                return_value=_SuccessfulOptimizeNoObjective(),
+            ),
+            patch(
+                "apexsim.simulation.transient_numpy._simulate_single_track_controls",
+                return_value=bad_profile,
+            ),
+        ):
+            config = build_simulation_config(
+                compute_backend="numpy",
+                solver_mode="transient_oc",
+                max_speed=40.0,
+                initial_speed=12.0,
+                transient=TransientConfig(
+                    runtime=TransientRuntimeConfig(driver_model="optimal_control"),
+                ),
+            )
+            with self.assertRaises(ConfigurationError):
+                solve_transient_lap_numpy(track=track, model=model, config=config)
+
+    def test_require_torch_failure_path_raises_configuration_error(self) -> None:
+        """Raise clear message when torch runtime dependency is missing."""
+        real_import = builtins.__import__
+
+        def _fake_import(name: str, *args: Any, **kwargs: Any) -> Any:
+            if name == "torch":
+                raise ModuleNotFoundError("forced missing torch")
+            return real_import(name, *args, **kwargs)
+
+        with (
+            patch.object(builtins, "__import__", side_effect=_fake_import),
+            self.assertRaises(ConfigurationError),
+        ):
+            _require_torch()
+
+    def test_require_torchdiffeq_failure_path_raises_configuration_error(self) -> None:
+        """Raise clear message when torchdiffeq dependency is missing."""
+        real_import = builtins.__import__
+
+        def _fake_import(name: str, *args: Any, **kwargs: Any) -> Any:
+            if name == "torchdiffeq":
+                raise ModuleNotFoundError("forced missing torchdiffeq")
+            return real_import(name, *args, **kwargs)
+
+        with (
+            patch.object(builtins, "__import__", side_effect=_fake_import),
+            self.assertRaises(ConfigurationError),
+        ):
+            _require_torchdiffeq()
 
     def test_pid_off_mode_ignores_custom_schedule_object(self) -> None:
         """Keep legacy PID behavior when scheduling mode is explicitly off."""

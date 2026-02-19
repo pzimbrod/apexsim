@@ -217,9 +217,9 @@ class TransientPidCoreTests(unittest.TestCase):
             max_time_step=0.6,
             max_integration_step=0.15,
         )
-        self.assertAlmostEqual(total, 0.6, places=9)
-        self.assertEqual(substeps, 4)
-        self.assertAlmostEqual(dt, 0.15, places=9)
+        self.assertAlmostEqual(total, 2.0, places=9)
+        self.assertEqual(substeps, 14)
+        self.assertAlmostEqual(dt, 2.0 / 14.0, places=9)
 
     @unittest.skipUnless(TORCH_AVAILABLE, "torch backend not available")
     def test_segment_time_partition_torch_matches_scalar_partition(self) -> None:
@@ -229,6 +229,58 @@ class TransientPidCoreTests(unittest.TestCase):
         total, dt, substeps = segment_time_partition_torch(
             torch=torch,
             segment_length=torch.tensor(12.0, dtype=torch.float64),
+            speed=torch.tensor(6.0, dtype=torch.float64),
+            min_time_step=0.02,
+            max_time_step=0.6,
+            max_integration_step=0.15,
+        )
+        self.assertEqual(substeps, 14)
+        self.assertAlmostEqual(float(total.detach().cpu().item()), 2.0, places=9)
+        self.assertAlmostEqual(float(dt.detach().cpu().item()), 2.0 / 14.0, places=9)
+
+    def test_segment_time_partition_handles_nonfinite_and_caps_substeps(self) -> None:
+        """Handle non-finite raw times and cap excessive substep counts."""
+        total_nan_speed, dt_nan_speed, substeps_nan_speed = segment_time_partition(
+            segment_length=1.0,
+            speed=float("nan"),
+            min_time_step=0.02,
+            max_time_step=0.6,
+            max_integration_step=0.15,
+        )
+        self.assertTrue(np.isfinite(total_nan_speed))
+        self.assertTrue(np.isfinite(dt_nan_speed))
+        self.assertGreaterEqual(substeps_nan_speed, 1)
+
+        total_inf, dt_inf, substeps_inf = segment_time_partition(
+            segment_length=float("inf"),
+            speed=6.0,
+            min_time_step=0.02,
+            max_time_step=0.6,
+            max_integration_step=0.15,
+        )
+        self.assertTrue(np.isfinite(total_inf))
+        self.assertAlmostEqual(total_inf, 0.6, places=9)
+        self.assertEqual(substeps_inf, 4)
+        self.assertAlmostEqual(dt_inf, 0.15, places=9)
+
+        total_cap, dt_cap, substeps_cap = segment_time_partition(
+            segment_length=1.0e6,
+            speed=1.0,
+            min_time_step=0.02,
+            max_time_step=0.1,
+            max_integration_step=0.05,
+        )
+        self.assertEqual(substeps_cap, 64)
+        self.assertGreater(total_cap, dt_cap)
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "torch backend not available")
+    def test_segment_time_partition_torch_handles_nonfinite(self) -> None:
+        """Handle non-finite torch raw times without NaN outputs."""
+        import torch
+
+        total, dt, substeps = segment_time_partition_torch(
+            torch=torch,
+            segment_length=torch.tensor(float("inf"), dtype=torch.float64),
             speed=torch.tensor(6.0, dtype=torch.float64),
             min_time_step=0.02,
             max_time_step=0.6,
