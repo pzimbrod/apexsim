@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib.util
 import unittest
 from collections.abc import Callable
 from dataclasses import replace
@@ -12,7 +13,9 @@ from apexsim.analysis.sensitivity import (
     SensitivityNumerics,
     SensitivityParameter,
     SensitivityRuntime,
+    SensitivityStudyParameter,
     compute_sensitivities,
+    run_lap_sensitivity_study,
 )
 from apexsim.simulation import (
     TransientConfig,
@@ -493,6 +496,370 @@ class SensitivityPhysicalPlausibilityTests(unittest.TestCase):
 
         self.assertAlmostEqual(lap_sensitivities["friction_coefficient"], 0.0, delta=1e-10)
         self.assertAlmostEqual(ax_sensitivities["friction_coefficient"], 0.0, delta=1e-10)
+
+
+class SensitivitySignMatrixTests(unittest.TestCase):
+    """Validate lap-time sensitivity signs across model/backend/solver combinations."""
+
+    BACKENDS = ("numpy", "numba", "torch")
+    SOLVER_MODES = ("quasi_static", "transient_oc")
+    MODELS = ("point_mass", "single_track")
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Create shared fixtures for matrix validations."""
+        cls.vehicle = sample_vehicle_parameters()
+        cls.tires = default_axle_tire_parameters()
+        cls.circle_track = build_circular_track(radius=80.0, sample_count=81)
+        cls.straight_track = build_straight_track(length=1_000.0, sample_count=81)
+        cls.fd_runtime = SensitivityRuntime(method="finite_difference")
+        cls.fd_numerics = SensitivityNumerics(
+            finite_difference_scheme="forward",
+            finite_difference_relative_step=1e-3,
+            finite_difference_absolute_step=1e-5,
+        )
+
+    @staticmethod
+    def _backend_available(backend: str) -> bool:
+        """Return whether a backend dependency is available in this environment.
+
+        Args:
+            backend: Backend identifier.
+
+        Returns:
+            ``True`` when backend dependencies are available.
+        """
+        if backend == "numba":
+            return importlib.util.find_spec("numba") is not None
+        if backend == "torch":
+            return importlib.util.find_spec("torch") is not None
+        return True
+
+    @staticmethod
+    def _parameter_lower_bound(name: str) -> float:
+        """Return conservative lower bounds used in sensitivity perturbations.
+
+        Args:
+            name: Vehicle-parameter identifier.
+
+        Returns:
+            Lower bound used for sensitivity perturbations.
+        """
+        return {
+            "mass": 100.0,
+            "cg_height": 0.05,
+            "lift_coefficient": 0.05,
+            "front_track": 0.8,
+            "rear_track": 0.8,
+            "drag_coefficient": 0.01,
+            "air_density": 0.3,
+        }[name]
+
+    def _build_config(
+        self,
+        *,
+        backend: str,
+        solver_mode: str,
+        initial_speed: float | None,
+        max_speed: float,
+    ) -> object:
+        """Build validated simulation config for one matrix scenario.
+
+        Args:
+            backend: Backend identifier.
+            solver_mode: Solver-mode identifier.
+            initial_speed: Initial speed [m/s].
+            max_speed: Global speed cap [m/s].
+
+        Returns:
+            Validated simulation config for the requested scenario.
+        """
+        if solver_mode == "transient_oc":
+            return build_simulation_config(
+                max_speed=max_speed,
+                initial_speed=initial_speed,
+                compute_backend=backend,
+                solver_mode=solver_mode,
+                transient=TransientConfig(
+                    numerics=TransientNumericsConfig(
+                        max_time_step=1.0,
+                        control_interval=12,
+                    ),
+                    runtime=TransientRuntimeConfig(
+                        driver_model="pid",
+                        verbosity=0,
+                    ),
+                ),
+            )
+        return build_simulation_config(
+            max_speed=max_speed,
+            initial_speed=initial_speed,
+            compute_backend=backend,
+            solver_mode=solver_mode,
+        )
+
+    def _build_model(
+        self,
+        *,
+        model_name: str,
+        vehicle: object,
+        scenario: str,
+    ) -> object:
+        """Build point-mass or single-track model for the requested scenario.
+
+        Args:
+            model_name: Model identifier.
+            vehicle: Vehicle parameter dataclass.
+            scenario: Scenario identifier (``"circle"`` or ``"straight"``).
+
+        Returns:
+            Configured solver model instance.
+        """
+        if model_name == "point_mass":
+            if scenario == "circle":
+                physics = PointMassPhysics(
+                    max_drive_accel=8.0,
+                    max_brake_accel=16.0,
+                    reference_mass=self.vehicle.mass,
+                    friction_coefficient=1.8,
+                )
+            else:
+                physics = PointMassPhysics(
+                    max_drive_accel=2.0,
+                    max_brake_accel=16.0,
+                    reference_mass=self.vehicle.mass,
+                    friction_coefficient=2.2,
+                )
+            return build_point_mass_model(vehicle=vehicle, physics=physics)
+
+        if scenario == "circle":
+            physics = SingleTrackPhysics(
+                max_drive_accel=8.0,
+                max_brake_accel=16.0,
+                reference_mass=self.vehicle.mass,
+                peak_slip_angle=0.12,
+                max_steer_rate=2.0,
+            )
+        else:
+            physics = SingleTrackPhysics(
+                max_drive_accel=2.0,
+                max_brake_accel=16.0,
+                reference_mass=self.vehicle.mass,
+                peak_slip_angle=0.12,
+                max_steer_rate=2.0,
+            )
+        return build_single_track_model(
+            vehicle=vehicle,
+            tires=self.tires,
+            physics=physics,
+            numerics=SingleTrackNumerics(),
+        )
+
+    def _assert_power_limited_straight_setup(self, *, model_name: str, model: object) -> None:
+        """Assert straight-line setup is drive-envelope-limited, not grip-limited.
+
+        Args:
+            model_name: Model identifier.
+            model: Configured solver model instance.
+        """
+        if model_name == "point_mass":
+            tire_limit = float(model._drive_tire_accel_limit(0.0))  # type: ignore[attr-defined]
+            drive_limit = float(model._scaled_drive_envelope_accel_limit())  # type: ignore[attr-defined]
+            self.assertGreater(tire_limit, drive_limit + 1e-6)
+            return
+
+        accel_at_zero_speed = float(
+            model.max_longitudinal_accel(  # type: ignore[attr-defined]
+                speed=0.0,
+                lateral_accel_required=0.0,
+                grade=0.0,
+                banking=0.0,
+            )
+        )
+        drive_limit = float(model._scaled_drive_envelope_accel_limit())  # type: ignore[attr-defined]
+        self.assertAlmostEqual(accel_at_zero_speed, drive_limit, delta=1e-9)
+
+    def _lap_time_sensitivities(
+        self,
+        *,
+        backend: str,
+        solver_mode: str,
+        model_name: str,
+        track: object,
+        scenario: str,
+        parameter_names: tuple[str, ...],
+    ) -> dict[str, float]:
+        """Compute lap-time sensitivities with AD on torch and FD otherwise.
+
+        Args:
+            backend: Backend identifier.
+            solver_mode: Solver-mode identifier.
+            model_name: Model identifier.
+            track: Track fixture used for simulation.
+            scenario: Scenario identifier.
+            parameter_names: Vehicle parameter names to differentiate.
+
+        Returns:
+            Mapping of parameter name to lap-time sensitivity.
+        """
+        if scenario == "circle":
+            config = self._build_config(
+                backend=backend,
+                solver_mode=solver_mode,
+                initial_speed=25.0,
+                max_speed=85.0,
+            )
+        else:
+            config = self._build_config(
+                backend=backend,
+                solver_mode=solver_mode,
+                initial_speed=0.0,
+                max_speed=90.0,
+            )
+
+        baseline_vehicle = self.vehicle
+        baseline_model = self._build_model(
+            model_name=model_name,
+            vehicle=baseline_vehicle,
+            scenario=scenario,
+        )
+        if scenario == "straight":
+            self._assert_power_limited_straight_setup(
+                model_name=model_name,
+                model=baseline_model,
+            )
+
+        if backend == "torch":
+            study_parameters = [
+                SensitivityStudyParameter(
+                    name=name,
+                    target=f"vehicle.{name}",
+                    lower_bound=self._parameter_lower_bound(name),
+                )
+                for name in parameter_names
+            ]
+            study = run_lap_sensitivity_study(
+                track=track,
+                model=baseline_model,
+                simulation_config=config,
+                parameters=study_parameters,
+                objectives=("lap_time_s",),
+                runtime=SensitivityRuntime(
+                    method="autodiff",
+                    torch_device=config.runtime.torch_device,  # type: ignore[attr-defined]
+                    autodiff_fallback_to_finite_difference=False,
+                ),
+            )
+            return dict(study.sensitivity_results["lap_time_s"].sensitivities)
+
+        def objective(parameter_values: dict[str, float]) -> float:
+            vehicle_kwargs = {
+                name: float(parameter_values[name]) for name in parameter_names
+            }
+            vehicle = replace(baseline_vehicle, **vehicle_kwargs)
+            model = self._build_model(
+                model_name=model_name,
+                vehicle=vehicle,
+                scenario=scenario,
+            )
+            return float(simulate_lap(track=track, model=model, config=config).lap_time)
+
+        result = compute_sensitivities(
+            objective=objective,
+            parameters=[
+                SensitivityParameter(
+                    name=name,
+                    value=float(getattr(baseline_vehicle, name)),
+                    lower_bound=self._parameter_lower_bound(name),
+                )
+                for name in parameter_names
+            ],
+            runtime=self.fd_runtime,
+            numerics=self.fd_numerics,
+        )
+        self.assertEqual(result.method, "finite_difference")
+        return dict(result.sensitivities)
+
+    def test_circle_lap_time_sensitivity_sign_matrix(self) -> None:
+        """Check circle-track lap-time sensitivity signs across full matrix."""
+        eps_sign = 1e-6
+        eps_zero = 1e-9
+        parameter_names = (
+            "mass",
+            "cg_height",
+            "lift_coefficient",
+            "front_track",
+            "rear_track",
+        )
+        for backend in self.BACKENDS:
+            if not self._backend_available(backend):
+                continue
+            for solver_mode in self.SOLVER_MODES:
+                for model_name in self.MODELS:
+                    with self.subTest(
+                        backend=backend,
+                        solver_mode=solver_mode,
+                        model=model_name,
+                        scenario="circle",
+                    ):
+                        sensitivities = self._lap_time_sensitivities(
+                            backend=backend,
+                            solver_mode=solver_mode,
+                            model_name=model_name,
+                            track=self.circle_track,
+                            scenario="circle",
+                            parameter_names=parameter_names,
+                        )
+                        self.assertGreater(sensitivities["mass"], eps_sign)
+                        self.assertLess(sensitivities["lift_coefficient"], -eps_sign)
+
+                        if model_name == "single_track":
+                            self.assertGreater(sensitivities["cg_height"], eps_sign)
+                            self.assertLess(sensitivities["front_track"], -eps_sign)
+                            self.assertLess(sensitivities["rear_track"], -eps_sign)
+                        else:
+                            self.assertAlmostEqual(
+                                sensitivities["cg_height"],
+                                0.0,
+                                delta=eps_zero,
+                            )
+                            self.assertAlmostEqual(
+                                sensitivities["front_track"],
+                                0.0,
+                                delta=eps_zero,
+                            )
+                            self.assertAlmostEqual(
+                                sensitivities["rear_track"],
+                                0.0,
+                                delta=eps_zero,
+                            )
+
+    def test_straight_lap_time_sensitivity_sign_matrix(self) -> None:
+        """Check straight-track lap-time sensitivity signs across full matrix."""
+        eps_sign = 1e-6
+        parameter_names = ("mass", "drag_coefficient", "air_density")
+        for backend in self.BACKENDS:
+            if not self._backend_available(backend):
+                continue
+            for solver_mode in self.SOLVER_MODES:
+                for model_name in self.MODELS:
+                    with self.subTest(
+                        backend=backend,
+                        solver_mode=solver_mode,
+                        model=model_name,
+                        scenario="straight",
+                    ):
+                        sensitivities = self._lap_time_sensitivities(
+                            backend=backend,
+                            solver_mode=solver_mode,
+                            model_name=model_name,
+                            track=self.straight_track,
+                            scenario="straight",
+                            parameter_names=parameter_names,
+                        )
+                        self.assertGreater(sensitivities["mass"], eps_sign)
+                        self.assertGreater(sensitivities["drag_coefficient"], eps_sign)
+                        self.assertGreater(sensitivities["air_density"], eps_sign)
 
 
 if __name__ == "__main__":
