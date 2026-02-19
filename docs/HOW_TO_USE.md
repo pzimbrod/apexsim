@@ -305,6 +305,8 @@ standing starts with `initial_speed=0.0`).
 - `transient_oc`: transient dynamic solver mode.
   - Default driver model: PID (`TransientRuntimeConfig.driver_model="pid"`).
   - Optional full optimizer path: `driver_model="optimal_control"`.
+    - Non-converged OC runs fail fast with `ConfigurationError` (no silent fallback).
+    - OC is validated against quasi-static references on simple straight/circle cases.
   - PID scheduling modes:
     - `off` (default): scalar gains only.
     - `physics_informed`: deterministic speed-dependent PWL schedule from vehicle physics.

@@ -80,6 +80,8 @@ Backend runtime controls:
   `"physics_informed"`, or `"custom"`
 - `TransientNumericsConfig.pid_gain_scheduling`: optional
   `TransientPidGainSchedulingConfig` (required for `"custom"` mode)
+- `driver_model="optimal_control"` raises `ConfigurationError` if the optimizer
+  does not converge or returns a non-finite final profile.
 
 Constraint for differentiable solver use:
 

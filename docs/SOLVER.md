@@ -278,9 +278,14 @@ Single-track control bounds are physical model inputs:
 
 ### 11.2 Dynamics propagation
 
-Arc-length segments are converted to bounded time steps:
+Arc-length segments are converted to physical segment travel times:
 \[
-\Delta t_i = \operatorname{clip}\left(\frac{\Delta s_i}{\max(|v_i|,\varepsilon_v)},\; \Delta t_{\min},\; \Delta t_{\max}\right).
+\Delta t_i = \max\left(\frac{\Delta s_i}{\max(|v_i|,\varepsilon_v)},\; \Delta t_{\min}\right).
+\]
+`max_time_step` is then applied as an integration-substep cap only:
+\[
+n_i = \left\lceil \frac{\Delta t_i}{\Delta t_{\max}} \right\rceil,\quad
+\delta t_i = \frac{\Delta t_i}{\max(n_i, 1)}.
 \]
 
 Point-mass update:
@@ -341,6 +346,19 @@ Scheduling modes in `TransientNumericsConfig`:
 - `off`: scalar gains only (legacy-compatible behavior).
 - `physics_informed`: deterministic schedule generated from vehicle physics.
 - `custom`: user-provided `TransientPidGainSchedulingConfig`.
+
+### 11.6 Optimal-Control Quality Gate
+
+For `driver_model="optimal_control"`, ApexSim applies a hard fail-fast policy:
+
+- if the optimizer does not converge, `simulate_lap(...)` raises
+  `ConfigurationError` (no silent fallback),
+- if the final transient profile is non-finite, `simulate_lap(...)` raises
+  `ConfigurationError`.
+
+Validation is additionally enforced by regression tests that require OC to
+match quasi-static reference behavior on simple straight/circle scenarios
+within the same consistency thresholds used for transient PID checks.
 
 Physics-informed longitudinal scaling at node $v_j$:
 \[
