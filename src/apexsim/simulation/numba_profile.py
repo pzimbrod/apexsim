@@ -25,6 +25,11 @@ NumbaSingleTrackProfileParameters = tuple[
     float,
     float,
     float,
+    float,
+    float,
+    float,
+    float,
+    float,
     int,
     float,
     float,
@@ -45,7 +50,7 @@ NumbaSingleTrackProfileParameters = tuple[
 NumbaProfileParameters = NumbaPointMassProfileParameters | NumbaSingleTrackProfileParameters
 
 POINT_MASS_PARAMETER_COUNT = 6
-SINGLE_TRACK_PARAMETER_COUNT = 25
+SINGLE_TRACK_PARAMETER_COUNT = 30
 
 _COMPILED_NUMBA_KERNEL: Any | None = None
 _COMPILED_SINGLE_TRACK_NUMBA_KERNEL: Any | None = None
@@ -264,6 +269,11 @@ def _single_track_speed_profile_kernel(
     drag_scale: float,
     front_downforce_share: float,
     front_weight_fraction: float,
+    cg_height: float,
+    wheelbase: float,
+    front_track: float,
+    rear_track: float,
+    front_roll_stiffness_share: float,
     max_drive_accel: float,
     max_brake_accel: float,
     peak_slip_angle: float,
@@ -302,6 +312,11 @@ def _single_track_speed_profile_kernel(
         drag_scale: Quadratic drag-force coefficient [N/(m/s)^2].
         front_downforce_share: Fraction of downforce on front axle [-].
         front_weight_fraction: Static front weight fraction [-].
+        cg_height: Center-of-gravity height [m].
+        wheelbase: Wheelbase [m].
+        front_track: Front track width [m].
+        rear_track: Rear track width [m].
+        front_roll_stiffness_share: Front roll-stiffness share [-].
         max_drive_accel: Maximum drive acceleration limit [m/s^2].
         max_brake_accel: Maximum braking deceleration magnitude [m/s^2].
         peak_slip_angle: Slip angle used for lateral-force envelope [rad].
@@ -373,36 +388,75 @@ def _single_track_speed_profile_kernel(
             )
             rear_axle_load = total_vertical_load - front_axle_load
 
-            front_tire_load = max(front_axle_load * 0.5, SMALL_EPS)
-            rear_tire_load = max(rear_axle_load * 0.5, SMALL_EPS)
-
             ay_banking = GRAVITY * math.sin(banking[idx])
             ay_estimate = min_lateral_accel_limit
 
             for _ in range(lateral_limit_max_iterations):
+                total_roll_moment = mass * ay_estimate * cg_height
+                front_transfer = front_roll_stiffness_share * total_roll_moment / max(
+                    front_track,
+                    SMALL_EPS,
+                )
+                rear_transfer = (1.0 - front_roll_stiffness_share) * total_roll_moment / max(
+                    rear_track,
+                    SMALL_EPS,
+                )
+
+                max_front_transfer = max(front_axle_load - min_axle_load, 0.0)
+                bounded_front_transfer = min(
+                    max(front_transfer, -max_front_transfer),
+                    max_front_transfer,
+                )
+                front_left_load = 0.5 * (front_axle_load - bounded_front_transfer)
+                front_right_load = front_axle_load - front_left_load
+
+                max_rear_transfer = max(rear_axle_load - min_axle_load, 0.0)
+                bounded_rear_transfer = min(
+                    max(rear_transfer, -max_rear_transfer),
+                    max_rear_transfer,
+                )
+                rear_left_load = 0.5 * (rear_axle_load - bounded_rear_transfer)
+                rear_right_load = rear_axle_load - rear_left_load
+
                 front_slip_term = front_b * peak_slip_angle
                 front_nonlinear = front_slip_term - front_e * (
                     front_slip_term - math.atan(front_slip_term)
                 )
                 front_shape = math.sin(front_c * math.atan(front_nonlinear))
-                front_load_delta = (front_tire_load - front_reference_load) / front_reference_load
-                front_mu_scale = max(
-                    1.0 + front_load_sensitivity * front_load_delta,
+                front_left_delta = (front_left_load - front_reference_load) / front_reference_load
+                front_left_mu = max(
+                    1.0 + front_load_sensitivity * front_left_delta,
                     front_min_mu_scale,
                 )
-                fy_front = 2.0 * front_d * front_mu_scale * front_tire_load * front_shape
+                front_right_delta = (front_right_load - front_reference_load) / front_reference_load
+                front_right_mu = max(
+                    1.0 + front_load_sensitivity * front_right_delta,
+                    front_min_mu_scale,
+                )
+                fy_front = (
+                    front_d * front_left_mu * front_left_load * front_shape
+                    + front_d * front_right_mu * front_right_load * front_shape
+                )
 
                 rear_slip_term = rear_b * peak_slip_angle
                 rear_nonlinear = rear_slip_term - rear_e * (
                     rear_slip_term - math.atan(rear_slip_term)
                 )
                 rear_shape = math.sin(rear_c * math.atan(rear_nonlinear))
-                rear_load_delta = (rear_tire_load - rear_reference_load) / rear_reference_load
-                rear_mu_scale = max(
-                    1.0 + rear_load_sensitivity * rear_load_delta,
+                rear_left_delta = (rear_left_load - rear_reference_load) / rear_reference_load
+                rear_left_mu = max(
+                    1.0 + rear_load_sensitivity * rear_left_delta,
                     rear_min_mu_scale,
                 )
-                fy_rear = 2.0 * rear_d * rear_mu_scale * rear_tire_load * rear_shape
+                rear_right_delta = (rear_right_load - rear_reference_load) / rear_reference_load
+                rear_right_mu = max(
+                    1.0 + rear_load_sensitivity * rear_right_delta,
+                    rear_min_mu_scale,
+                )
+                fy_rear = (
+                    rear_d * rear_left_mu * rear_left_load * rear_shape
+                    + rear_d * rear_right_mu * rear_right_load * rear_shape
+                )
 
                 ay_tire = (fy_front + fy_rear) / mass
                 ay_next = max(min_lateral_accel_limit, ay_tire + ay_banking)
@@ -453,34 +507,73 @@ def _single_track_speed_profile_kernel(
         )
         rear_axle_load = total_vertical_load - front_axle_load
 
-        front_tire_load = max(front_axle_load * 0.5, SMALL_EPS)
-        rear_tire_load = max(rear_axle_load * 0.5, SMALL_EPS)
-
         ay_banking = GRAVITY * math.sin(banking[idx])
         ay_estimate = min_lateral_accel_limit
 
         for _ in range(lateral_limit_max_iterations):
+            total_roll_moment = mass * ay_estimate * cg_height
+            front_transfer = front_roll_stiffness_share * total_roll_moment / max(
+                front_track,
+                SMALL_EPS,
+            )
+            rear_transfer = (1.0 - front_roll_stiffness_share) * total_roll_moment / max(
+                rear_track,
+                SMALL_EPS,
+            )
+
+            max_front_transfer = max(front_axle_load - min_axle_load, 0.0)
+            bounded_front_transfer = min(
+                max(front_transfer, -max_front_transfer),
+                max_front_transfer,
+            )
+            front_left_load = 0.5 * (front_axle_load - bounded_front_transfer)
+            front_right_load = front_axle_load - front_left_load
+
+            max_rear_transfer = max(rear_axle_load - min_axle_load, 0.0)
+            bounded_rear_transfer = min(
+                max(rear_transfer, -max_rear_transfer),
+                max_rear_transfer,
+            )
+            rear_left_load = 0.5 * (rear_axle_load - bounded_rear_transfer)
+            rear_right_load = rear_axle_load - rear_left_load
+
             front_slip_term = front_b * peak_slip_angle
             front_nonlinear = front_slip_term - front_e * (
                 front_slip_term - math.atan(front_slip_term)
             )
             front_shape = math.sin(front_c * math.atan(front_nonlinear))
-            front_load_delta = (front_tire_load - front_reference_load) / front_reference_load
-            front_mu_scale = max(
-                1.0 + front_load_sensitivity * front_load_delta,
+            front_left_delta = (front_left_load - front_reference_load) / front_reference_load
+            front_left_mu = max(
+                1.0 + front_load_sensitivity * front_left_delta,
                 front_min_mu_scale,
             )
-            fy_front = 2.0 * front_d * front_mu_scale * front_tire_load * front_shape
+            front_right_delta = (front_right_load - front_reference_load) / front_reference_load
+            front_right_mu = max(
+                1.0 + front_load_sensitivity * front_right_delta,
+                front_min_mu_scale,
+            )
+            fy_front = (
+                front_d * front_left_mu * front_left_load * front_shape
+                + front_d * front_right_mu * front_right_load * front_shape
+            )
 
             rear_slip_term = rear_b * peak_slip_angle
             rear_nonlinear = rear_slip_term - rear_e * (rear_slip_term - math.atan(rear_slip_term))
             rear_shape = math.sin(rear_c * math.atan(rear_nonlinear))
-            rear_load_delta = (rear_tire_load - rear_reference_load) / rear_reference_load
-            rear_mu_scale = max(
-                1.0 + rear_load_sensitivity * rear_load_delta,
+            rear_left_delta = (rear_left_load - rear_reference_load) / rear_reference_load
+            rear_left_mu = max(
+                1.0 + rear_load_sensitivity * rear_left_delta,
                 rear_min_mu_scale,
             )
-            fy_rear = 2.0 * rear_d * rear_mu_scale * rear_tire_load * rear_shape
+            rear_right_delta = (rear_right_load - rear_reference_load) / rear_reference_load
+            rear_right_mu = max(
+                1.0 + rear_load_sensitivity * rear_right_delta,
+                rear_min_mu_scale,
+            )
+            fy_rear = (
+                rear_d * rear_left_mu * rear_left_load * rear_shape
+                + rear_d * rear_right_mu * rear_right_load * rear_shape
+            )
 
             ay_tire = (fy_front + fy_rear) / mass
             ay_next = max(min_lateral_accel_limit, ay_tire + ay_banking)
@@ -530,34 +623,73 @@ def _single_track_speed_profile_kernel(
         )
         rear_axle_load = total_vertical_load - front_axle_load
 
-        front_tire_load = max(front_axle_load * 0.5, SMALL_EPS)
-        rear_tire_load = max(rear_axle_load * 0.5, SMALL_EPS)
-
         ay_banking = GRAVITY * math.sin(banking[idx + 1])
         ay_estimate = min_lateral_accel_limit
 
         for _ in range(lateral_limit_max_iterations):
+            total_roll_moment = mass * ay_estimate * cg_height
+            front_transfer = front_roll_stiffness_share * total_roll_moment / max(
+                front_track,
+                SMALL_EPS,
+            )
+            rear_transfer = (1.0 - front_roll_stiffness_share) * total_roll_moment / max(
+                rear_track,
+                SMALL_EPS,
+            )
+
+            max_front_transfer = max(front_axle_load - min_axle_load, 0.0)
+            bounded_front_transfer = min(
+                max(front_transfer, -max_front_transfer),
+                max_front_transfer,
+            )
+            front_left_load = 0.5 * (front_axle_load - bounded_front_transfer)
+            front_right_load = front_axle_load - front_left_load
+
+            max_rear_transfer = max(rear_axle_load - min_axle_load, 0.0)
+            bounded_rear_transfer = min(
+                max(rear_transfer, -max_rear_transfer),
+                max_rear_transfer,
+            )
+            rear_left_load = 0.5 * (rear_axle_load - bounded_rear_transfer)
+            rear_right_load = rear_axle_load - rear_left_load
+
             front_slip_term = front_b * peak_slip_angle
             front_nonlinear = front_slip_term - front_e * (
                 front_slip_term - math.atan(front_slip_term)
             )
             front_shape = math.sin(front_c * math.atan(front_nonlinear))
-            front_load_delta = (front_tire_load - front_reference_load) / front_reference_load
-            front_mu_scale = max(
-                1.0 + front_load_sensitivity * front_load_delta,
+            front_left_delta = (front_left_load - front_reference_load) / front_reference_load
+            front_left_mu = max(
+                1.0 + front_load_sensitivity * front_left_delta,
                 front_min_mu_scale,
             )
-            fy_front = 2.0 * front_d * front_mu_scale * front_tire_load * front_shape
+            front_right_delta = (front_right_load - front_reference_load) / front_reference_load
+            front_right_mu = max(
+                1.0 + front_load_sensitivity * front_right_delta,
+                front_min_mu_scale,
+            )
+            fy_front = (
+                front_d * front_left_mu * front_left_load * front_shape
+                + front_d * front_right_mu * front_right_load * front_shape
+            )
 
             rear_slip_term = rear_b * peak_slip_angle
             rear_nonlinear = rear_slip_term - rear_e * (rear_slip_term - math.atan(rear_slip_term))
             rear_shape = math.sin(rear_c * math.atan(rear_nonlinear))
-            rear_load_delta = (rear_tire_load - rear_reference_load) / rear_reference_load
-            rear_mu_scale = max(
-                1.0 + rear_load_sensitivity * rear_load_delta,
+            rear_left_delta = (rear_left_load - rear_reference_load) / rear_reference_load
+            rear_left_mu = max(
+                1.0 + rear_load_sensitivity * rear_left_delta,
                 rear_min_mu_scale,
             )
-            fy_rear = 2.0 * rear_d * rear_mu_scale * rear_tire_load * rear_shape
+            rear_right_delta = (rear_right_load - rear_reference_load) / rear_reference_load
+            rear_right_mu = max(
+                1.0 + rear_load_sensitivity * rear_right_delta,
+                rear_min_mu_scale,
+            )
+            fy_rear = (
+                rear_d * rear_left_mu * rear_left_load * rear_shape
+                + rear_d * rear_right_mu * rear_right_load * rear_shape
+            )
 
             ay_tire = (fy_front + fy_rear) / mass
             ay_next = max(min_lateral_accel_limit, ay_tire + ay_banking)
@@ -714,6 +846,11 @@ def solve_speed_profile_numba(
             drag_scale,
             front_downforce_share,
             front_weight_fraction,
+            cg_height,
+            wheelbase,
+            front_track,
+            rear_track,
+            front_roll_stiffness_share,
             max_drive_accel,
             max_brake_accel,
             peak_slip_angle,
@@ -746,6 +883,11 @@ def solve_speed_profile_numba(
             float(drag_scale),
             float(front_downforce_share),
             float(front_weight_fraction),
+            float(cg_height),
+            float(wheelbase),
+            float(front_track),
+            float(rear_track),
+            float(front_roll_stiffness_share),
             float(max_drive_accel),
             float(max_brake_accel),
             float(peak_slip_angle),

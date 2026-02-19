@@ -129,42 +129,7 @@ class BackendAccelerationTests(unittest.TestCase):
         )
 
     @staticmethod
-    def _single_track_kernel_inputs() -> tuple[
-        np.ndarray,
-        np.ndarray,
-        np.ndarray,
-        np.ndarray,
-        float,
-        float,
-        float,
-        float,
-        float,
-        float,
-        float,
-        float,
-        float,
-        int,
-        float,
-        float,
-        float,
-        float,
-        float,
-        float,
-        float,
-        float,
-        float,
-        float,
-        float,
-        float,
-        float,
-        float,
-        float,
-        float,
-        float,
-        float,
-        int,
-        float,
-    ]:
+    def _single_track_kernel_inputs() -> tuple[object, ...]:
         """Build deterministic inputs for direct single_track-kernel testing.
 
         Returns:
@@ -185,6 +150,11 @@ class BackendAccelerationTests(unittest.TestCase):
             0.5 * 1.225 * 0.9 * 1.5,
             0.5,
             0.5,
+            0.31,
+            3.60,
+            1.60,
+            1.55,
+            0.53,
             8.0,
             16.0,
             0.12,
@@ -287,42 +257,11 @@ class BackendAccelerationTests(unittest.TestCase):
     def test_python_single_track_numba_kernel_executes_and_respects_bounds(self) -> None:
         """Execute single_track kernel in Python mode and verify physical invariants."""
         args = self._single_track_kernel_inputs()
-        (
-            arc_length,
-            curvature,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            _,
-            max_speed,
-            _,
-            min_speed,
-            lateral_iterations_limit,
-            _,
-        ) = args
+        arc_length = args[0]
+        curvature = args[1]
+        max_speed = args[-5]
+        min_speed = args[-3]
+        lateral_iterations_limit = args[-2]
 
         speed, longitudinal_accel, lateral_accel, lateral_iterations, lap_time = (
             _single_track_speed_profile_kernel(*args)

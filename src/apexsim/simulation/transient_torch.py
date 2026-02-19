@@ -40,7 +40,10 @@ from apexsim.simulation.transient_common import (
 from apexsim.track.models import TrackData
 from apexsim.utils.constants import SMALL_EPS
 from apexsim.utils.exceptions import ConfigurationError
-from apexsim.vehicle._backend_physics_core import axle_tire_loads_torch
+from apexsim.vehicle._backend_physics_core import (
+    roll_stiffness_front_share_numpy,
+    single_track_wheel_loads_torch,
+)
 
 _TRACK_PROGRESS_FRACTION_STEP = DEFAULT_TRACK_PROGRESS_FRACTION_STEP
 _TRACK_PROGRESS_EVAL_STRIDE = 20
@@ -189,7 +192,10 @@ def _is_single_track_model(model: Any) -> bool:
     """
     return (
         hasattr(model, "_backend_magic_formula_lateral")
-        and hasattr(model, "_backend_axle_tire_loads")
+        and (
+            hasattr(model, "_backend_wheel_loads")
+            or hasattr(model, "_backend_axle_tire_loads")
+        )
         and hasattr(model, "tires")
         and hasattr(model, "physics")
         and hasattr(model.physics, "max_steer_angle")
@@ -686,18 +692,15 @@ def _transient_reference_profile_torch(
     return solve_speed_profile_torch(track=track, model=model, config=quasi_config)
 
 
-def _single_track_axle_tire_loads_torch(
+def _single_track_wheel_loads_torch(
     *,
     torch: Any,
     model: Any,
     speed: Any,
     longitudinal_accel: Any,
     lateral_accel: Any,
-) -> tuple[Any, Any]:
-    """Estimate front/rear per-tire loads with transient load transfer terms.
-
-    This mirrors the scalar logic used by ``estimate_normal_loads`` in the
-    NumPy single-track dynamics path while preserving autograd compatibility.
+) -> tuple[Any, Any, Any, Any]:
+    """Estimate wheel loads with transient load transfer terms.
 
     Args:
         torch: Imported torch module.
@@ -707,46 +710,36 @@ def _single_track_axle_tire_loads_torch(
         lateral_accel: Kinematic lateral-acceleration estimate [m/s^2].
 
     Returns:
-        Tuple ``(front_tire_load, rear_tire_load)`` [N].
+        Tuple ``(front_left, front_right, rear_left, rear_right)`` [N].
     """
-    del lateral_accel
-
-    dtype = speed.dtype
-    device = speed.device
-
-    mass = torch.as_tensor(model.vehicle.mass, dtype=dtype, device=device)
-    cg_height = torch.as_tensor(model.vehicle.cg_height, dtype=dtype, device=device)
-    wheelbase = torch.as_tensor(model.vehicle.wheelbase, dtype=dtype, device=device)
-
-    base_front_tire_load, base_rear_tire_load = axle_tire_loads_torch(
+    front_roll_share = roll_stiffness_front_share_numpy(
+        front_spring_rate=model.vehicle.front_spring_rate,
+        rear_spring_rate=model.vehicle.rear_spring_rate,
+        front_arb_distribution=model.vehicle.front_arb_distribution,
+    )
+    (
+        _front_axle_load,
+        _rear_axle_load,
+        front_left,
+        front_right,
+        rear_left,
+        rear_right,
+    ) = single_track_wheel_loads_torch(
         torch=torch,
         speed=speed,
         mass=model.vehicle.mass,
         downforce_scale=model._downforce_scale,
         front_downforce_share=model._front_downforce_share,
         front_weight_fraction=model.vehicle.front_weight_fraction,
+        longitudinal_accel=longitudinal_accel,
+        lateral_accel=lateral_accel,
+        cg_height=model.vehicle.cg_height,
+        wheelbase=model.vehicle.wheelbase,
+        front_track=model.vehicle.front_track,
+        rear_track=model.vehicle.rear_track,
+        front_roll_stiffness_share=front_roll_share,
     )
-    front_axle_base = 2.0 * base_front_tire_load
-    rear_axle_base = 2.0 * base_rear_tire_load
-    total_vertical_load = front_axle_base + rear_axle_base
-
-    longitudinal_transfer = mass * longitudinal_accel * cg_height / torch.clamp(
-        wheelbase,
-        min=SMALL_EPS,
-    )
-    front_axle_raw = front_axle_base - longitudinal_transfer
-    min_axle_load = 2.0 * SMALL_EPS
-    min_axle_load_tensor = torch.full_like(total_vertical_load, min_axle_load)
-    max_front_axle_load = torch.clamp(total_vertical_load - min_axle_load, min=min_axle_load)
-    front_axle_load = torch.minimum(
-        torch.maximum(front_axle_raw, min_axle_load_tensor),
-        max_front_axle_load,
-    )
-    rear_axle_load = total_vertical_load - front_axle_load
-
-    front_tire_load = torch.clamp(front_axle_load * 0.5, min=SMALL_EPS)
-    rear_tire_load = torch.clamp(rear_axle_load * 0.5, min=SMALL_EPS)
-    return front_tire_load, rear_tire_load
+    return front_left, front_right, rear_left, rear_right
 
 
 def _single_track_derivatives_torch(
@@ -784,23 +777,33 @@ def _single_track_derivatives_torch(
 
     speed = torch.sqrt(vx * vx + vy * vy)
     lateral_accel_estimate = vx * yaw_rate
-    front_tire_load, rear_tire_load = _single_track_axle_tire_loads_torch(
+    front_left, front_right, rear_left, rear_right = _single_track_wheel_loads_torch(
         torch=torch,
         model=model,
         speed=speed,
         longitudinal_accel=longitudinal_accel_cmd,
         lateral_accel=lateral_accel_estimate,
     )
-    fy_front = 2.0 * model._backend_magic_formula_lateral(
+    fy_front = model._backend_magic_formula_lateral(
         torch=torch,
         slip_angle=alpha_front,
-        normal_load=front_tire_load,
+        normal_load=front_left,
+        params=model.tires.front,
+    ) + model._backend_magic_formula_lateral(
+        torch=torch,
+        slip_angle=alpha_front,
+        normal_load=front_right,
         params=model.tires.front,
     )
-    fy_rear = 2.0 * model._backend_magic_formula_lateral(
+    fy_rear = model._backend_magic_formula_lateral(
         torch=torch,
         slip_angle=alpha_rear,
-        normal_load=rear_tire_load,
+        normal_load=rear_left,
+        params=model.tires.rear,
+    ) + model._backend_magic_formula_lateral(
+        torch=torch,
+        slip_angle=alpha_rear,
+        normal_load=rear_right,
         params=model.tires.rear,
     )
 
