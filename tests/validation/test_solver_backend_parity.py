@@ -26,6 +26,8 @@ from tests.helpers import sample_vehicle_parameters
 
 TORCH_AVAILABLE = importlib.util.find_spec("torch") is not None
 NUMBA_AVAILABLE = importlib.util.find_spec("numba") is not None
+SCIPY_AVAILABLE = importlib.util.find_spec("scipy") is not None
+TORCHDIFFEQ_AVAILABLE = importlib.util.find_spec("torchdiffeq") is not None
 
 
 def _relative_error(value: float, reference: float) -> float:
@@ -201,6 +203,48 @@ class TorchBackendParityTests(unittest.TestCase):
             2.5,
         )
 
+    @unittest.skipUnless(
+        TORCHDIFFEQ_AVAILABLE and SCIPY_AVAILABLE,
+        "torchdiffeq/scipy not available",
+    )
+    def test_transient_optimal_control_point_mass_numpy_torch_parity_on_straight(self) -> None:
+        """Keep transient OC point-mass output aligned between NumPy and Torch."""
+        track = build_straight_track(length=700.0, sample_count=81)
+        transient_oc = TransientConfig(
+            numerics=TransientNumericsConfig(
+                integration_method="rk4",
+                max_iterations=5,
+                control_interval=1,
+                tolerance=1e-2,
+                control_smoothness_weight=0.0,
+            ),
+            runtime=TransientRuntimeConfig(
+                driver_model="optimal_control",
+                verbosity=0,
+            ),
+        )
+        numpy_config = build_simulation_config(
+            compute_backend="numpy",
+            max_speed=14.0,
+            initial_speed=12.0,
+            solver_mode="transient_oc",
+            transient=transient_oc,
+        )
+        torch_config = build_simulation_config(
+            compute_backend="torch",
+            max_speed=14.0,
+            initial_speed=12.0,
+            solver_mode="transient_oc",
+            transient=transient_oc,
+        )
+        numpy_result = simulate_lap(track=track, model=self.point_mass, config=numpy_config)
+        torch_result = simulate_lap(track=track, model=self.point_mass, config=torch_config)
+        self.assertLess(_relative_error(torch_result.lap_time, numpy_result.lap_time), 5e-3)
+        self.assertLess(
+            float(np.max(np.abs(torch_result.speed - numpy_result.speed))),
+            0.2,
+        )
+
 
 @unittest.skipUnless(NUMBA_AVAILABLE, "numba backend not available")
 class NumbaBackendParityTests(unittest.TestCase):
@@ -236,6 +280,45 @@ class NumbaBackendParityTests(unittest.TestCase):
         numpy_result = simulate_lap(track=self.track, model=self.model, config=self.numpy_config)
         numba_result = simulate_lap(track=self.track, model=self.model, config=self.numba_config)
         self.assertLess(_relative_error(numba_result.lap_time, numpy_result.lap_time), 5e-6)
+        self.assertLess(
+            float(np.max(np.abs(numba_result.speed - numpy_result.speed))),
+            1e-6,
+        )
+
+    @unittest.skipUnless(SCIPY_AVAILABLE, "scipy not available")
+    def test_transient_optimal_control_point_mass_numba_matches_numpy(self) -> None:
+        """Keep transient OC point-mass output aligned between NumPy and Numba."""
+        track = build_straight_track(length=700.0, sample_count=81)
+        transient_oc = TransientConfig(
+            numerics=TransientNumericsConfig(
+                integration_method="rk4",
+                max_iterations=5,
+                control_interval=1,
+                tolerance=1e-2,
+                control_smoothness_weight=0.0,
+            ),
+            runtime=TransientRuntimeConfig(
+                driver_model="optimal_control",
+                verbosity=0,
+            ),
+        )
+        numpy_config = build_simulation_config(
+            compute_backend="numpy",
+            max_speed=14.0,
+            initial_speed=12.0,
+            solver_mode="transient_oc",
+            transient=transient_oc,
+        )
+        numba_config = build_simulation_config(
+            compute_backend="numba",
+            max_speed=14.0,
+            initial_speed=12.0,
+            solver_mode="transient_oc",
+            transient=transient_oc,
+        )
+        numpy_result = simulate_lap(track=track, model=self.model, config=numpy_config)
+        numba_result = simulate_lap(track=track, model=self.model, config=numba_config)
+        self.assertLess(_relative_error(numba_result.lap_time, numpy_result.lap_time), 5e-3)
         self.assertLess(
             float(np.max(np.abs(numba_result.speed - numpy_result.speed))),
             1e-6,

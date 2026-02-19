@@ -23,6 +23,7 @@ from apexsim.simulation import (
 )
 from apexsim.tire import default_axle_tire_parameters
 from apexsim.track import build_circular_track
+from apexsim.utils.exceptions import ConfigurationError
 from apexsim.vehicle import (
     PointMassPhysics,
     SingleTrackPhysics,
@@ -400,7 +401,7 @@ class YawMomentSteadyStateValidationTests(unittest.TestCase):
 
     @unittest.skipUnless(SCIPY_AVAILABLE, "SciPy not installed")
     def test_circle_optimal_control_low_iteration_case_exposes_nonsteady_yaw_residual(self) -> None:
-        """Use yaw residual to detect non-converged optimal-control circle solutions."""
+        """Fail fast when low-iteration optimal-control setup cannot converge."""
         track = build_circular_track(radius=100.0, sample_count=41)
         model = self._build_model(model_name="single_track")
         config = self._build_config(
@@ -411,13 +412,8 @@ class YawMomentSteadyStateValidationTests(unittest.TestCase):
             max_iterations=2,
             control_interval=6,
         )
-        lap = simulate_lap(track=track, model=model, config=config)
-        mean_eta, max_eta = self._steady_state_eta_stats(model=model, lap=lap)
-
-        self.assertTrue(np.isfinite(mean_eta))
-        self.assertTrue(np.isfinite(max_eta))
-        self.assertGreaterEqual(mean_eta, 5e-2)
-        self.assertGreaterEqual(max_eta, 1.0)
+        with self.assertRaises(ConfigurationError):
+            simulate_lap(track=track, model=model, config=config)
 
 
 if __name__ == "__main__":
