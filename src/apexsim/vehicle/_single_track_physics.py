@@ -10,7 +10,10 @@ from apexsim.simulation.model_api import ModelDiagnostics
 from apexsim.tire.models import AxleTireParameters
 from apexsim.tire.pacejka import magic_formula_lateral
 from apexsim.utils.constants import GRAVITY
-from apexsim.vehicle._backend_physics_core import axle_tire_loads_numpy
+from apexsim.vehicle._backend_physics_core import (
+    roll_stiffness_front_share_numpy,
+    single_track_wheel_loads_numpy,
+)
 from apexsim.vehicle._point_mass_physics import PointMassPhysicalMixin, PointMassPhysicalState
 from apexsim.vehicle.single_track.dynamics import (
     ControlInput,
@@ -84,66 +87,92 @@ class SingleTrackPhysicalMixin(PointMassPhysicalMixin):
         _single_track_lateral_physics: SingleTrackLateralPhysicsProtocol
         _dynamics: SingleTrackDynamicsModel
 
-    def _axle_tire_loads(
-        self,
-        speed: float | np.ndarray,
-    ) -> tuple[np.ndarray, np.ndarray]:
-        """Estimate front/rear per-tire normal loads for envelope evaluation.
-
-        Args:
-            speed: Vehicle speed sample or vector [m/s].
-
-        Returns:
-            Tuple ``(front_tire_load, rear_tire_load)`` [N].
-        """
-        return axle_tire_loads_numpy(
-            speed=np.asarray(speed, dtype=float),
-            mass=self.vehicle.mass,
-            downforce_scale=self._downforce_scale,
-            front_downforce_share=self._front_downforce_share,
-            front_weight_fraction=self.vehicle.front_weight_fraction,
-        )
-
     def _iterate_lateral_limit(
         self,
-        front_tire_load: np.ndarray,
-        rear_tire_load: np.ndarray,
+        speed: np.ndarray,
         ay_banking: np.ndarray,
     ) -> np.ndarray:
-        """Run fixed-point lateral-limit iteration for vectorized tire loads.
+        """Run fixed-point lateral-limit iteration with wheel-load-aware tire forces.
 
         Args:
-            front_tire_load: Front per-tire normal-load samples [N].
-            rear_tire_load: Rear per-tire normal-load samples [N].
+            speed: Vehicle speed samples [m/s].
             ay_banking: Banking-induced lateral acceleration samples [m/s^2].
 
         Returns:
             Converged lateral-acceleration limit samples [m/s^2].
         """
+        speed_array, ay_banking_array = np.broadcast_arrays(
+            np.asarray(speed, dtype=float),
+            np.asarray(ay_banking, dtype=float),
+        )
+        zero_longitudinal = np.zeros_like(speed_array, dtype=float)
+        front_roll_share = roll_stiffness_front_share_numpy(
+            front_spring_rate=self.vehicle.front_spring_rate,
+            rear_spring_rate=self.vehicle.rear_spring_rate,
+            front_arb_distribution=self.vehicle.front_arb_distribution,
+        )
         ay_estimate = np.full(
-            np.shape(ay_banking),
+            np.shape(ay_banking_array),
             self.numerics.min_lateral_accel_limit,
             dtype=float,
         )
         for _ in range(self.numerics.lateral_limit_max_iterations):
-            fy_front = 2.0 * np.asarray(
+            (
+                _front_axle_load,
+                _rear_axle_load,
+                front_left_load,
+                front_right_load,
+                rear_left_load,
+                rear_right_load,
+            ) = single_track_wheel_loads_numpy(
+                speed=speed_array,
+                mass=self.vehicle.mass,
+                downforce_scale=self._downforce_scale,
+                front_downforce_share=self._front_downforce_share,
+                front_weight_fraction=self.vehicle.front_weight_fraction,
+                longitudinal_accel=zero_longitudinal,
+                lateral_accel=ay_estimate,
+                cg_height=self.vehicle.cg_height,
+                wheelbase=self.vehicle.wheelbase,
+                front_track=self.vehicle.front_track,
+                rear_track=self.vehicle.rear_track,
+                front_roll_stiffness_share=front_roll_share,
+            )
+            fy_front = np.asarray(
                 magic_formula_lateral(
                     self._single_track_lateral_physics.peak_slip_angle,
-                    front_tire_load,
+                    front_left_load,
+                    self.tires.front,
+                ),
+                dtype=float,
+            ) + np.asarray(
+                magic_formula_lateral(
+                    self._single_track_lateral_physics.peak_slip_angle,
+                    front_right_load,
                     self.tires.front,
                 ),
                 dtype=float,
             )
-            fy_rear = 2.0 * np.asarray(
+            fy_rear = np.asarray(
                 magic_formula_lateral(
                     self._single_track_lateral_physics.peak_slip_angle,
-                    rear_tire_load,
+                    rear_left_load,
+                    self.tires.rear,
+                ),
+                dtype=float,
+            ) + np.asarray(
+                magic_formula_lateral(
+                    self._single_track_lateral_physics.peak_slip_angle,
+                    rear_right_load,
                     self.tires.rear,
                 ),
                 dtype=float,
             )
             ay_tire = (fy_front + fy_rear) / self.vehicle.mass
-            ay_next = np.maximum(self.numerics.min_lateral_accel_limit, ay_tire + ay_banking)
+            ay_next = np.maximum(
+                self.numerics.min_lateral_accel_limit,
+                ay_tire + ay_banking_array,
+            )
 
             if (
                 float(np.max(np.abs(ay_next - ay_estimate)))
@@ -168,11 +197,10 @@ class SingleTrackPhysicalMixin(PointMassPhysicalMixin):
         Returns:
             Quasi-steady lateral acceleration limit [m/s^2].
         """
-        front_tire_load, rear_tire_load = self._axle_tire_loads(speed)
+        speed_array = np.asarray(speed, dtype=float)
         ay_banking = np.asarray(GRAVITY * float(np.sin(banking)), dtype=float)
         ay_limit = self._iterate_lateral_limit(
-            front_tire_load=np.asarray(front_tire_load, dtype=float),
-            rear_tire_load=np.asarray(rear_tire_load, dtype=float),
+            speed=speed_array,
             ay_banking=ay_banking,
         )
         return float(ay_limit)
@@ -196,10 +224,8 @@ class SingleTrackPhysicalMixin(PointMassPhysicalMixin):
             np.asarray(banking, dtype=float),
         )
         ay_banking = GRAVITY * np.sin(banking_array)
-        front_tire_load, rear_tire_load = self._axle_tire_loads(speed_array)
         return self._iterate_lateral_limit(
-            front_tire_load=front_tire_load,
-            rear_tire_load=rear_tire_load,
+            speed=speed_array,
             ay_banking=ay_banking,
         )
 

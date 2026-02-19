@@ -5,7 +5,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from apexsim.utils.constants import GRAVITY, SMALL_EPS
-from apexsim.vehicle._backend_physics_core import axle_tire_loads_torch
+from apexsim.vehicle._backend_physics_core import (
+    roll_stiffness_front_share_numpy,
+    single_track_wheel_loads_torch,
+)
 from apexsim.vehicle._point_mass_backends import PointMassTorchBackendMixin
 
 if TYPE_CHECKING:
@@ -45,12 +48,22 @@ class SingleTrackNumbaBackendMixin:
         """
         front = self.tires.front
         rear = self.tires.rear
+        front_roll_share = roll_stiffness_front_share_numpy(
+            front_spring_rate=self.vehicle.front_spring_rate,
+            rear_spring_rate=self.vehicle.rear_spring_rate,
+            front_arb_distribution=self.vehicle.front_arb_distribution,
+        )
         return (
             float(self.vehicle.mass),
             float(self._downforce_scale),
             float(self._drag_force_scale),
             float(self._front_downforce_share),
             float(self.vehicle.front_weight_fraction),
+            float(self.vehicle.cg_height),
+            float(self.vehicle.wheelbase),
+            float(self.vehicle.front_track),
+            float(self.vehicle.rear_track),
+            float(front_roll_share),
             float(self._scaled_drive_envelope_accel_limit()),
             float(self._scaled_brake_envelope_accel_limit()),
             float(self._single_track_lateral_physics.peak_slip_angle),
@@ -118,24 +131,52 @@ class SingleTrackTorchBackendMixin(PointMassTorchBackendMixin):
         )
         return params.D * mu_scale * fz * shape
 
-    def _backend_axle_tire_loads(self, speed: Any) -> tuple[Any, Any]:
-        """Estimate front/rear per-tire normal loads for torch speed inputs.
+    def _backend_wheel_loads(
+        self,
+        *,
+        speed: Any,
+        longitudinal_accel: Any,
+        lateral_accel: Any,
+    ) -> tuple[Any, Any, Any, Any]:
+        """Estimate wheel normal loads for torch speed/load-transfer states.
 
         Args:
             speed: Speed tensor [m/s].
+            longitudinal_accel: Longitudinal acceleration tensor [m/s^2].
+            lateral_accel: Lateral acceleration tensor [m/s^2].
 
         Returns:
-            Tuple ``(front_tire_load, rear_tire_load)`` [N].
+            Tuple ``(front_left, front_right, rear_left, rear_right)`` [N].
         """
         torch = self._torch_module()
-        return axle_tire_loads_torch(
+        front_roll_share = roll_stiffness_front_share_numpy(
+            front_spring_rate=self.vehicle.front_spring_rate,
+            rear_spring_rate=self.vehicle.rear_spring_rate,
+            front_arb_distribution=self.vehicle.front_arb_distribution,
+        )
+        (
+            _front_axle_load,
+            _rear_axle_load,
+            front_left,
+            front_right,
+            rear_left,
+            rear_right,
+        ) = single_track_wheel_loads_torch(
             torch=torch,
             speed=speed,
             mass=self.vehicle.mass,
             downforce_scale=self._downforce_scale,
             front_downforce_share=self._front_downforce_share,
             front_weight_fraction=self.vehicle.front_weight_fraction,
+            longitudinal_accel=longitudinal_accel,
+            lateral_accel=lateral_accel,
+            cg_height=self.vehicle.cg_height,
+            wheelbase=self.vehicle.wheelbase,
+            front_track=self.vehicle.front_track,
+            rear_track=self.vehicle.rear_track,
+            front_roll_stiffness_share=front_roll_share,
         )
+        return front_left, front_right, rear_left, rear_right
 
     def lateral_accel_limit_torch(self, speed: Any, banking: Any) -> Any:
         """Estimate lateral acceleration limits for torch tensor inputs.
@@ -148,27 +189,52 @@ class SingleTrackTorchBackendMixin(PointMassTorchBackendMixin):
             Quasi-steady lateral acceleration limit tensor [m/s^2].
         """
         torch = self._torch_module()
-        front_tire_load, rear_tire_load = self._backend_axle_tire_loads(speed)
+        speed_tensor = torch.as_tensor(speed)
+        ay_banking = GRAVITY * torch.sin(banking)
+        ay_estimate = torch.full_like(speed_tensor, self.numerics.min_lateral_accel_limit)
         slip = self._single_track_lateral_physics.peak_slip_angle
 
-        fy_front = 2.0 * self._backend_magic_formula_lateral(
-            torch=torch,
-            slip_angle=slip,
-            normal_load=front_tire_load,
-            params=self.tires.front,
-        )
-        fy_rear = 2.0 * self._backend_magic_formula_lateral(
-            torch=torch,
-            slip_angle=slip,
-            normal_load=rear_tire_load,
-            params=self.tires.rear,
-        )
-        ay_tire = (fy_front + fy_rear) / self.vehicle.mass
-        ay_banking = GRAVITY * torch.sin(banking)
-        return torch.clamp(
-            ay_tire + ay_banking,
-            min=self.numerics.min_lateral_accel_limit,
-        )
+        for _ in range(self.numerics.lateral_limit_max_iterations):
+            front_left, front_right, rear_left, rear_right = self._backend_wheel_loads(
+                speed=speed_tensor,
+                longitudinal_accel=torch.zeros_like(speed_tensor),
+                lateral_accel=ay_estimate,
+            )
+            fy_front = self._backend_magic_formula_lateral(
+                torch=torch,
+                slip_angle=slip,
+                normal_load=front_left,
+                params=self.tires.front,
+            ) + self._backend_magic_formula_lateral(
+                torch=torch,
+                slip_angle=slip,
+                normal_load=front_right,
+                params=self.tires.front,
+            )
+            fy_rear = self._backend_magic_formula_lateral(
+                torch=torch,
+                slip_angle=slip,
+                normal_load=rear_left,
+                params=self.tires.rear,
+            ) + self._backend_magic_formula_lateral(
+                torch=torch,
+                slip_angle=slip,
+                normal_load=rear_right,
+                params=self.tires.rear,
+            )
+            ay_tire = (fy_front + fy_rear) / self.vehicle.mass
+            ay_next = torch.clamp(
+                ay_tire + ay_banking,
+                min=self.numerics.min_lateral_accel_limit,
+            )
+            delta = torch.max(torch.abs(ay_next - ay_estimate))
+            ay_estimate = ay_next
+            if (
+                float(delta.detach().cpu().item())
+                <= self.numerics.lateral_limit_convergence_tolerance
+            ):
+                break
+        return ay_estimate
 
     def max_longitudinal_accel_torch(
         self,
