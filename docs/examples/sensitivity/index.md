@@ -25,6 +25,8 @@ Two objective metrics are evaluated:
 - It gives a consistent sensitivity baseline across different track classes.
 - It highlights which parameters matter globally (lap time) vs. energetically.
 - It uses one compact, model-agnostic API with clear parameter targets.
+- The Spa notebook additionally compares quasi-static and transient sensitivities
+  to expose solver-path limitations (notably for yaw inertia).
 
 ## Output artifacts
 
