@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import unittest
+from dataclasses import replace
 
 import numpy as np
 
@@ -63,6 +64,13 @@ class SingleTrackModelTests(unittest.TestCase):
                 max_brake_accel=16.0,
                 peak_slip_angle=0.0,
             ).validate()
+        with self.assertRaises(ConfigurationError):
+            SingleTrackPhysics(
+                max_drive_accel=8.0,
+                max_brake_accel=16.0,
+                reference_mass=0.0,
+                peak_slip_angle=0.12,
+            ).validate()
 
     def test_numerics_validation_rejects_invalid_values(self) -> None:
         """Reject invalid numerical settings for lateral limit iteration."""
@@ -118,6 +126,58 @@ class SingleTrackModelTests(unittest.TestCase):
         )
 
         self.assertLess(uphill, on_flat)
+
+    def test_reference_mass_scales_longitudinal_limits_with_vehicle_mass(self) -> None:
+        """Scale single-track accel/decel limits inversely with mass when configured."""
+        vehicle = sample_vehicle_parameters()
+        baseline_mass = vehicle.mass
+        tires = default_axle_tire_parameters()
+        numerics = SingleTrackNumerics()
+        physics = SingleTrackPhysics(
+            max_drive_accel=8.0,
+            max_brake_accel=16.0,
+            reference_mass=baseline_mass,
+            peak_slip_angle=0.12,
+        )
+        lighter_model = build_single_track_model(
+            vehicle=replace(vehicle, mass=baseline_mass * 0.9),
+            tires=tires,
+            physics=physics,
+            numerics=numerics,
+        )
+        heavier_model = build_single_track_model(
+            vehicle=replace(vehicle, mass=baseline_mass * 1.1),
+            tires=tires,
+            physics=physics,
+            numerics=numerics,
+        )
+        lighter_accel = lighter_model.max_longitudinal_accel(
+            speed=20.0,
+            lateral_accel_required=0.0,
+            grade=0.0,
+            banking=0.0,
+        )
+        heavier_accel = heavier_model.max_longitudinal_accel(
+            speed=20.0,
+            lateral_accel_required=0.0,
+            grade=0.0,
+            banking=0.0,
+        )
+        lighter_brake = lighter_model.max_longitudinal_decel(
+            speed=20.0,
+            lateral_accel_required=0.0,
+            grade=0.0,
+            banking=0.0,
+        )
+        heavier_brake = heavier_model.max_longitudinal_decel(
+            speed=20.0,
+            lateral_accel_required=0.0,
+            grade=0.0,
+            banking=0.0,
+        )
+
+        self.assertGreater(lighter_accel, heavier_accel)
+        self.assertGreater(lighter_brake, heavier_brake)
 
     def test_lateral_limit_batch_matches_scalar_api(self) -> None:
         """Match vectorized lateral-limit output against scalar API evaluation."""

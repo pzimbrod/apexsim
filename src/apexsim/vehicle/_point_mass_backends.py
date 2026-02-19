@@ -23,6 +23,10 @@ class PointMassBackendState(Protocol):
     _drag_force_scale: float
     _downforce_scale: float
 
+    def _scaled_drive_envelope_accel_limit(self) -> float: ...
+
+    def _scaled_brake_envelope_accel_limit(self) -> float: ...
+
 
 class PointMassNumbaBackendMixin:
     """Numba backend adapter methods for ``PointMassModel``."""
@@ -39,8 +43,8 @@ class PointMassNumbaBackendMixin:
             float(self._downforce_scale),
             float(self._drag_force_scale),
             float(self.physics.friction_coefficient),
-            float(self.envelope_physics.max_drive_accel),
-            float(self.envelope_physics.max_brake_accel),
+            float(self._scaled_drive_envelope_accel_limit()),
+            float(self._scaled_brake_envelope_accel_limit()),
         )
 
 
@@ -94,6 +98,30 @@ class PointMassTorchBackendMixin:
         speed_squared = speed_non_negative * speed_non_negative
         downforce = self._downforce_scale * speed_squared
         return torch.clamp(GRAVITY + downforce / self.vehicle.mass, min=SMALL_EPS)
+
+    def _scaled_drive_envelope_accel_limit_torch(self, torch: Any) -> Any:
+        """Return drive envelope limit with optional reference-mass scaling."""
+        reference_mass = self.envelope_physics.reference_mass
+        if reference_mass is None:
+            return torch.as_tensor(self.envelope_physics.max_drive_accel)
+        mass = torch.as_tensor(self.vehicle.mass)
+        return (
+            torch.as_tensor(self.envelope_physics.max_drive_accel)
+            * torch.as_tensor(reference_mass)
+            / mass
+        )
+
+    def _scaled_brake_envelope_accel_limit_torch(self, torch: Any) -> Any:
+        """Return brake envelope limit with optional reference-mass scaling."""
+        reference_mass = self.envelope_physics.reference_mass
+        if reference_mass is None:
+            return torch.as_tensor(self.envelope_physics.max_brake_accel)
+        mass = torch.as_tensor(self.vehicle.mass)
+        return (
+            torch.as_tensor(self.envelope_physics.max_brake_accel)
+            * torch.as_tensor(reference_mass)
+            / mass
+        )
 
     def _tire_accel_limit_torch(self, speed: Any) -> Any:
         """Compute isotropic tire acceleration limits for torch tensors.
@@ -196,7 +224,10 @@ class PointMassTorchBackendMixin:
         ay_limit = torch.clamp(ay_tire + GRAVITY * torch.sin(banking), min=SMALL_EPS)
         circle_scale = self._friction_circle_scale_torch(lateral_accel_required, ay_limit)
 
-        tire_limit = torch.clamp(ay_tire, max=self.envelope_physics.max_drive_accel)
+        tire_limit = torch.clamp(
+            ay_tire,
+            max=self._scaled_drive_envelope_accel_limit_torch(torch),
+        )
         tire_accel = tire_limit * circle_scale
 
         speed_non_negative = torch.clamp(speed, min=0.0)
@@ -229,7 +260,10 @@ class PointMassTorchBackendMixin:
         ay_limit = torch.clamp(ay_tire + GRAVITY * torch.sin(banking), min=SMALL_EPS)
         circle_scale = self._friction_circle_scale_torch(lateral_accel_required, ay_limit)
 
-        tire_limit = torch.clamp(ay_tire, max=self.envelope_physics.max_brake_accel)
+        tire_limit = torch.clamp(
+            ay_tire,
+            max=self._scaled_brake_envelope_accel_limit_torch(torch),
+        )
         tire_brake = tire_limit * circle_scale
 
         speed_non_negative = torch.clamp(speed, min=0.0)

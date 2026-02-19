@@ -31,6 +31,10 @@ class SingleTrackNumbaBackendMixin:
         _downforce_scale: float
         _front_downforce_share: float
 
+        def _scaled_drive_envelope_accel_limit(self) -> float: ...
+
+        def _scaled_brake_envelope_accel_limit(self) -> float: ...
+
     def numba_speed_profile_parameters(self) -> NumbaSingleTrackProfileParameters:
         """Return scalar coefficients consumed by the single-track numba kernel.
 
@@ -46,8 +50,8 @@ class SingleTrackNumbaBackendMixin:
             float(self._drag_force_scale),
             float(self._front_downforce_share),
             float(self.vehicle.front_weight_fraction),
-            float(self.envelope_physics.max_drive_accel),
-            float(self.envelope_physics.max_brake_accel),
+            float(self._scaled_drive_envelope_accel_limit()),
+            float(self._scaled_brake_envelope_accel_limit()),
             float(self._single_track_lateral_physics.peak_slip_angle),
             float(self.numerics.min_lateral_accel_limit),
             int(self.numerics.lateral_limit_max_iterations),
@@ -202,7 +206,7 @@ class SingleTrackTorchBackendMixin(PointMassTorchBackendMixin):
 
         ay_limit = torch.clamp(self.lateral_accel_limit_torch(speed, banking), min=SMALL_EPS)
         circle_scale = self._friction_circle_scale_torch(lateral_accel_required, ay_limit)
-        tire_accel = self.envelope_physics.max_drive_accel * circle_scale
+        tire_accel = self._scaled_drive_envelope_accel_limit_torch(torch) * circle_scale
 
         speed_non_negative = torch.clamp(speed, min=0.0)
         speed_squared = speed_non_negative * speed_non_negative
@@ -232,7 +236,7 @@ class SingleTrackTorchBackendMixin(PointMassTorchBackendMixin):
 
         ay_limit = torch.clamp(self.lateral_accel_limit_torch(speed, banking), min=SMALL_EPS)
         circle_scale = self._friction_circle_scale_torch(lateral_accel_required, ay_limit)
-        tire_brake = self.envelope_physics.max_brake_accel * circle_scale
+        tire_brake = self._scaled_brake_envelope_accel_limit_torch(torch) * circle_scale
 
         speed_non_negative = torch.clamp(speed, min=0.0)
         speed_squared = speed_non_negative * speed_non_negative

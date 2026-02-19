@@ -162,6 +162,20 @@ class PointMassPhysicalMixin:
         """
         return float(self._tire_accel_limit(speed))
 
+    def _scaled_drive_envelope_accel_limit(self) -> float:
+        """Return drive acceleration envelope scaled by optional reference mass."""
+        reference_mass = self.envelope_physics.reference_mass
+        if reference_mass is None:
+            return float(self.envelope_physics.max_drive_accel)
+        return float(self.envelope_physics.max_drive_accel * reference_mass / self.vehicle.mass)
+
+    def _scaled_brake_envelope_accel_limit(self) -> float:
+        """Return brake deceleration envelope scaled by optional reference mass."""
+        reference_mass = self.envelope_physics.reference_mass
+        if reference_mass is None:
+            return float(self.envelope_physics.max_brake_accel)
+        return float(self.envelope_physics.max_brake_accel * reference_mass / self.vehicle.mass)
+
     def _lateral_limit_for_longitudinal(
         self,
         speed: float,
@@ -279,7 +293,10 @@ class PointMassPhysicalMixin:
         ay_limit = self._lateral_limit_for_longitudinal(speed=speed, banking=banking)
         circle_scale = self._friction_circle_scale(lateral_accel_required, ay_limit)
 
-        tire_limit = min(self._drive_tire_accel_limit(speed), self.envelope_physics.max_drive_accel)
+        tire_limit = min(
+            self._drive_tire_accel_limit(speed),
+            self._scaled_drive_envelope_accel_limit(),
+        )
         tire_accel = tire_limit * circle_scale
         return self._net_forward_accel(tire_accel=tire_accel, speed=speed, grade=grade)
 
@@ -304,7 +321,10 @@ class PointMassPhysicalMixin:
         ay_limit = self._lateral_limit_for_longitudinal(speed=speed, banking=banking)
         circle_scale = self._friction_circle_scale(lateral_accel_required, ay_limit)
 
-        tire_limit = min(self._brake_tire_accel_limit(speed), self.envelope_physics.max_brake_accel)
+        tire_limit = min(
+            self._brake_tire_accel_limit(speed),
+            self._scaled_brake_envelope_accel_limit(),
+        )
         tire_brake = tire_limit * circle_scale
         return self._net_brake_decel(tire_brake=tire_brake, speed=speed, grade=grade)
 

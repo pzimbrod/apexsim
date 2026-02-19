@@ -14,7 +14,13 @@ from apexsim.analysis.sensitivity import (
     SensitivityRuntime,
     compute_sensitivities,
 )
-from apexsim.simulation import build_simulation_config, simulate_lap
+from apexsim.simulation import (
+    TransientConfig,
+    TransientNumericsConfig,
+    TransientRuntimeConfig,
+    build_simulation_config,
+    simulate_lap,
+)
 from apexsim.tire import default_axle_tire_parameters
 from apexsim.track import build_circular_track, build_straight_track
 from apexsim.vehicle import (
@@ -288,6 +294,54 @@ class SensitivityPhysicalPlausibilityTests(unittest.TestCase):
         )
         for sensitivity in single_track_sensitivities.values():
             self.assertAlmostEqual(sensitivity, 0.0, delta=1e-12)
+
+    def test_straight_lap_time_mass_and_drag_share_positive_sign_with_reference_mass(self) -> None:
+        """Keep mass/drag lap-time sensitivities positive with force-equivalent scaling."""
+        track = build_straight_track(length=700.0, sample_count=161)
+        config = build_simulation_config(
+            max_speed=90.0,
+            initial_speed=0.0,
+            compute_backend="numpy",
+            solver_mode="transient_oc",
+            transient=TransientConfig(
+                numerics=TransientNumericsConfig(max_time_step=1.0),
+                runtime=TransientRuntimeConfig(driver_model="pid", verbosity=0),
+            ),
+        )
+        reference_mass = self.vehicle.mass
+
+        def lap_time_objective(parameters: dict[str, float]) -> float:
+            model = build_single_track_model(
+                vehicle=replace(
+                    self.vehicle,
+                    mass=parameters["mass"],
+                    drag_coefficient=parameters["drag_coefficient"],
+                ),
+                tires=self.tires,
+                physics=SingleTrackPhysics(
+                    max_drive_accel=8.0,
+                    max_brake_accel=16.0,
+                    reference_mass=reference_mass,
+                    peak_slip_angle=0.12,
+                    max_steer_rate=1.0,
+                ),
+                numerics=SingleTrackNumerics(),
+            )
+            return simulate_lap(track=track, model=model, config=config).lap_time
+
+        sensitivities = self._fd_sensitivity(
+            lap_time_objective,
+            [
+                SensitivityParameter(name="mass", value=self.vehicle.mass, lower_bound=100.0),
+                SensitivityParameter(
+                    name="drag_coefficient",
+                    value=self.vehicle.drag_coefficient,
+                    lower_bound=0.05,
+                ),
+            ],
+        )
+        self.assertGreater(sensitivities["mass"], 0.0)
+        self.assertGreater(sensitivities["drag_coefficient"], 0.0)
 
     def test_straight_traction_limited_case_is_insensitive_to_drive_limit(self) -> None:
         """Keep lap-time/max(ax) insensitive to drive limit when tire grip bottlenecks."""

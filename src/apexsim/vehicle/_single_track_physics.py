@@ -225,7 +225,7 @@ class SingleTrackPhysicalMixin(PointMassPhysicalMixin):
             Pre-envelope drive acceleration limit [m/s^2].
         """
         del speed
-        return float(self.envelope_physics.max_drive_accel)
+        return float(self._scaled_drive_envelope_accel_limit())
 
     def _brake_tire_accel_limit(self, speed: float) -> float:
         """Return pre-envelope tire-limited brake deceleration for single-track model.
@@ -237,7 +237,7 @@ class SingleTrackPhysicalMixin(PointMassPhysicalMixin):
             Pre-envelope brake deceleration limit [m/s^2].
         """
         del speed
-        return float(self.envelope_physics.max_brake_accel)
+        return float(self._scaled_brake_envelope_accel_limit())
 
     def diagnostics(
         self,

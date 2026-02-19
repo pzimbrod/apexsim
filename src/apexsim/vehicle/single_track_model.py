@@ -53,6 +53,8 @@ class SingleTrackPhysics:
             lateral demand, excluding drag and grade [m/s^2].
         max_brake_accel: Maximum braking deceleration magnitude on flat road and
             zero lateral demand, excluding drag and grade [m/s^2].
+        reference_mass: Optional reference mass [kg] used to keep
+            acceleration limits force-equivalent under vehicle-mass variation.
         peak_slip_angle: Quasi-steady peak slip angle used to evaluate tire
             lateral force capability in the envelope iteration [rad].
         max_steer_angle: Maximum absolute steering angle used in transient
@@ -63,6 +65,7 @@ class SingleTrackPhysics:
 
     max_drive_accel: float = 8.0
     max_brake_accel: float = 16.0
+    reference_mass: float | None = None
     peak_slip_angle: float = 0.12
     max_steer_angle: float = 0.6
     max_steer_rate: float = 4.0
@@ -78,6 +81,7 @@ class SingleTrackPhysics:
         return EnvelopePhysics(
             max_drive_accel=self.max_drive_accel,
             max_brake_accel=self.max_brake_accel,
+            reference_mass=self.reference_mass,
         )
 
     @property

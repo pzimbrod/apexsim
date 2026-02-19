@@ -34,12 +34,15 @@ class PointMassPhysics:
             lateral demand, excluding drag and grade [m/s^2].
         max_brake_accel: Maximum braking deceleration magnitude on flat road and
             zero lateral demand, excluding drag and grade [m/s^2].
+        reference_mass: Optional reference mass [kg] used to keep
+            acceleration limits force-equivalent under vehicle-mass variation.
         friction_coefficient: Isotropic tire-road friction coefficient used for
             lateral limit and friction-circle coupling (-).
     """
 
     max_drive_accel: float = 8.0
     max_brake_accel: float = 16.0
+    reference_mass: float | None = None
     friction_coefficient: float = 1.70
 
     @property
@@ -53,6 +56,7 @@ class PointMassPhysics:
         return EnvelopePhysics(
             max_drive_accel=self.max_drive_accel,
             max_brake_accel=self.max_brake_accel,
+            reference_mass=self.reference_mass,
         )
 
     def validate(self) -> None:
