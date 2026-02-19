@@ -45,21 +45,21 @@ representation. In quasi-steady use, the key balances are:
 
 Lateral acceleration balance:
 
-$$
+\[
 a_y = \frac{F_{y,f} + F_{y,r}}{m}
-$$
+\]
 
 Yaw moment balance signal:
 
-$$
+\[
 M_z = l_f F_{y,f} - l_r F_{y,r}
-$$
+\]
 
 Path-kinematics coupling:
 
-$$
+\[
 a_y = v^2 \kappa
-$$
+\]
 
 Tire forces are generated from the Pacejka-style lateral model with load
 sensitivity. This makes axle-load distribution and aero effects directly

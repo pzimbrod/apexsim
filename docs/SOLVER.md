@@ -21,9 +21,9 @@ $i = 0,\dots,N-1$ with:
 - banking angle $\beta_i$ [rad]
 
 Segment length:
-$$
+\[
 \Delta s_i = s_{i+1} - s_i, \quad i=0,\dots,N-2.
-$$
+\]
 
 The solver computes a speed profile $v_i$ [m/s], then derives:
 
@@ -34,18 +34,18 @@ The solver computes a speed profile $v_i$ [m/s], then derives:
 ## 2. Lateral Envelope (Cornering Limit)
 
 A lateral speed limit $v_{\text{lat},i}$ is computed at each point. Core relation:
-$$
+\[
 |a_{y,i}| = v_i^2 |\kappa_i|.
-$$
+\]
 
 Given lateral acceleration capacity $a_{y,\text{lim},i}$:
-$$
+\[
 v_{\text{lat},i} =
 \begin{cases}
 \sqrt{a_{y,\text{lim},i}/|\kappa_i|}, & |\kappa_i| > \varepsilon \\
 v_{\max}, & |\kappa_i| \le \varepsilon
 \end{cases}
-$$
+\]
 with clipping to $[v_{\min}, v_{\max}]$.
 
 ### 2.1 Lateral Acceleration Capacity
@@ -59,19 +59,19 @@ For fixed speed $v$:
 2. Compute front/rear lateral tire forces at a representative peak slip angle
    (Pacejka Magic Formula).
 3. Update lateral limit:
-$$
+\[
 a_{y,\text{next}} = \max\left(a_{y,\min}, \frac{F_{y,f}+F_{y,r}}{m} + g\sin\beta\right).
-$$
+\]
 4. Repeat until $|a_{y,\text{next}}-a_{y,\text{current}}|\le\text{tol}$ or max iterations.
 
 ## 3. Longitudinal Coupling via Friction Circle
 
 Available longitudinal capability is reduced by lateral usage:
-$$
+\[
 \lambda_i = \sqrt{\max\left(0, 1 - \left(\frac{|a_{y,\text{req},i}|}{a_{y,\text{lim},i}}\right)^2\right)},
 \quad
 |a_{y,\text{req},i}| = v_i^2 |\kappa_i|.
-$$
+\]
 
 - Drive limit: $a_{x,\text{drive},i} = a_{x,\text{drive,max}}\,\lambda_i$
 - Brake limit: $a_{x,\text{brake},i} = a_{x,\text{brake,max}}\,\lambda_i$
@@ -81,50 +81,50 @@ This is a simplified isotropic friction-circle approximation.
 ## 4. Forward Pass (Acceleration-Limited)
 
 Starting from $v_0$, propagate forward with kinematic relation:
-$$
+\[
 v_{i+1}^2 = v_i^2 + 2 a_{x,\text{net},i} \Delta s_i.
-$$
+\]
 
 Initial-condition rule:
-$$
+\[
 v_0 = \min\left(v_{\text{lat},0}, v_{\max}, v_{\text{init}}\right),
-$$
+\]
 where $v_{\text{init}}$ is:
 
 - `RuntimeConfig.initial_speed`, if provided.
 - otherwise the legacy fallback $v_{\max}$.
 
 Net acceleration model:
-$$
+\[
 a_{x,\text{net},i} =
 a_{x,\text{drive},i}
 - \frac{D(v_i)}{m}
 - g\,\gamma_i,
-$$
+\]
 where drag force is
-$$
+\[
 D(v) = \tfrac{1}{2}\rho c_d A v^2.
-$$
+\]
 
 Then enforce bounds:
-$$
+\[
 v_{i+1} \leftarrow \min(v_{i+1}, v_{\text{lat},i+1}, v_{\max}),
 \quad v_{i+1} \ge v_{\min}.
-$$
+\]
 
 ## 5. Backward Pass (Braking-Limited)
 
 From the end of the lap backwards, enforce braking feasibility:
-$$
+\[
 v_i^2 = v_{i+1}^2 + 2 a_{x,\text{decel,avail},i} \Delta s_i,
-$$
+\]
 with
-$$
+\[
 a_{x,\text{decel,avail},i} =
 a_{x,\text{brake},i}
 + \frac{D(v_{i+1})}{m}
 + g\,\gamma_{i+1}.
-$$
+\]
 
 Again clamp by lateral and global speed bounds.
 
@@ -132,24 +132,24 @@ Again clamp by lateral and global speed bounds.
 
 After forward/backward constraints, the final profile is $v_i$. Longitudinal acceleration
 is reconstructed by finite differences:
-$$
+\[
 a_{x,i} = \frac{v_{i+1}^2 - v_i^2}{2\Delta s_i}, \quad i=0,\dots,N-2.
-$$
+\]
 
 Lateral acceleration:
-$$
+\[
 a_{y,i} = v_i^2\kappa_i.
-$$
+\]
 
 Segment time is approximated with average segment speed:
-$$
+\[
 \Delta t_i = \frac{\Delta s_i}{\max\left(\tfrac{v_i+v_{i+1}}{2}, \varepsilon_v\right)}.
-$$
+\]
 
 Total lap time:
-$$
+\[
 T = \sum_{i=0}^{N-2} \Delta t_i.
-$$
+\]
 
 ## 7. Numerical Convergence Controls
 
@@ -160,9 +160,9 @@ Lateral envelope convergence in `solve_speed_profile(...)` is configurable via
 - `lateral_envelope_convergence_tolerance`
 
 Stop criterion:
-$$
+\[
 \max_i |v^{(k)}_{\text{lat},i} - v^{(k-1)}_{\text{lat},i}| \le \text{tol}_v.
-$$
+\]
 
 The actual number of iterations used is reported as
 `SpeedProfileResult.lateral_envelope_iterations`.
@@ -231,20 +231,20 @@ arc-length samples:
 - `driver_model="optimal_control"`: minimum-time optimal-control formulation.
 
 The OC objective is:
-$$
+\[
 \min_{u} \; T + w_{\text{lat}} J_{\text{lat}} + w_{\text{trk}} J_{\text{trk}} + w_{\text{sm}} J_{\text{sm}}.
-$$
+\]
 
 ### 11.1 State and controls
 
 - Point-mass transient state:
-$$
+\[
 x_i = [v_i]
-$$
+\]
 - Single-track transient state:
-$$
+\[
 x_i = [v_{x,i}, v_{y,i}, r_i]
-$$
+\]
 where $r$ is yaw rate.
 
 Controls:
@@ -260,19 +260,19 @@ Single-track control bounds are physical model inputs:
 ### 11.2 Dynamics propagation
 
 Arc-length segments are converted to bounded time steps:
-$$
+\[
 \Delta t_i = \operatorname{clip}\left(\frac{\Delta s_i}{\max(|v_i|,\varepsilon_v)},\; \Delta t_{\min},\; \Delta t_{\max}\right).
-$$
+\]
 
 Point-mass update:
-$$
+\[
 v_{i+1} = \operatorname{clip}(v_i + a_{x,\text{net},i}\Delta t_i, 0, v_{\max}).
-$$
+\]
 
 Single-track update uses Euler or RK4 integration of:
-$$
+\[
 \dot{x} = f(x, u),
-$$
+\]
 with a 3-DOF single-track dynamic model.
 
 ### 11.3 Constraint penalties and objective terms
@@ -312,9 +312,9 @@ Transient mode adds time/state/control traces in `LapResult`:
 
 The default transient driver is PID. ApexSim supports optional speed-dependent
 gain scheduling with piecewise-linear (PWL) tables:
-$$
+\[
 k(v) = \operatorname{interp}(v;\, v_{\text{nodes}}, k_{\text{nodes}})
-$$
+\]
 with boundary clamping at the first/last node.
 
 Scheduling modes in `TransientNumericsConfig`:
@@ -324,51 +324,51 @@ Scheduling modes in `TransientNumericsConfig`:
 - `custom`: user-provided `TransientPidGainSchedulingConfig`.
 
 Physics-informed longitudinal scaling at node $v_j$:
-$$
+\[
 a_+(v_j) = a_{x,\max}(v_j, a_y=0, \theta=0, \beta=0), \quad
 a_-(v_j) = a_{x,\min}(v_j, a_y=0, \theta=0, \beta=0),
-$$
-$$
+\]
+\[
 a_{\text{eff}}(v_j) = \frac{a_+(v_j) + a_-(v_j)}{2}, \quad
 s_a(v_j) = \frac{a_{\text{eff}}(v_j)}{a_{\text{eff}}(v_{\text{ref}})}.
-$$
+\]
 The scheduled gains are:
-$$
+\[
 k_{p,\text{long}}(v_j) = k_{p,0}\,\operatorname{clip}(s_a, s_{\min}, s_{\max}),
-$$
-$$
+\]
+\[
 k_{i,\text{long}}(v_j) = k_{i,0}\,\operatorname{clip}(s_a, s_{\min}, s_{\max}),
-$$
-$$
+\]
+\[
 k_{d,\text{long}}(v_j) = k_{d,0}\,\operatorname{clip}(\sqrt{s_a}, s_{d,\min}, s_{d,\max}).
-$$
+\]
 
 Single-track steering scaling uses speed normalization:
-$$
+\[
 s_v(v_j) = \frac{v_{\text{ref}}}{\max(v_j, v_{\min})}.
-$$
+\]
 This yields:
-$$
+\[
 k_{p,\delta}(v_j) = k_{p,0}\,\operatorname{clip}(s_v, s_{kp,\min}, s_{kp,\max}),
-$$
-$$
+\]
+\[
 k_{i,\delta}(v_j) = k_{i,0}\,\operatorname{clip}(s_v, s_{ki,\min}, s_{ki,\max}),
-$$
-$$
+\]
+\[
 k_{d,\delta}(v_j) = k_{d,0}\,\operatorname{clip}(\sqrt{s_v}, s_{kd,\min}, s_{kd,\max}),
-$$
-$$
+\]
+\[
 k_{v_y}(v_j) = k_{v_y,0}\,\operatorname{clip}\!\left(
 1 + c_{v_y}\frac{v_j}{v_{\text{ref}}},
 s_{vy,\min},
 s_{vy,\max}
 \right).
-$$
+\]
 
 Default node set:
-$$
+\[
 v_{\text{nodes}} = (0,\,10,\,20,\,35,\,55,\,v_{\max})\ \text{m/s}
-$$
+\]
 (intermediate nodes above $v_{\max}$ are omitted).
 
 Rationale:

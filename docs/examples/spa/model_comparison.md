@@ -25,10 +25,10 @@ The calibration step fits an effective point-mass friction value so that
 point-mass lateral limits approximate single-track lateral limits over a speed set.
 Conceptually, this is a least-squares fit:
 
-$$
+\[
 \mu^\star
 = \arg\min_{\mu}\sum_i\left(\mu\,a_n(v_i)-a_{y,\mathrm{lim},\mathrm{single\text{-}track}}(v_i)\right)^2
-$$
+\]
 
 This keeps cross-model comparison focused on structure, not arbitrary parameter
 offsets.
