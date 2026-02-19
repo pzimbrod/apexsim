@@ -9,7 +9,6 @@ import numpy as np
 from apexsim.tire.models import AxleTireParameters
 from apexsim.tire.pacejka import axle_lateral_forces
 from apexsim.utils.constants import SMALL_EPS
-from apexsim.vehicle.aero import aero_forces
 from apexsim.vehicle.params import VehicleParameters
 from apexsim.vehicle.single_track.load_transfer import estimate_normal_loads
 
@@ -111,11 +110,14 @@ class SingleTrackDynamicsModel:
             Force-balance terms including slip angles, tire forces, and yaw moment.
         """
         alpha_front, alpha_rear = self.slip_angles(state, control.steer)
+        body_speed = float(np.hypot(state.vx, state.vy))
+        # Use a kinematic lateral-acceleration estimate for transient load transfer.
+        lateral_accel_estimate = state.vx * state.yaw_rate
         loads = estimate_normal_loads(
             self.vehicle,
-            speed=state.vx,
+            speed=body_speed,
             longitudinal_accel=control.longitudinal_accel_cmd,
-            lateral_accel=0.0,
+            lateral_accel=lateral_accel_estimate,
         )
 
         fy_front, fy_rear = axle_lateral_forces(
@@ -149,10 +151,10 @@ class SingleTrackDynamicsModel:
             Time derivatives ``(dvx/dt, dvy/dt, dr/dt)`` in SI units.
         """
         fb = self.force_balance(state, control)
-        aero = aero_forces(self.vehicle, state.vx)
-
         mass = self.vehicle.mass
-        longitudinal_force = mass * control.longitudinal_accel_cmd - aero.drag
+        # The transient solver provides a *net* longitudinal acceleration command
+        # (after envelope/drag/grade limits). Do not subtract aero drag again here.
+        longitudinal_force = mass * control.longitudinal_accel_cmd
 
         vx = state.vx
         vy = state.vy

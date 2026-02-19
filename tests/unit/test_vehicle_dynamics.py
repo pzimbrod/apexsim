@@ -52,6 +52,16 @@ class VehicleDynamicsTests(unittest.TestCase):
         self.assertTrue(abs(derivatives.vy) < 100.0)
         self.assertTrue(abs(derivatives.yaw_rate) < 100.0)
 
+    def test_single_track_longitudinal_command_is_net_acceleration(self) -> None:
+        """Interpret longitudinal command directly as net path-tangent acceleration."""
+        vehicle = sample_vehicle_parameters()
+        model = SingleTrackDynamicsModel(vehicle, default_axle_tire_parameters())
+        state = VehicleState(vx=40.0, vy=0.0, yaw_rate=0.0)
+        control = ControlInput(steer=0.0, longitudinal_accel_cmd=0.0)
+
+        derivatives = model.derivatives(state, control)
+        self.assertAlmostEqual(derivatives.vx, 0.0, delta=1e-12)
+
     def test_wheel_loads_preserve_axle_load_under_high_lateral_accel(self) -> None:
         """Preserve axle totals and positive wheel loads under high lateral acceleration."""
         vehicle = sample_vehicle_parameters()

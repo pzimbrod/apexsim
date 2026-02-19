@@ -25,6 +25,7 @@ from apexsim.vehicle.single_track.dynamics import ControlInput, VehicleState
 _PROGRESS_BAR_WIDTH = 30
 _TRACK_PROGRESS_FRACTION_STEP = 0.10
 _TRACK_PROGRESS_EVAL_STRIDE = 20
+_MAX_TRANSIENT_SIDESLIP_RATIO = 0.35
 
 _DEFAULT_SCHEDULE_SPEED_NODES_MPS = (0.0, 10.0, 20.0, 35.0, 55.0)
 _SCHEDULE_REFERENCE_SPEED_MPS = 20.0
@@ -834,7 +835,7 @@ def _simulate_single_track_controls(
     vx[0] = max(start_speed, SMALL_EPS)
     vy[0] = 0.0
     yaw_rate[0] = vx[0] * float(track.curvature[0])
-    speed[0] = float(np.hypot(vx[0], vy[0]))
+    speed[0] = float(vx[0])
     steer_cmd[0] = float(np.clip(steer_target[0], -max_steer_angle, max_steer_angle))
 
     dynamics = model._dynamics
@@ -843,23 +844,24 @@ def _simulate_single_track_controls(
     next_track_progress = _TRACK_PROGRESS_FRACTION_STEP
 
     for idx in range(n - 1):
-        speed_value = max(float(np.hypot(vx[idx], vy[idx])), SMALL_EPS)
+        progress_speed = max(float(vx[idx]), SMALL_EPS)
+        body_speed = max(float(np.hypot(vx[idx], vy[idx])), SMALL_EPS)
         curvature = float(track.curvature[idx])
-        ay_required = speed_value * speed_value * abs(curvature)
+        ay_required = progress_speed * progress_speed * abs(curvature)
         ay_limit = float(
             model.lateral_accel_limit(
-                speed=speed_value,
+                speed=body_speed,
                 banking=float(track.banking[idx]),
             )
         )
         lateral_penalty += max(0.0, ay_required - ay_limit) ** 2
         tracking_penalty += (
-            (yaw_rate[idx] - speed_value * curvature) ** 2 + vy[idx] * vy[idx]
+            (yaw_rate[idx] - progress_speed * curvature) ** 2 + vy[idx] * vy[idx]
         )
 
         max_accel = float(
             model.max_longitudinal_accel(
-                speed=speed_value,
+                speed=body_speed,
                 lateral_accel_required=ay_required,
                 grade=float(track.grade[idx]),
                 banking=float(track.banking[idx]),
@@ -867,7 +869,7 @@ def _simulate_single_track_controls(
         )
         max_brake = float(
             model.max_longitudinal_decel(
-                speed=speed_value,
+                speed=body_speed,
                 lateral_accel_required=ay_required,
                 grade=float(track.grade[idx]),
                 banking=float(track.banking[idx]),
@@ -876,11 +878,11 @@ def _simulate_single_track_controls(
         commanded = float(np.clip(ax_signal[idx], -max_brake, max_accel))
         ax_cmd[idx] = commanded
         longitudinal_accel[idx] = commanded
-        lateral_accel[idx] = speed_value * speed_value * curvature
+        lateral_accel[idx] = progress_speed * progress_speed * curvature
 
         dt = segment_time_step(
             segment_length=float(ds[idx]),
-            speed=speed_value,
+            speed=progress_speed,
             min_time_step=min_time_step,
             max_time_step=max_time_step,
         )
@@ -925,9 +927,10 @@ def _simulate_single_track_controls(
             next_state = rk4_step(rhs=rhs, time=0.0, state=state, dtime=dt)
 
         vx[idx + 1] = float(np.clip(next_state[0], SMALL_EPS, max_speed))
-        vy[idx + 1] = float(next_state[1])
+        vy_limit = _MAX_TRANSIENT_SIDESLIP_RATIO * max(vx[idx + 1], SMALL_EPS)
+        vy[idx + 1] = float(np.clip(next_state[1], -vy_limit, vy_limit))
         yaw_rate[idx + 1] = float(next_state[2])
-        speed[idx + 1] = float(np.hypot(vx[idx + 1], vy[idx + 1]))
+        speed[idx + 1] = float(vx[idx + 1])
         time[idx + 1] = time[idx] + dt
         next_track_progress = _maybe_emit_track_progress(
             progress_prefix=track_progress_prefix,
@@ -1212,7 +1215,7 @@ def _simulate_single_track_pid_driver(
     vx[0] = max(start_speed, SMALL_EPS)
     vy[0] = 0.0
     yaw_rate[0] = vx[0] * float(track.curvature[0])
-    speed[0] = float(np.hypot(vx[0], vy[0]))
+    speed[0] = float(vx[0])
     steer_cmd[0] = float(np.clip(reference_steer[0], -max_steer_angle, max_steer_angle))
 
     dynamics = model._dynamics
@@ -1225,23 +1228,24 @@ def _simulate_single_track_pid_driver(
     next_track_progress = _TRACK_PROGRESS_FRACTION_STEP
 
     for idx in range(n - 1):
-        speed_value = max(float(np.hypot(vx[idx], vy[idx])), SMALL_EPS)
+        progress_speed = max(float(vx[idx]), SMALL_EPS)
+        body_speed = max(float(np.hypot(vx[idx], vy[idx])), SMALL_EPS)
         curvature = float(track.curvature[idx])
-        ay_required = speed_value * speed_value * abs(curvature)
+        ay_required = progress_speed * progress_speed * abs(curvature)
         ay_limit = float(
             model.lateral_accel_limit(
-                speed=speed_value,
+                speed=body_speed,
                 banking=float(track.banking[idx]),
             )
         )
         lateral_penalty += max(0.0, ay_required - ay_limit) ** 2
         tracking_penalty += (
-            (yaw_rate[idx] - speed_value * curvature) ** 2 + vy[idx] * vy[idx]
+            (yaw_rate[idx] - progress_speed * curvature) ** 2 + vy[idx] * vy[idx]
         )
 
         max_accel = float(
             model.max_longitudinal_accel(
-                speed=speed_value,
+                speed=body_speed,
                 lateral_accel_required=ay_required,
                 grade=float(track.grade[idx]),
                 banking=float(track.banking[idx]),
@@ -1249,7 +1253,7 @@ def _simulate_single_track_pid_driver(
         )
         max_brake = float(
             model.max_longitudinal_decel(
-                speed=speed_value,
+                speed=body_speed,
                 lateral_accel_required=ay_required,
                 grade=float(track.grade[idx]),
                 banking=float(track.banking[idx]),
@@ -1258,12 +1262,12 @@ def _simulate_single_track_pid_driver(
 
         dt = segment_time_step(
             segment_length=float(ds[idx]),
-            speed=speed_value,
+            speed=progress_speed,
             min_time_step=min_time_step,
             max_time_step=max_time_step,
         )
 
-        speed_error = float(reference_speed[idx] - speed_value)
+        speed_error = float(reference_speed[idx] - progress_speed)
         longitudinal_integral = _clamp_integral(
             longitudinal_integral + speed_error * dt,
             longitudinal_integral_limit,
@@ -1277,7 +1281,7 @@ def _simulate_single_track_pid_driver(
                 else None
             ),
             default_value=longitudinal_kp,
-            speed_mps=speed_value,
+            speed_mps=progress_speed,
         )
         long_ki_value = _schedule_or_default(
             schedule=(
@@ -1286,7 +1290,7 @@ def _simulate_single_track_pid_driver(
                 else None
             ),
             default_value=longitudinal_ki,
-            speed_mps=speed_value,
+            speed_mps=progress_speed,
         )
         long_kd_value = _schedule_or_default(
             schedule=(
@@ -1295,7 +1299,7 @@ def _simulate_single_track_pid_driver(
                 else None
             ),
             default_value=longitudinal_kd,
-            speed_mps=speed_value,
+            speed_mps=progress_speed,
         )
         commanded_unbounded = (
             float(reference_ax[idx])
@@ -1306,7 +1310,7 @@ def _simulate_single_track_pid_driver(
         commanded = float(np.clip(commanded_unbounded, -max_brake, max_accel))
         ax_cmd[idx] = commanded
         longitudinal_accel[idx] = commanded
-        lateral_accel[idx] = speed_value * speed_value * curvature
+        lateral_accel[idx] = progress_speed * progress_speed * curvature
 
         yaw_rate_reference = float(reference_speed[idx] * curvature)
         yaw_error = yaw_rate_reference - float(yaw_rate[idx])
@@ -1319,17 +1323,17 @@ def _simulate_single_track_pid_driver(
         steer_kp_value = _schedule_or_default(
             schedule=(gain_scheduling.steer_kp if gain_scheduling is not None else None),
             default_value=steer_kp,
-            speed_mps=speed_value,
+            speed_mps=progress_speed,
         )
         steer_ki_value = _schedule_or_default(
             schedule=(gain_scheduling.steer_ki if gain_scheduling is not None else None),
             default_value=steer_ki,
-            speed_mps=speed_value,
+            speed_mps=progress_speed,
         )
         steer_kd_value = _schedule_or_default(
             schedule=(gain_scheduling.steer_kd if gain_scheduling is not None else None),
             default_value=steer_kd,
-            speed_mps=speed_value,
+            speed_mps=progress_speed,
         )
         steer_vy_damping_value = _schedule_or_default(
             schedule=(
@@ -1338,7 +1342,7 @@ def _simulate_single_track_pid_driver(
                 else None
             ),
             default_value=steer_vy_damping,
-            speed_mps=speed_value,
+            speed_mps=progress_speed,
         )
         steer_target = (
             float(reference_steer[idx])
@@ -1389,9 +1393,10 @@ def _simulate_single_track_pid_driver(
             next_state = rk4_step(rhs=rhs, time=0.0, state=state, dtime=dt)
 
         vx[idx + 1] = float(np.clip(next_state[0], SMALL_EPS, max_speed))
-        vy[idx + 1] = float(next_state[1])
+        vy_limit = _MAX_TRANSIENT_SIDESLIP_RATIO * max(vx[idx + 1], SMALL_EPS)
+        vy[idx + 1] = float(np.clip(next_state[1], -vy_limit, vy_limit))
         yaw_rate[idx + 1] = float(next_state[2])
-        speed[idx + 1] = float(np.hypot(vx[idx + 1], vy[idx + 1]))
+        speed[idx + 1] = float(vx[idx + 1])
         time[idx + 1] = time[idx] + dt
         next_track_progress = _maybe_emit_track_progress(
             progress_prefix=track_progress_prefix,

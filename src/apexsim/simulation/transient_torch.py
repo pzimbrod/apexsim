@@ -18,6 +18,7 @@ from apexsim.utils.exceptions import ConfigurationError
 _PROGRESS_BAR_WIDTH = 30
 _TRACK_PROGRESS_FRACTION_STEP = 0.10
 _TRACK_PROGRESS_EVAL_STRIDE = 20
+_MAX_TRANSIENT_SIDESLIP_RATIO = 0.35
 
 
 def _require_torch() -> Any:
@@ -561,11 +562,10 @@ def _single_track_derivatives_torch(
     )
 
     yaw_moment = cg_to_front * fy_front * torch.cos(steer) - cg_to_rear * fy_rear
-    speed_non_negative = torch.clamp(vx, min=0.0)
-    drag = model._drag_force_scale * speed_non_negative * speed_non_negative
     mass = float(model.vehicle.mass)
-
-    longitudinal_force = mass * longitudinal_accel_cmd - drag
+    # Longitudinal command is interpreted as net acceleration at the path tangent;
+    # drag is already accounted for in acceleration-limit calculations.
+    longitudinal_force = mass * longitudinal_accel_cmd
     dvx = (longitudinal_force - fy_front * torch.sin(steer) + mass * vy * yaw_rate) / mass
     dvy = (fy_rear + fy_front * torch.cos(steer) - mass * vx * yaw_rate) / mass
     dyaw = yaw_moment / float(model.vehicle.yaw_inertia)
@@ -744,7 +744,7 @@ def _simulate_single_track_torch(
     )
 
     state_values = [state]
-    speed_values = [torch.sqrt(state[0] * state[0] + state[1] * state[1])]
+    speed_values = [torch.clamp(state[0], min=SMALL_EPS, max=max_speed)]
     time_values = [torch.zeros((), dtype=dtype, device=device)]
     ax_values: list[Any] = []
     ay_values: list[Any] = []
@@ -762,24 +762,25 @@ def _simulate_single_track_torch(
 
     for idx in range(int(ds.numel())):
         state = state_values[-1]
-        speed = torch.sqrt(state[0] * state[0] + state[1] * state[1])
-        ay_required = speed * speed * curvature_abs[idx]
-        ay_limit = model.lateral_accel_limit_torch(speed=speed, banking=banking[idx])
+        progress_speed = torch.clamp(state[0], min=SMALL_EPS, max=max_speed)
+        body_speed = torch.sqrt(state[0] * state[0] + state[1] * state[1])
+        ay_required = progress_speed * progress_speed * curvature_abs[idx]
+        ay_limit = model.lateral_accel_limit_torch(speed=body_speed, banking=banking[idx])
         lateral_penalty = lateral_penalty + torch.relu(ay_required - ay_limit) ** 2
         tracking_penalty = (
             tracking_penalty
-            + (state[2] - speed * curvature[idx]) ** 2
+            + (state[2] - progress_speed * curvature[idx]) ** 2
             + state[1] ** 2
         )
 
         max_accel = model.max_longitudinal_accel_torch(
-            speed=speed,
+            speed=body_speed,
             lateral_accel_required=ay_required,
             grade=grade[idx],
             banking=banking[idx],
         )
         max_brake = model.max_longitudinal_decel_torch(
-            speed=speed,
+            speed=body_speed,
             lateral_accel_required=ay_required,
             grade=grade[idx],
             banking=banking[idx],
@@ -787,9 +788,9 @@ def _simulate_single_track_torch(
         commanded = torch.minimum(torch.maximum(ax_signal[idx], -max_brake), max_accel)
         ax_cmd_values.append(commanded)
         ax_values.append(commanded)
-        ay_values.append(speed * speed * curvature[idx])
+        ay_values.append(progress_speed * progress_speed * curvature[idx])
 
-        dt = ds[idx] / torch.clamp(torch.abs(speed), min=SMALL_EPS)
+        dt = ds[idx] / torch.clamp(progress_speed, min=SMALL_EPS)
         dt = torch.clamp(dt, min=min_time_step, max=max_time_step)
         steer_prev = steer_values[-1]
         steer_delta = max_steer_rate * dt
@@ -825,19 +826,12 @@ def _simulate_single_track_torch(
             )
         )
         next_state = odeint(rhs, state, integration_times, method=ode_method)[-1]
-        next_state = torch.stack(
-            (
-                torch.clamp(next_state[0], min=SMALL_EPS, max=max_speed),
-                next_state[1],
-                next_state[2],
-            )
-        )
+        next_vx = torch.clamp(next_state[0], min=SMALL_EPS, max=max_speed)
+        vy_limit = _MAX_TRANSIENT_SIDESLIP_RATIO * torch.clamp(next_vx, min=SMALL_EPS)
+        next_vy = torch.clamp(next_state[1], min=-vy_limit, max=vy_limit)
+        next_state = torch.stack((next_vx, next_vy, next_state[2]))
         state_values.append(next_state)
-        speed_values.append(
-            torch.sqrt(
-                next_state[0] * next_state[0] + next_state[1] * next_state[1]
-            )
-        )
+        speed_values.append(torch.clamp(next_state[0], min=SMALL_EPS, max=max_speed))
         time_values.append(time_values[-1] + dt)
         next_track_progress = _maybe_emit_track_progress(
             progress_prefix=track_progress_prefix,
