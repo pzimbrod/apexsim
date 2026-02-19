@@ -184,6 +184,23 @@ for lap-time studies.
 The same solver routine can be used with different backends implementing
 `VehicleModel`, including the single-track and point-mass models.
 
+### 8.1 Yaw-Moment Output Semantics
+
+`LapResult.yaw_moment` is reported with solver-mode-consistent semantics:
+
+- quasi-static mode: the model is solved in steady-state envelope form, so
+  yaw-moment output is set to zero by assumption.
+- transient mode: yaw moment is reported as the dynamic residual
+\[
+M_z = I_z \dot r,
+\]
+with yaw acceleration $\dot r$ reconstructed from transient yaw-rate and time
+traces.
+
+For steady-state cornering this residual should approach zero in the interior of
+the lap (excluding seam transients), which provides a direct stability and
+convergence indicator.
+
 ## 9. Equation-to-Code Mapping
 
 - $a_{y,i} = v_i^2\kappa_i$:

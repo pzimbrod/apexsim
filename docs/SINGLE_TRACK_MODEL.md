@@ -16,7 +16,8 @@ lateral force and diagnostic equations layered on top.
 ## 1. Scope
 
 The single-track model keeps the solver API contract and adds axle-level lateral
-tire force modeling, quasi-static load transfer, and yaw-moment diagnostics.
+tire force modeling and quasi-static load transfer, while transient runs expose
+dynamic yaw behavior through residual diagnostics.
 
 State assumptions in the lap-time solver context:
 
@@ -150,7 +151,12 @@ D(v)=\tfrac{1}{2}\rho C_D A v^2.
 
 The backend reports at each operating point:
 
-- yaw moment from 3-DOF single-track force balance,
+- yaw moment according to solver-mode semantics:
+  - quasi-static mode: zero by steady-state model assumption,
+  - transient mode: dynamic residual
+\[
+M_z = I_z \dot r,
+\]
 - front and rear axle normal loads,
 - tractive power:
 

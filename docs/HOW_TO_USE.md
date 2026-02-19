@@ -129,7 +129,8 @@ model = build_point_mass_model(
 
 When to use which:
 
-- Single-track (bicycle): better diagnostics (yaw moment, axle-load dynamics), better cornering interpretation.
+- Single-track (bicycle): better cornering interpretation and richer diagnostics
+  (axle-load dynamics in all modes, dynamic yaw-residual signal in transient mode).
 - Point-mass: fast baseline and sensitivity sweeps.
 
 ## Step 3: Load or generate track
@@ -490,7 +491,8 @@ Before using results for decisions:
 1. "The solver should always accelerate to max speed."
    - Not necessarily. At high speed, drag can exceed available drive force.
 2. "Yaw moment should always be visible."
-   - Not with point-mass model (yaw moment is structurally zero).
+   - Not in quasi-static mode (steady-state assumption -> zero yaw moment), and
+     not with point-mass model (structurally zero in both modes).
 3. "Changing numerics changed physics dramatically."
    - Re-check physical parameters first; numerics should refine stability, not redefine behavior.
 4. "My results jump near lap closure."

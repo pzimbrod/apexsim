@@ -128,6 +128,8 @@ Vehicle-model solver contract:
 - lap time
 - speed / longitudinal acceleration / lateral acceleration traces
 - yaw moment
+  - quasi-static mode: zero by model assumption
+  - transient mode: dynamic residual $M_z = I_z \dot r$
 - front/rear axle loads
 - power and energy
 - solver mode identifier (`quasi_static` or `transient_oc`)
