@@ -16,9 +16,7 @@ from apexsim.vehicle._backend_physics_core import (
 )
 from apexsim.vehicle._point_mass_physics import PointMassPhysicalMixin, PointMassPhysicalState
 from apexsim.vehicle.single_track.dynamics import (
-    ControlInput,
     SingleTrackDynamicsModel,
-    VehicleState,
 )
 from apexsim.vehicle.single_track.load_transfer import estimate_normal_loads
 
@@ -271,11 +269,6 @@ class SingleTrackPhysicalMixin(PointMassPhysicalMixin):
         Returns:
             Diagnostic values for plotting and KPI post-processing.
         """
-        steer = float(np.arctan(self.vehicle.wheelbase * curvature))
-        state = VehicleState(vx=speed, vy=0.0, yaw_rate=speed * curvature)
-        control = ControlInput(steer=steer, longitudinal_accel_cmd=longitudinal_accel)
-        force_balance = self._dynamics.force_balance(state, control)
-
         loads = estimate_normal_loads(
             self.vehicle,
             speed=speed,
@@ -285,7 +278,7 @@ class SingleTrackPhysicalMixin(PointMassPhysicalMixin):
         power = self._tractive_power(speed=speed, longitudinal_accel=longitudinal_accel)
 
         return ModelDiagnostics(
-            yaw_moment=force_balance.yaw_moment,
+            yaw_moment=0.0,
             front_axle_load=loads.front_axle_load,
             rear_axle_load=loads.rear_axle_load,
             power=power,
@@ -310,7 +303,7 @@ class SingleTrackPhysicalMixin(PointMassPhysicalMixin):
             Tuple ``(yaw_moment, front_axle_load, rear_axle_load, power)`` with
             arrays aligned to the input shape.
         """
-        speed_array, accel_array, lateral_array, curvature_array = np.broadcast_arrays(
+        speed_array, accel_array, lateral_array, _curvature_array = np.broadcast_arrays(
             np.asarray(speed, dtype=float),
             np.asarray(longitudinal_accel, dtype=float),
             np.asarray(lateral_accel, dtype=float),
@@ -318,15 +311,13 @@ class SingleTrackPhysicalMixin(PointMassPhysicalMixin):
         )
         shape = speed_array.shape
 
-        yaw_moment = np.empty_like(speed_array, dtype=float)
+        yaw_moment = np.zeros_like(speed_array, dtype=float)
         front_axle = np.empty_like(speed_array, dtype=float)
         rear_axle = np.empty_like(speed_array, dtype=float)
 
         speed_flat = speed_array.ravel()
         accel_flat = accel_array.ravel()
         lateral_flat = lateral_array.ravel()
-        curvature_flat = curvature_array.ravel()
-        yaw_flat = yaw_moment.ravel()
         front_flat = front_axle.ravel()
         rear_flat = rear_axle.ravel()
 
@@ -334,13 +325,6 @@ class SingleTrackPhysicalMixin(PointMassPhysicalMixin):
             speed_value = float(speed_flat[idx])
             accel_value = float(accel_flat[idx])
             lateral_value = float(lateral_flat[idx])
-            curvature_value = float(curvature_flat[idx])
-
-            steer = float(np.arctan(self.vehicle.wheelbase * curvature_value))
-            state = VehicleState(vx=speed_value, vy=0.0, yaw_rate=speed_value * curvature_value)
-            control = ControlInput(steer=steer, longitudinal_accel_cmd=accel_value)
-            force_balance = self._dynamics.force_balance(state, control)
-            yaw_flat[idx] = force_balance.yaw_moment
 
             loads = estimate_normal_loads(
                 self.vehicle,

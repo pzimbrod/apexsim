@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 import numpy as np
 
@@ -26,7 +26,9 @@ class LapResult:
         speed: Converged speed trace along arc length [m/s].
         longitudinal_accel: Net longitudinal acceleration trace [m/s^2].
         lateral_accel: Lateral acceleration trace [m/s^2].
-        yaw_moment: Yaw moment trace from model diagnostics [N*m].
+        yaw_moment: Yaw-moment trace [N*m]. In quasi-static mode this is zero by
+            model assumption. In transient mode this is reported as the dynamic
+            yaw residual ``I_z * dr/dt``.
         front_axle_load: Front-axle normal load trace [N].
         rear_axle_load: Rear-axle normal load trace [N].
         power: Tractive power trace [W].
@@ -75,6 +77,69 @@ def _compute_energy(power: np.ndarray, speed: np.ndarray, arc_length: np.ndarray
     dt = ds / np.maximum(0.5 * (speed[:-1] + speed[1:]), MIN_AVERAGE_SPEED_FOR_TIME_STEP)
     traction_power = np.maximum(power[:-1], 0.0)
     return float(np.sum(traction_power * dt))
+
+
+def _resolve_yaw_inertia(model: VehicleModel) -> float:
+    """Resolve model yaw inertia for transient yaw-moment residual evaluation.
+
+    Args:
+        model: Vehicle model instance.
+
+    Returns:
+        Positive yaw inertia [kg*m^2], or ``0.0`` if unavailable/invalid.
+    """
+    vehicle = getattr(model, "vehicle", None)
+    yaw_inertia = getattr(vehicle, "yaw_inertia", None)
+    if yaw_inertia is None:
+        return 0.0
+    yaw_inertia_value = float(yaw_inertia)
+    if not np.isfinite(yaw_inertia_value) or yaw_inertia_value <= 0.0:
+        return 0.0
+    return yaw_inertia_value
+
+
+def _compute_transient_yaw_moment_residual(
+    *,
+    model: VehicleModel,
+    transient_profile: TransientProfileResult,
+) -> np.ndarray:
+    """Compute transient yaw-moment residual from solved yaw dynamics.
+
+    The residual is defined as ``M_z = I_z * dr/dt`` and is used as the transient
+    yaw-moment output to align post-processing with dynamic equilibrium checks.
+
+    Args:
+        model: Vehicle model instance.
+        transient_profile: Transient solver profile with ``time`` and ``yaw_rate``.
+
+    Returns:
+        Yaw-moment residual trace [N*m], or zeros if inputs are invalid.
+    """
+    yaw_rate = np.asarray(transient_profile.yaw_rate, dtype=float)
+    if yaw_rate.ndim != 1:
+        return np.zeros_like(yaw_rate, dtype=float)
+    if yaw_rate.size < 2:
+        return np.zeros_like(yaw_rate, dtype=float)
+
+    time = np.asarray(transient_profile.time, dtype=float)
+    if time.shape != yaw_rate.shape:
+        return np.zeros_like(yaw_rate, dtype=float)
+    if np.any(~np.isfinite(time)) or np.any(~np.isfinite(yaw_rate)):
+        return np.zeros_like(yaw_rate, dtype=float)
+
+    dt = np.diff(time)
+    if np.any(dt <= 0.0):
+        return np.zeros_like(yaw_rate, dtype=float)
+
+    yaw_inertia = _resolve_yaw_inertia(model)
+    if yaw_inertia <= 0.0:
+        return np.zeros_like(yaw_rate, dtype=float)
+
+    edge_order: Literal[1, 2] = 2 if yaw_rate.size >= 3 else 1
+    yaw_accel = np.gradient(yaw_rate, time, edge_order=edge_order)
+    if np.any(~np.isfinite(yaw_accel)):
+        return np.zeros_like(yaw_rate, dtype=float)
+    return np.asarray(yaw_inertia * yaw_accel, dtype=float)
 
 
 def _solve_profile(
@@ -242,7 +307,7 @@ def simulate_lap(
     """
     if config.runtime.solver_mode == "transient_oc":
         transient_profile = _solve_transient_profile(track=track, model=model, config=config)
-        yaw_moment, front_axle_load, rear_axle_load, power = _compute_diagnostics(
+        _diagnostic_yaw, front_axle_load, rear_axle_load, power = _compute_diagnostics(
             track=track,
             model=model,
             profile=SpeedProfileResult(
@@ -252,6 +317,10 @@ def simulate_lap(
                 lateral_envelope_iterations=0,
                 lap_time=float(transient_profile.lap_time),
             ),
+        )
+        yaw_moment = _compute_transient_yaw_moment_residual(
+            model=model,
+            transient_profile=transient_profile,
         )
         energy = _compute_energy(power, transient_profile.speed, track.arc_length)
         return LapResult(
