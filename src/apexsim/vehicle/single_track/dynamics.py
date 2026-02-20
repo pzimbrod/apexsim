@@ -112,7 +112,7 @@ class SingleTrackDynamicsModel:
         alpha_front, alpha_rear = self.slip_angles(state, control.steer)
         body_speed = float(np.hypot(state.vx, state.vy))
         # Use a kinematic lateral-acceleration estimate for transient load transfer.
-        lateral_accel_estimate = state.vx * state.yaw_rate
+        lateral_accel_estimate = body_speed * state.yaw_rate
         loads = estimate_normal_loads(
             self.vehicle,
             speed=body_speed,
