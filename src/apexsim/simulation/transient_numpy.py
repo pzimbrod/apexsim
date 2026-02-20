@@ -806,6 +806,7 @@ def _simulate_single_track_controls(
             speed=progress_speed,
             min_time_step=min_time_step,
             max_time_step=max_time_step,
+            max_integration_step=_MAX_SINGLE_TRACK_PID_INTEGRATION_STEP,
         )
         max_delta_steer = max_steer_rate * dt_total
         steer_prev = steer_cmd[idx]
