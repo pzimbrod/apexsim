@@ -2,8 +2,15 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import importlib.util
+import warnings
+from dataclasses import dataclass, field
 
+from apexsim.simulation.transient_common import (
+    DEFAULT_SOLVER_MODE,
+    VALID_SOLVER_MODES,
+    TransientConfig,
+)
 from apexsim.utils.exceptions import ConfigurationError
 
 DEFAULT_MIN_SPEED = 8.0
@@ -67,7 +74,10 @@ class RuntimeConfig:
         initial_speed: Optional initial speed at the first track sample [m/s].
             If ``None``, the solver keeps the legacy behavior and initializes
             from lateral/global speed limits.
-        enable_transient_refinement: Flag for optional second-pass transient solve.
+        enable_transient_refinement: Deprecated transient enable flag retained
+            for one compatibility cycle.
+        solver_mode: Solver mode identifier (``"quasi_static"`` or
+            ``"transient_oc"``).
         compute_backend: Numerical backend identifier (``numpy``, ``numba``,
             or ``torch``).
         torch_device: Torch device identifier. ``numpy`` and ``numba`` are
@@ -79,6 +89,7 @@ class RuntimeConfig:
     max_speed: float
     initial_speed: float | None = DEFAULT_INITIAL_SPEED
     enable_transient_refinement: bool = DEFAULT_ENABLE_TRANSIENT_REFINEMENT
+    solver_mode: str = DEFAULT_SOLVER_MODE
     compute_backend: str = DEFAULT_COMPUTE_BACKEND
     torch_device: str = DEFAULT_TORCH_DEVICE
     torch_compile: bool = DEFAULT_ENABLE_TORCH_COMPILE
@@ -103,6 +114,12 @@ class RuntimeConfig:
             if self.initial_speed > self.max_speed:
                 msg = "initial_speed must be less than or equal to max_speed"
                 raise ConfigurationError(msg)
+        if self.solver_mode not in VALID_SOLVER_MODES:
+            msg = (
+                "solver_mode must be one of "
+                f"{VALID_SOLVER_MODES}, got: {self.solver_mode!r}"
+            )
+            raise ConfigurationError(msg)
         if self.compute_backend not in VALID_COMPUTE_BACKENDS:
             msg = (
                 "compute_backend must be one of "
@@ -185,20 +202,56 @@ class SimulationConfig:
     Args:
         runtime: Scenario and runtime controls, independent of physical car data.
         numerics: Discretization and convergence controls for numerical solving.
+        transient: Transient-solver numerical and runtime controls.
     """
 
     runtime: RuntimeConfig
     numerics: NumericsConfig
+    transient: TransientConfig = field(default_factory=TransientConfig)
 
     def validate(self) -> None:
         """Validate combined simulation settings.
 
         Raises:
-            apexsim.utils.exceptions.ConfigurationError: If runtime or
-                numerical configuration values violate their bounds.
+            apexsim.utils.exceptions.ConfigurationError: If runtime or numerical
+                configuration values violate their bounds.
         """
         self.numerics.validate()
         self.runtime.validate(self.numerics)
+        self.transient.validate()
+        if self.runtime.solver_mode == "transient_oc":
+            self._validate_transient_dependencies()
+
+    def _validate_transient_dependencies(self) -> None:
+        """Validate transient-runtime dependency requirements.
+
+        Raises:
+            apexsim.utils.exceptions.ConfigurationError: If required optional
+                transient dependencies are missing.
+        """
+        backend = self.runtime.compute_backend
+        driver_model = self.transient.runtime.driver_model
+
+        if driver_model == "pid":
+            return
+
+        if backend in ("numpy", "numba"):
+            if importlib.util.find_spec("scipy") is None:
+                msg = (
+                    "solver_mode='transient_oc' with compute_backend "
+                    f"{backend!r} and driver_model='optimal_control' requires SciPy. Install with "
+                    "`pip install -e .`."
+                )
+                raise ConfigurationError(msg)
+            return
+
+        if backend == "torch" and importlib.util.find_spec("torchdiffeq") is None:
+            msg = (
+                "solver_mode='transient_oc' with compute_backend='torch' "
+                "and driver_model='optimal_control' requires torchdiffeq. Install with "
+                "`pip install -e .`."
+            )
+            raise ConfigurationError(msg)
 
 
 def build_simulation_config(
@@ -206,6 +259,8 @@ def build_simulation_config(
     initial_speed: float | None = DEFAULT_INITIAL_SPEED,
     numerics: NumericsConfig | None = None,
     enable_transient_refinement: bool = DEFAULT_ENABLE_TRANSIENT_REFINEMENT,
+    solver_mode: str | None = None,
+    transient: TransientConfig | None = None,
     compute_backend: str = DEFAULT_COMPUTE_BACKEND,
     torch_device: str = DEFAULT_TORCH_DEVICE,
     torch_compile: bool = DEFAULT_ENABLE_TORCH_COMPILE,
@@ -218,7 +273,12 @@ def build_simulation_config(
             If ``None``, the solver keeps the legacy behavior and initializes
             from lateral/global speed limits.
         numerics: Optional numerical settings. Defaults to :class:`NumericsConfig`.
-        enable_transient_refinement: Flag for optional transient post-processing.
+        enable_transient_refinement: Deprecated transient enable flag retained
+            for one compatibility cycle.
+        solver_mode: Optional solver mode identifier. When omitted, defaults to
+            ``"quasi_static"``. Allowed values are ``"quasi_static"`` and
+            ``"transient_oc"``.
+        transient: Optional transient solver settings.
         compute_backend: Numerical backend identifier (``numpy``, ``numba``,
             or ``torch``).
         torch_device: Torch device identifier. ``numpy`` and ``numba`` are
@@ -233,16 +293,42 @@ def build_simulation_config(
         apexsim.utils.exceptions.ConfigurationError: If assembled runtime or
             numerical settings are inconsistent.
     """
+    resolved_solver_mode = DEFAULT_SOLVER_MODE if solver_mode is None else solver_mode
+    if enable_transient_refinement and solver_mode is None:
+        warnings.warn(
+            "`enable_transient_refinement` is deprecated and will be removed. "
+            "Use solver_mode='transient_oc' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        resolved_solver_mode = "transient_oc"
+    elif enable_transient_refinement and solver_mode == "transient_oc":
+        warnings.warn(
+            "`enable_transient_refinement` is deprecated; solver_mode='transient_oc' "
+            "already enables transient solving.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+    elif enable_transient_refinement and solver_mode == "quasi_static":
+        msg = (
+            "enable_transient_refinement=True conflicts with explicit "
+            "solver_mode='quasi_static'. Use solver_mode='transient_oc' or "
+            "disable enable_transient_refinement."
+        )
+        raise ConfigurationError(msg)
+
     config = SimulationConfig(
         runtime=RuntimeConfig(
             max_speed=max_speed,
             initial_speed=initial_speed,
             enable_transient_refinement=enable_transient_refinement,
+            solver_mode=resolved_solver_mode,
             compute_backend=compute_backend,
             torch_device=torch_device,
             torch_compile=torch_compile,
         ),
         numerics=numerics or NumericsConfig(),
+        transient=transient or TransientConfig(),
     )
     config.validate()
     return config

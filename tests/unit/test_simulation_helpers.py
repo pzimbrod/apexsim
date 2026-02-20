@@ -5,6 +5,7 @@ from __future__ import annotations
 import builtins
 import importlib.util
 import unittest
+import warnings
 from unittest.mock import patch
 
 import numpy as np
@@ -18,6 +19,13 @@ from apexsim.simulation.config import (
 )
 from apexsim.simulation.envelope import lateral_speed_limit
 from apexsim.simulation.integrator import rk4_step
+from apexsim.simulation.transient_common import (
+    PidSpeedSchedule,
+    TransientConfig,
+    TransientNumericsConfig,
+    TransientPidGainSchedulingConfig,
+    TransientRuntimeConfig,
+)
 from apexsim.utils.exceptions import ConfigurationError
 
 NUMBA_AVAILABLE = importlib.util.find_spec("numba") is not None
@@ -160,6 +168,237 @@ class SimulationHelpersTests(unittest.TestCase):
         """Allow standing starts for straight-line launch scenarios."""
         config = build_simulation_config(max_speed=115.0, initial_speed=0.0)
         self.assertEqual(config.runtime.initial_speed, 0.0)
+
+    def test_runtime_config_rejects_unknown_solver_mode(self) -> None:
+        """Reject runtime configs with unsupported solver_mode identifiers."""
+        with self.assertRaises(ConfigurationError):
+            SimulationConfig(
+                runtime=RuntimeConfig(
+                    max_speed=115.0,
+                    solver_mode="unknown",
+                ),
+                numerics=NumericsConfig(),
+            ).validate()
+
+    def test_transient_config_validation_rejects_invalid_inputs(self) -> None:
+        """Reject transient numerical/runtime settings outside valid bounds."""
+        with self.assertRaises(ConfigurationError):
+            TransientNumericsConfig(integration_method="unknown").validate()
+        with self.assertRaises(ConfigurationError):
+            TransientNumericsConfig(max_iterations=0).validate()
+        with self.assertRaises(ConfigurationError):
+            TransientNumericsConfig(tolerance=0.0).validate()
+        with self.assertRaises(ConfigurationError):
+            TransientNumericsConfig(min_time_step=0.0).validate()
+        with self.assertRaises(ConfigurationError):
+            TransientNumericsConfig(
+                min_time_step=0.1,
+                max_time_step=0.05,
+            ).validate()
+        with self.assertRaises(ConfigurationError):
+            TransientNumericsConfig(lateral_constraint_weight=-1.0).validate()
+        with self.assertRaises(ConfigurationError):
+            TransientNumericsConfig(tracking_weight=-1.0).validate()
+        with self.assertRaises(ConfigurationError):
+            TransientNumericsConfig(control_smoothness_weight=-1.0).validate()
+        with self.assertRaises(ConfigurationError):
+            TransientNumericsConfig(control_interval=0).validate()
+        with self.assertRaises(ConfigurationError):
+            TransientNumericsConfig(optimizer_learning_rate=0.0).validate()
+        with self.assertRaises(ConfigurationError):
+            TransientNumericsConfig(optimizer_lbfgs_max_iter=0).validate()
+        with self.assertRaises(ConfigurationError):
+            TransientNumericsConfig(optimizer_adam_steps=0).validate()
+        with self.assertRaises(ConfigurationError):
+            TransientNumericsConfig(pid_longitudinal_kp=float("inf")).validate()
+        with self.assertRaises(ConfigurationError):
+            TransientNumericsConfig(
+                pid_longitudinal_integral_limit=-1.0
+            ).validate()
+        with self.assertRaises(ConfigurationError):
+            TransientNumericsConfig(pid_steer_integral_limit=-1.0).validate()
+        with self.assertRaises(ConfigurationError):
+            TransientNumericsConfig(pid_gain_scheduling_mode="invalid").validate()
+        with self.assertRaises(ConfigurationError):
+            TransientNumericsConfig(pid_gain_scheduling_mode="custom").validate()
+        with self.assertRaises(ConfigurationError):
+            TransientNumericsConfig(
+                pid_gain_scheduling_mode="custom",
+                pid_gain_scheduling=TransientPidGainSchedulingConfig(),
+            ).validate()
+        with self.assertRaises(ConfigurationError):
+            TransientRuntimeConfig(ode_backend_policy="bad").validate()
+        with self.assertRaises(ConfigurationError):
+            TransientRuntimeConfig(optimizer_backend_policy="bad").validate()
+        with self.assertRaises(ConfigurationError):
+            TransientRuntimeConfig(driver_model="bad").validate()
+        with self.assertRaises(ConfigurationError):
+            TransientRuntimeConfig(deterministic_seed=-1).validate()
+        with self.assertRaises(ConfigurationError):
+            TransientRuntimeConfig(verbosity=-1).validate()
+
+    def test_pid_speed_schedule_validation_and_interpolation(self) -> None:
+        """Validate PWL schedule checks and interpolation/clamping behavior."""
+        valid = PidSpeedSchedule(
+            speed_nodes_mps=(0.0, 10.0, 20.0),
+            values=(1.0, 0.8, 0.6),
+        )
+        valid.validate()
+        self.assertAlmostEqual(valid.evaluate(-5.0), 1.0)
+        self.assertAlmostEqual(valid.evaluate(5.0), 0.9)
+        self.assertAlmostEqual(valid.evaluate(30.0), 0.6)
+
+        with self.assertRaises(ConfigurationError):
+            PidSpeedSchedule(speed_nodes_mps=(0.0,), values=(1.0,)).validate()
+        with self.assertRaises(ConfigurationError):
+            PidSpeedSchedule(speed_nodes_mps=(0.0, 10.0), values=(1.0,)).validate()
+        with self.assertRaises(ConfigurationError):
+            PidSpeedSchedule(speed_nodes_mps=(0.0, 10.0), values=(1.0, np.nan)).validate()
+        with self.assertRaises(ConfigurationError):
+            PidSpeedSchedule(speed_nodes_mps=(0.0, 0.0), values=(1.0, 1.0)).validate()
+
+    def test_transient_pid_gain_scheduling_validation(self) -> None:
+        """Validate grouped scheduling config rules."""
+        schedule = TransientPidGainSchedulingConfig(
+            longitudinal_kp=PidSpeedSchedule((0.0, 10.0), (0.8, 0.7)),
+            longitudinal_ki=PidSpeedSchedule((0.0, 10.0), (0.1, 0.05)),
+            longitudinal_kd=PidSpeedSchedule((0.0, 10.0), (0.02, 0.01)),
+            steer_kp=PidSpeedSchedule((0.0, 10.0), (1.5, 1.0)),
+            steer_ki=PidSpeedSchedule((0.0, 10.0), (0.05, 0.03)),
+            steer_kd=PidSpeedSchedule((0.0, 10.0), (0.1, 0.08)),
+            steer_vy_damping=PidSpeedSchedule((0.0, 10.0), (0.2, 0.3)),
+        )
+        schedule.validate()
+
+        invalid_nodes = TransientPidGainSchedulingConfig(
+            longitudinal_kp=PidSpeedSchedule((0.0, 10.0), (0.8, 0.7)),
+            longitudinal_ki=PidSpeedSchedule((0.0, 12.0), (0.1, 0.05)),
+            longitudinal_kd=PidSpeedSchedule((0.0, 10.0), (0.02, 0.01)),
+        )
+        with self.assertRaises(ConfigurationError):
+            invalid_nodes.validate()
+
+    def test_build_simulation_config_maps_deprecated_transient_flag(self) -> None:
+        """Map deprecated transient flag to transient solver mode with warning."""
+        real_find_spec = importlib.util.find_spec
+        with (
+            patch(
+                "apexsim.simulation.config.importlib.util.find_spec",
+                side_effect=lambda name: (
+                    object() if name in {"scipy"} else real_find_spec(name)
+                ),
+            ),
+            warnings.catch_warnings(record=True) as captured,
+        ):
+            warnings.simplefilter("always")
+            config = build_simulation_config(
+                max_speed=115.0,
+                compute_backend="numpy",
+                enable_transient_refinement=True,
+            )
+        self.assertEqual(config.runtime.solver_mode, "transient_oc")
+        self.assertTrue(any(item.category is DeprecationWarning for item in captured))
+
+    def test_build_simulation_config_warns_for_redundant_transient_flag(self) -> None:
+        """Warn when deprecated transient flag duplicates explicit transient mode."""
+        real_find_spec = importlib.util.find_spec
+        with (
+            patch(
+                "apexsim.simulation.config.importlib.util.find_spec",
+                side_effect=lambda name: (
+                    object() if name in {"scipy"} else real_find_spec(name)
+                ),
+            ),
+            warnings.catch_warnings(record=True) as captured,
+        ):
+            warnings.simplefilter("always")
+            config = build_simulation_config(
+                max_speed=115.0,
+                compute_backend="numpy",
+                solver_mode="transient_oc",
+                enable_transient_refinement=True,
+            )
+        self.assertEqual(config.runtime.solver_mode, "transient_oc")
+        self.assertTrue(any(item.category is DeprecationWarning for item in captured))
+
+    def test_build_simulation_config_rejects_conflicting_transient_flags(self) -> None:
+        """Reject deprecated transient flag when solver mode is explicitly quasi-static."""
+        with self.assertRaises(ConfigurationError):
+            build_simulation_config(
+                max_speed=115.0,
+                solver_mode="quasi_static",
+                enable_transient_refinement=True,
+            )
+
+    def test_transient_optimal_control_requires_backend_specific_dependencies(self) -> None:
+        """Require SciPy or torchdiffeq when transient optimal-control mode is selected."""
+        real_find_spec = importlib.util.find_spec
+        with patch(
+            "apexsim.simulation.config.importlib.util.find_spec",
+            side_effect=lambda name: (
+                None if name == "scipy" else real_find_spec(name)
+            ),
+        ), self.assertRaises(ConfigurationError):
+            build_simulation_config(
+                max_speed=115.0,
+                compute_backend="numpy",
+                solver_mode="transient_oc",
+                transient=TransientConfig(
+                    runtime=TransientRuntimeConfig(driver_model="optimal_control")
+                ),
+            )
+
+        with patch(
+            "apexsim.simulation.config.importlib.util.find_spec",
+            side_effect=lambda name: (
+                None if name == "torchdiffeq" else real_find_spec(name)
+            ),
+        ), self.assertRaises(ConfigurationError):
+            build_simulation_config(
+                max_speed=115.0,
+                compute_backend="torch",
+                solver_mode="transient_oc",
+                transient=TransientConfig(
+                    runtime=TransientRuntimeConfig(driver_model="optimal_control")
+                ),
+            )
+
+    def test_transient_pid_mode_skips_optimal_control_dependency_checks(self) -> None:
+        """Allow transient PID mode without SciPy/torchdiffeq optional dependencies."""
+        real_find_spec = importlib.util.find_spec
+        with patch(
+            "apexsim.simulation.config.importlib.util.find_spec",
+            side_effect=lambda name: (
+                None if name in {"scipy", "torchdiffeq"} else real_find_spec(name)
+            ),
+        ):
+            config = build_simulation_config(
+                max_speed=115.0,
+                compute_backend="numpy",
+                solver_mode="transient_oc",
+            )
+        self.assertEqual(config.transient.runtime.driver_model, "pid")
+
+    def test_simulation_config_accepts_transient_custom_config(self) -> None:
+        """Accept fully specified transient config in quasi-static runtime mode."""
+        config = build_simulation_config(
+            max_speed=115.0,
+            compute_backend="numpy",
+            transient=TransientConfig(
+                numerics=TransientNumericsConfig(
+                    integration_method="euler",
+                    max_iterations=3,
+                    tolerance=1e-3,
+                ),
+                runtime=TransientRuntimeConfig(
+                    ode_backend_policy="auto",
+                    optimizer_backend_policy="auto",
+                    deterministic_seed=0,
+                    verbosity=0,
+                ),
+            ),
+        )
+        self.assertEqual(config.transient.numerics.integration_method, "euler")
 
     @unittest.skipUnless(NUMBA_AVAILABLE, "Numba not installed")
     def test_build_simulation_config_supports_numba_backend(self) -> None:

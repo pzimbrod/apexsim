@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import unittest
+from dataclasses import replace
 from unittest.mock import patch
 
 import numpy as np
@@ -61,6 +62,59 @@ class PointMassModelTests(unittest.TestCase):
                 max_brake_accel=16.0,
                 friction_coefficient=0.0,
             ).validate()
+        with self.assertRaises(ConfigurationError):
+            PointMassPhysics(
+                max_drive_accel=8.0,
+                max_brake_accel=16.0,
+                reference_mass=0.0,
+                friction_coefficient=1.7,
+            ).validate()
+
+    def test_reference_mass_scales_longitudinal_limits_with_vehicle_mass(self) -> None:
+        """Scale accel/decel limits inversely with mass when reference mass is set."""
+        vehicle = sample_vehicle_parameters()
+        baseline_mass = vehicle.mass
+        physics = PointMassPhysics(
+            max_drive_accel=8.0,
+            max_brake_accel=16.0,
+            reference_mass=baseline_mass,
+            friction_coefficient=1.7,
+        )
+        lighter_model = build_point_mass_model(
+            vehicle=replace(vehicle, mass=baseline_mass * 0.9),
+            physics=physics,
+        )
+        heavier_model = build_point_mass_model(
+            vehicle=replace(vehicle, mass=baseline_mass * 1.1),
+            physics=physics,
+        )
+        lighter_accel = lighter_model.max_longitudinal_accel(
+            speed=20.0,
+            lateral_accel_required=0.0,
+            grade=0.0,
+            banking=0.0,
+        )
+        heavier_accel = heavier_model.max_longitudinal_accel(
+            speed=20.0,
+            lateral_accel_required=0.0,
+            grade=0.0,
+            banking=0.0,
+        )
+        lighter_brake = lighter_model.max_longitudinal_decel(
+            speed=20.0,
+            lateral_accel_required=0.0,
+            grade=0.0,
+            banking=0.0,
+        )
+        heavier_brake = heavier_model.max_longitudinal_decel(
+            speed=20.0,
+            lateral_accel_required=0.0,
+            grade=0.0,
+            banking=0.0,
+        )
+
+        self.assertGreater(lighter_accel, heavier_accel)
+        self.assertGreater(lighter_brake, heavier_brake)
 
     def test_lateral_limit_increases_with_speed_due_to_downforce(self) -> None:
         """Increase lateral limit with speed when aerodynamic downforce is positive."""
@@ -192,6 +246,49 @@ class PointMassModelTests(unittest.TestCase):
 
         self.assertAlmostEqual(float(torch_accel.item()), float(numpy_accel), places=10)
         self.assertAlmostEqual(float(torch_decel.item()), float(numpy_decel), places=10)
+
+    @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch not installed")
+    def test_torch_reference_mass_scaling_helpers_cover_both_branches(self) -> None:
+        """Evaluate torch reference-mass helpers with and without scaling."""
+        import torch
+
+        model_without_reference = _build_point_mass_model()
+        drive_unscaled = model_without_reference._backend_scaled_drive_envelope_accel_limit(torch)
+        brake_unscaled = model_without_reference._backend_scaled_brake_envelope_accel_limit(torch)
+        self.assertAlmostEqual(
+            float(drive_unscaled.item()),
+            model_without_reference.envelope_physics.max_drive_accel,
+            places=12,
+        )
+        self.assertAlmostEqual(
+            float(brake_unscaled.item()),
+            model_without_reference.envelope_physics.max_brake_accel,
+            places=12,
+        )
+
+        vehicle = sample_vehicle_parameters()
+        reference_mass = vehicle.mass * 1.1
+        model_with_reference = PointMassModel(
+            vehicle=vehicle,
+            physics=PointMassPhysics(
+                max_drive_accel=8.0,
+                max_brake_accel=16.0,
+                reference_mass=reference_mass,
+                friction_coefficient=1.7,
+            ),
+        )
+        drive_scaled = model_with_reference._backend_scaled_drive_envelope_accel_limit(torch)
+        brake_scaled = model_with_reference._backend_scaled_brake_envelope_accel_limit(torch)
+        self.assertAlmostEqual(
+            float(drive_scaled.item()),
+            model_with_reference.envelope_physics.max_drive_accel * reference_mass / vehicle.mass,
+            places=6,
+        )
+        self.assertAlmostEqual(
+            float(brake_scaled.item()),
+            model_with_reference.envelope_physics.max_brake_accel * reference_mass / vehicle.mass,
+            places=6,
+        )
 
     def test_build_point_mass_model_uses_default_physics(self) -> None:
         """Build a model with default physical settings when omitted."""

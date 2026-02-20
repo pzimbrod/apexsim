@@ -120,6 +120,33 @@ For backend-enabled models, keep backend adapters out of the physics layer:
   `src/apexsim/vehicle/single_track/` (for example `dynamics.py`,
   `load_transfer.py`) to keep model-specific code grouped together.
 
+## Backend Unification Rules
+
+When changing solver backend behavior:
+
+- Do not duplicate core algorithmics per backend when a shared implementation
+  is feasible.
+- Extend shared solver cores first:
+  - `src/apexsim/simulation/_profile_core.py`
+  - `src/apexsim/simulation/_transient_pid_core.py`
+  - `src/apexsim/simulation/_transient_controls_core.py`
+  - `src/apexsim/simulation/_progress.py`
+- Keep backend modules (`profile.py`, `torch_profile.py`, `transient_*`) as
+  thin adapters around the shared core plus backend-specific primitives.
+- Keep vehicle backend physics formulas centralized in
+  `src/apexsim/vehicle/_backend_physics_core.py` and consume those helpers
+  from point-mass and single-track backends.
+- If a new backend-specific branch is unavoidable for performance, add a parity
+  test against the shared semantics and document why specialization is needed.
+
+Performance policy for refactors:
+
+- Run `scripts/benchmark_solver_matrix.py` before and after significant backend
+  refactors.
+- Compare with `scripts/compare_solver_benchmarks.py`.
+- Any case slower than 5% requires either optimization or explicit, documented
+  justification.
+
 ## Refreshing Spa Data
 
 ```bash

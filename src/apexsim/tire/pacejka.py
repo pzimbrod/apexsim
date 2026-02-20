@@ -51,7 +51,7 @@ def magic_formula_lateral(
     load_delta = (fz - params.reference_load) / params.reference_load
     mu_scale = np.maximum(1.0 + params.load_sensitivity * load_delta, params.min_mu_scale)
 
-    fy = params.D * mu_scale * fz * shape
+    fy = params.D * (fz / params.reference_load) * mu_scale * shape
 
     if np.isscalar(slip_angle) and np.isscalar(normal_load):
         return float(np.asarray(fy).item())

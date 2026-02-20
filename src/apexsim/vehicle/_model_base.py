@@ -4,10 +4,13 @@ from __future__ import annotations
 
 from abc import abstractmethod
 
-import numpy as np
-
 from apexsim.simulation.model_api import VehicleModelBase
-from apexsim.utils.constants import GRAVITY, SMALL_EPS
+from apexsim.utils.constants import GRAVITY
+from apexsim.vehicle._backend_physics_core import (
+    downforce_total_numpy,
+    drag_force_numpy,
+    friction_circle_scale_numpy,
+)
 from apexsim.vehicle._physics_primitives import EnvelopePhysics
 from apexsim.vehicle.params import VehicleParameters
 
@@ -71,10 +74,11 @@ class EnvelopeVehicleModel(VehicleModelBase):
         Returns:
             Scalar in ``[0, 1]`` reducing longitudinal capability.
         """
-        if lateral_accel_limit <= SMALL_EPS:
-            return 0.0
-        usage = min(abs(lateral_accel_required) / lateral_accel_limit, 1.0)
-        return float(np.sqrt(max(0.0, 1.0 - usage * usage)))
+        scale = friction_circle_scale_numpy(
+            lateral_accel_required=lateral_accel_required,
+            lateral_accel_limit=lateral_accel_limit,
+        )
+        return float(scale)
 
     def _drag_force(self, speed: float) -> float:
         """Compute aerodynamic drag force from precomputed coefficients.
@@ -85,8 +89,12 @@ class EnvelopeVehicleModel(VehicleModelBase):
         Returns:
             Aerodynamic drag force [N].
         """
-        speed_sq = max(speed, 0.0) ** 2
-        return self._drag_force_scale * speed_sq
+        return float(
+            drag_force_numpy(
+                speed=speed,
+                drag_force_scale=self._drag_force_scale,
+            )
+        )
 
     def _downforce_total(self, speed: float) -> float:
         """Compute total aerodynamic downforce from precomputed coefficients.
@@ -97,8 +105,12 @@ class EnvelopeVehicleModel(VehicleModelBase):
         Returns:
             Total aerodynamic downforce [N].
         """
-        speed_sq = max(speed, 0.0) ** 2
-        return self._downforce_scale * speed_sq
+        return float(
+            downforce_total_numpy(
+                speed=speed,
+                downforce_scale=self._downforce_scale,
+            )
+        )
 
     def _downforce_front(self, speed: float) -> float:
         """Compute front-axle aerodynamic downforce share.

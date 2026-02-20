@@ -16,12 +16,14 @@ After finishing all example pages, you should be able to:
 
 1. [Synthetic Track Walkthrough](EXAMPLES_SYNTHETIC.md)
 2. [Spa Walkthrough](examples/spa/index.md)
-3. [Sensitivity Walkthrough](examples/sensitivity/index.md)
+3. [Transient Solver Walkthrough](examples/transient/index.md)
+4. [Sensitivity Walkthrough](examples/sensitivity/index.md)
 
 Reason:
 
 - Synthetic tracks isolate single effects and simplify debugging.
 - Spa introduces full-track interactions and realistic complexity.
+- Transient examples introduce state/control trajectories beyond quasi-static envelopes.
 - Sensitivity examples connect parameter changes to lap-time and energy outcomes.
 
 ## Mapping scripts to engineering questions
@@ -38,6 +40,10 @@ Reason:
   - "How does the speed-dependent G-G envelope differ by model complexity?"
 - `examples/backend_benchmarks.py`
   - "Which compute backend should I use for my workload?"
+- `examples/transient/transient_point_mass_lap.py`
+  - "How does transient minimum-time launch behavior look for point-mass dynamics?"
+- `examples/transient/transient_single_track_lap.py`
+  - "How do steering-rate and yaw dynamics affect a maneuver-heavy transient lap?"
 - `examples/sensitivity/synthetic_single_track_sensitivity.py`
   - "How sensitive are lap time and energy to key parameters on a canonical track via the Sensitivity API?"
 - `examples/sensitivity/spa_single_track_sensitivity.py`
@@ -46,6 +52,7 @@ Reason:
 ## What the example suite covers well
 
 - End-to-end solver use on real and synthetic tracks.
+- Side-by-side transient and quasi-static solver usage through the same public API.
 - KPI and plot export workflows.
 - Direct model-complexity comparison.
 - Practical interpretation of speed/acceleration/yaw diagnostics.
@@ -60,7 +67,8 @@ Reason:
 ## Output structure
 
 All scripts export into `examples/output/` with consistent folder logic
-(`examples/output/spa/` for Spa-specific workflows).
+(`examples/output/spa/` for Spa-specific workflows and
+`examples/output/transient/` for transient-specific workflows).
 Typical artifacts:
 
 - `kpis.json`

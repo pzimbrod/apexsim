@@ -12,6 +12,7 @@ vehicle models.
 Main strengths:
 
 - Quasi-steady lap-time simulation on arbitrary track centerlines.
+- Transient lap simulation through the same `simulate_lap(...)` API.
 - Interchangeable vehicle models behind one solver API.
 - Clear separation between physical inputs and numerical solver settings.
 - Reproducible engineering outputs (KPIs + standardized plots).
@@ -21,8 +22,7 @@ Main strengths:
 
 Current model boundaries are important for correct interpretation:
 
-- No full transient lap solver in production path yet.
-- No driver model or closed-loop control strategy model.
+- No human-driver identification or preview-control model yet.
 - No detailed powertrain/energy management model yet.
 - No full multi-body chassis compliance model.
 - No direct tire thermal/wear state evolution.
@@ -129,7 +129,8 @@ model = build_point_mass_model(
 
 When to use which:
 
-- Single-track (bicycle): better diagnostics (yaw moment, axle-load dynamics), better cornering interpretation.
+- Single-track (bicycle): better cornering interpretation and richer diagnostics
+  (axle-load dynamics in all modes, dynamic yaw-residual signal in transient mode).
 - Point-mass: fast baseline and sensitivity sweeps.
 
 ## Step 3: Load or generate track
@@ -173,18 +174,94 @@ Simple setup:
 config = build_simulation_config(max_speed=115.0)
 ```
 
-Explicit setup:
+Explicit quasi-static setup:
 
 ```python
 from apexsim.simulation import NumericsConfig, RuntimeConfig, SimulationConfig
 
 config = SimulationConfig(
-    runtime=RuntimeConfig(max_speed=115.0, initial_speed=20.0),
+    runtime=RuntimeConfig(
+        max_speed=115.0,
+        initial_speed=20.0,
+        solver_mode="quasi_static",
+    ),
     numerics=NumericsConfig(
         min_speed=8.0,
         lateral_envelope_max_iterations=20,
         lateral_envelope_convergence_tolerance=0.1,
         transient_step=0.01,
+    ),
+)
+```
+
+Explicit transient setup:
+
+```python
+from apexsim.simulation import (
+    PidSpeedSchedule,
+    TransientConfig,
+    TransientNumericsConfig,
+    TransientPidGainSchedulingConfig,
+    TransientRuntimeConfig,
+    build_simulation_config,
+)
+
+config_transient = build_simulation_config(
+    compute_backend="numpy",
+    solver_mode="transient_oc",
+    initial_speed=0.0,  # standing start
+    transient=TransientConfig(
+        numerics=TransientNumericsConfig(
+            integration_method="rk4",
+            max_iterations=60,
+            control_interval=8,  # optimize on coarser control mesh, then interpolate
+            pid_gain_scheduling_mode="off",  # legacy-compatible default
+        ),
+        runtime=TransientRuntimeConfig(
+            ode_backend_policy="auto",
+            optimizer_backend_policy="auto",
+            driver_model="pid",  # default
+            verbosity=1,  # 1: optimizer progress, 2: +track progress
+        ),
+    ),
+)
+```
+
+Physics-informed PID scheduling (recommended start for transient PID studies):
+
+```python
+config_transient_pid_sched = build_simulation_config(
+    compute_backend="numpy",
+    solver_mode="transient_oc",
+    initial_speed=0.0,
+    transient=TransientConfig(
+        numerics=TransientNumericsConfig(
+            pid_gain_scheduling_mode="physics_informed",
+        ),
+    ),
+)
+```
+
+Custom PWL schedule example:
+
+```python
+custom_schedule = TransientPidGainSchedulingConfig(
+    longitudinal_kp=PidSpeedSchedule((0.0, 20.0, 60.0), (0.9, 0.8, 0.7)),
+    longitudinal_ki=PidSpeedSchedule((0.0, 20.0, 60.0), (0.03, 0.02, 0.01)),
+    longitudinal_kd=PidSpeedSchedule((0.0, 20.0, 60.0), (0.07, 0.06, 0.05)),
+    steer_kp=PidSpeedSchedule((0.0, 20.0, 60.0), (1.8, 1.4, 0.9)),
+    steer_ki=PidSpeedSchedule((0.0, 20.0, 60.0), (0.08, 0.05, 0.03)),
+    steer_kd=PidSpeedSchedule((0.0, 20.0, 60.0), (0.16, 0.12, 0.09)),
+    steer_vy_damping=PidSpeedSchedule((0.0, 20.0, 60.0), (0.2, 0.27, 0.35)),
+)
+config_transient_custom = build_simulation_config(
+    compute_backend="numpy",
+    solver_mode="transient_oc",
+    transient=TransientConfig(
+        numerics=TransientNumericsConfig(
+            pid_gain_scheduling_mode="custom",
+            pid_gain_scheduling=custom_schedule,
+        ),
     ),
 )
 ```
@@ -206,7 +283,7 @@ Selection rule:
 
 - `numpy`: robust baseline and easiest debugging.
 - `numba`: fastest CPU sweeps (currently with `PointMassModel` and `SingleTrackModel`).
-- `torch`: CPU/GPU execution and tensor-native workflows.
+- `torch`: CPU/GPU execution and AD-native workflows.
 
 For quantitative guidance, see [Compute Backends](BACKENDS.md).
 
@@ -221,6 +298,26 @@ Do not compensate wrong physics by over-tuning numerics.
 start behavior. Set it explicitly when you need controlled acceleration phases
 from the first sample (for example, straight-line bottleneck studies or
 standing starts with `initial_speed=0.0`).
+
+`solver_mode` selects the algorithm:
+
+- `quasi_static`: envelope-based speed-profile solver (default).
+- `transient_oc`: transient dynamic solver mode.
+  - Default driver model: PID (`TransientRuntimeConfig.driver_model="pid"`).
+  - Optional full optimizer path: `driver_model="optimal_control"`.
+    - Non-converged OC runs fail fast with `ConfigurationError` (no silent fallback).
+    - OC is validated against quasi-static references on simple straight/circle cases.
+  - PID scheduling modes:
+    - `off` (default): scalar gains only.
+    - `physics_informed`: deterministic speed-dependent PWL schedule from vehicle physics.
+    - `custom`: user-provided `TransientPidGainSchedulingConfig`.
+
+Transient dependency note:
+
+- `driver_model="pid"` does not require transient optimizer extras.
+- `numpy` / `numba` with `driver_model="optimal_control"` requires `scipy`.
+- `torch` with `driver_model="optimal_control"` requires `torchdiffeq`.
+- Both are part of the default package dependencies.
 
 ## Step 5: Run the lap simulation
 
@@ -237,6 +334,12 @@ result = simulate_lap(track=track, model=model, config=config)
 - axle loads
 - power trace
 - integrated energy
+
+When `solver_mode="transient_oc"`, `result` also contains:
+
+- `time`
+- `vx`, `vy`, `yaw_rate`
+- `steer_cmd`, `ax_cmd`
 
 ## Step 6: Postprocess and export
 
@@ -297,7 +400,12 @@ long_table = study.to_dataframe()
 pivot_table = study.to_pivot()
 ```
 
-To force finite differences (for regression checks), pass:
+For transient studies, AD is supported with PID driver mode. AD for
+`solver_mode="transient_oc"` with `driver_model="optimal_control"` is currently
+not supported.
+
+To force finite differences (for regression checks or transient
+`optimal_control` studies), pass:
 
 ```python
 study_fd = run_lap_sensitivity_study(
@@ -343,6 +451,26 @@ torch_result = solve_speed_profile_torch(track=track, model=model, config=torch_
 lap_time_tensor = torch_result.lap_time
 ```
 
+Optional: run the public differentiable torch transient API directly:
+
+```python
+from apexsim.simulation import solve_transient_lap_torch
+
+torch_transient_config = build_simulation_config(
+    compute_backend="torch",
+    solver_mode="transient_oc",
+    torch_device="cpu",
+    torch_compile=False,
+    initial_speed=0.0,
+)
+torch_transient_result = solve_transient_lap_torch(
+    track=track,
+    model=model,
+    config=torch_transient_config,
+)
+lap_time_tensor = torch_transient_result.lap_time
+```
+
 Minimum review set:
 
 - lap time
@@ -365,7 +493,8 @@ Before using results for decisions:
 1. "The solver should always accelerate to max speed."
    - Not necessarily. At high speed, drag can exceed available drive force.
 2. "Yaw moment should always be visible."
-   - Not with point-mass model (yaw moment is structurally zero).
+   - Not in quasi-static mode (steady-state assumption -> zero yaw moment), and
+     not with point-mass model (structurally zero in both modes).
 3. "Changing numerics changed physics dramatically."
    - Re-check physical parameters first; numerics should refine stability, not redefine behavior.
 4. "My results jump near lap closure."

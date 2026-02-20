@@ -55,23 +55,44 @@ Terminology note:
 
 - `apexsim.simulation.RuntimeConfig`
 - `apexsim.simulation.NumericsConfig`
+- `apexsim.simulation.TransientConfig`
+- `apexsim.simulation.TransientNumericsConfig`
+- `apexsim.simulation.TransientPidGainSchedulingConfig`
+- `apexsim.simulation.TransientRuntimeConfig`
+- `apexsim.simulation.PidSpeedSchedule`
 - `apexsim.simulation.SimulationConfig`
 - `apexsim.simulation.build_simulation_config(...)`
+- `apexsim.simulation.build_physics_informed_pid_gain_scheduling(...)`
 - `apexsim.simulation.simulate_lap(track, model, config) -> LapResult`
 - `apexsim.simulation.solve_speed_profile_torch(track, model, config) -> TorchSpeedProfileResult`
+- `apexsim.simulation.solve_transient_lap_torch(track, model, config) -> TorchTransientProfileResult`
 
 Backend runtime controls:
 
 - `RuntimeConfig.compute_backend`: `"numpy"`, `"numba"`, or `"torch"`
+- `RuntimeConfig.solver_mode`: `"quasi_static"` or `"transient_oc"`
 - `RuntimeConfig.torch_device`: keep `"cpu"` for `numpy`/`numba`; use `"cpu"` or `"cuda:0"` for `torch`
 - `RuntimeConfig.torch_compile`: reserved flag, must currently remain `False` for simulation
 - `RuntimeConfig.initial_speed`: optional start speed at first track sample [m/s]
   (supports `0.0` for standing starts)
+- `TransientRuntimeConfig.driver_model`: `"pid"` (default) or `"optimal_control"`
+- `TransientNumericsConfig.pid_gain_scheduling_mode`: `"off"` (default),
+  `"physics_informed"`, or `"custom"`
+- `TransientNumericsConfig.pid_gain_scheduling`: optional
+  `TransientPidGainSchedulingConfig` (required for `"custom"` mode)
+- `driver_model="optimal_control"` raises `ConfigurationError` if the optimizer
+  does not converge or returns a non-finite final profile.
 
 Constraint for differentiable solver use:
 
 - `solve_speed_profile_torch(...)` is the differentiable torch solver and requires
   `RuntimeConfig.torch_compile = False`
+
+`PidSpeedSchedule` defines one gain table:
+
+- `speed_nodes_mps`: strictly increasing speed nodes [m/s]
+- `values`: gain values at each node
+- interpolation: piecewise-linear with boundary clamping
 
 See [Compute Backends](BACKENDS.md) for selection guidance and benchmarks.
 
@@ -109,8 +130,12 @@ Vehicle-model solver contract:
 - lap time
 - speed / longitudinal acceleration / lateral acceleration traces
 - yaw moment
+  - quasi-static mode: zero by model assumption
+  - transient mode: dynamic residual $M_z = I_z \dot r$
 - front/rear axle loads
 - power and energy
+- solver mode identifier (`quasi_static` or `transient_oc`)
+- transient-only traces (`time`, `vx`, `vy`, `yaw_rate`, `steer_cmd`, `ax_cmd`)
 
 `PerformanceEnvelopeResult` provides:
 
@@ -132,6 +157,9 @@ Vehicle-model solver contract:
 - multi-objective lap sensitivity outputs (`lap_time_s`, `energy_kwh`)
 - long-form tabular export via `.to_dataframe()`
 - compact parameter × objective table via `.to_pivot()`
+- AD-first evaluation on torch backend, including transient PID studies
+  (`solver_mode="transient_oc"`, `driver_model="pid"`).
+  - `driver_model="optimal_control"` currently requires explicit finite differences.
 
 ## 5. Minimal usage pattern
 

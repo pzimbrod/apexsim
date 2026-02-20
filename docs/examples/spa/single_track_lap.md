@@ -28,7 +28,7 @@ result = simulate_lap(track=track, model=model, config=config)
 ## Why start with single-track
 
 - It captures lateral tire behavior with load sensitivity.
-- It provides yaw-moment and axle-load diagnostics.
+- It provides axle-load diagnostics and supports transient yaw-residual analysis.
 - It is a strong baseline before simplifying to point-mass.
 
 ## Outputs to inspect first
@@ -45,21 +45,18 @@ representation. In quasi-steady use, the key balances are:
 
 Lateral acceleration balance:
 
-$$
+\[
 a_y = \frac{F_{y,f} + F_{y,r}}{m}
-$$
+\]
 
-Yaw moment balance signal:
-
-$$
-M_z = l_f F_{y,f} - l_r F_{y,r}
-$$
+In quasi-static mode, yaw-moment output is zero by steady-state model
+assumption. Dynamic yaw residuals are available in transient mode.
 
 Path-kinematics coupling:
 
-$$
+\[
 a_y = v^2 \kappa
-$$
+\]
 
 Tire forces are generated from the Pacejka-style lateral model with load
 sensitivity. This makes axle-load distribution and aero effects directly
@@ -75,5 +72,6 @@ relevant for cornering limits.
 
 1. Check lap-time and speed-trace shape together, not separately.
 2. Validate that high $|a_y|$ regions align with curved track sectors.
-3. Use yaw-moment traces as consistency diagnostics for lateral balance.
+3. In transient runs, use yaw-residual traces as consistency diagnostics for
+   dynamic balance.
 4. If output magnitudes are implausible, re-check physical inputs before changing numerics.

@@ -9,18 +9,24 @@ from apexsim.utils.exceptions import ConfigurationError
 
 @dataclass(frozen=True)
 class PacejkaParameters:
-    """Pacejka lateral model coefficients and load-sensitivity behavior.
+    r"""Pacejka lateral model coefficients and load-sensitivity behavior.
 
-    The lateral force model uses coefficients `B, C, D, E` in a Magic Formula style
-    equation. `D` is treated as an effective friction coefficient at the current
-    reference condition.
+    The lateral force model uses coefficients ``B``, ``C``, ``D``, ``E`` in the
+    Pacejka Magic Formula.  ``D`` is the peak lateral force at the reference normal
+    load ``Fz0`` [N].  The load-sensitive force is
+
+    .. math::
+
+        F_y = D \\cdot \\frac{F_z}{F_{z0}} \\cdot \\mu_{\\text{scale}} \\cdot
+              \\sin\\!\\left(C \\arctan\\!\\left(B\\alpha - E(B\\alpha -
+              \\arctan(B\\alpha))\\right)\\right)
 
     Args:
         B: Pacejka stiffness factor (-).
         C: Pacejka shape factor (-).
-        D: Peak friction-like factor at reference load (-).
+        D: Peak lateral force at reference normal load ``reference_load`` [N].
         E: Pacejka curvature factor (-).
-        reference_load: Reference normal load used by load sensitivity [N].
+        reference_load: Reference normal load ``Fz0`` [N].
         load_sensitivity: Linear scaling of effective friction with load deviation
             from reference (-/N).
         min_mu_scale: Lower bound for load-scaled friction multiplier (-).
@@ -91,7 +97,7 @@ def default_axle_tire_parameters() -> AxleTireParameters:
         front=PacejkaParameters(
             B=9.5,
             C=1.35,
-            D=1.85,
+            D=6475.0,
             E=0.97,
             reference_load=3500.0,
             load_sensitivity=-0.08,
@@ -100,7 +106,7 @@ def default_axle_tire_parameters() -> AxleTireParameters:
         rear=PacejkaParameters(
             B=10.2,
             C=1.33,
-            D=1.95,
+            D=8190.0,
             E=0.95,
             reference_load=4200.0,
             load_sensitivity=-0.08,

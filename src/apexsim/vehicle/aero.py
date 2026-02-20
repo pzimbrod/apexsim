@@ -6,6 +6,8 @@ from dataclasses import dataclass
 
 from apexsim.vehicle.params import VehicleParameters
 
+MAX_AERO_SPEED_MPS = 300.0
+
 
 @dataclass(frozen=True)
 class AeroForces:
@@ -39,7 +41,9 @@ def aero_forces(vehicle: VehicleParameters, speed: float) -> AeroForces:
             are invalid.
     """
     vehicle.validate()
-    speed_sq = max(speed, 0.0) ** 2
+    # Defensive clipping prevents overflow for numerically unstable transient states.
+    bounded_speed = min(max(speed, 0.0), MAX_AERO_SPEED_MPS)
+    speed_sq = bounded_speed * bounded_speed
     q = 0.5 * vehicle.air_density * speed_sq
 
     drag = q * vehicle.drag_coefficient * vehicle.frontal_area

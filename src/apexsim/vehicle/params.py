@@ -30,6 +30,8 @@ class VehicleParameters:
         front_spring_rate: Front spring rate [N/m].
         rear_spring_rate: Rear spring rate [N/m].
         front_arb_distribution: Front anti-roll-bar distribution in [0, 1].
+        arb_roll_stiffness_fraction: Fraction of total roll stiffness contributed
+            by anti-roll bars in [0, 1].
         front_ride_height: Front ride height [m].
         rear_ride_height: Rear ride height [m].
         air_density: Air density [kg/m^3].
@@ -50,6 +52,7 @@ class VehicleParameters:
     front_spring_rate: float
     rear_spring_rate: float
     front_arb_distribution: float
+    arb_roll_stiffness_fraction: float
     front_ride_height: float
     rear_ride_height: float
     air_density: float
@@ -106,6 +109,9 @@ class VehicleParameters:
             raise ConfigurationError(msg)
         if not 0.0 <= self.front_arb_distribution <= 1.0:
             msg = "front_arb_distribution must be between 0 and 1"
+            raise ConfigurationError(msg)
+        if not 0.0 <= self.arb_roll_stiffness_fraction <= 1.0:
+            msg = "arb_roll_stiffness_fraction must be between 0 and 1"
             raise ConfigurationError(msg)
         if self.air_density <= 0.0:
             msg = "air_density must be positive"

@@ -1,12 +1,12 @@
 window.MathJax = {
   tex: {
-    inlineMath: [["\\(", "\\)"]],
-    displayMath: [["\\[", "\\]"]],
+    inlineMath: [["\\(", "\\)"], ["$", "$"]],
+    displayMath: [["\\[", "\\]"], ["$$", "$$"]],
     processEscapes: true,
     processEnvironments: true,
   },
   options: {
     ignoreHtmlClass: ".*|",
-    processHtmlClass: "arithmatex",
+    processHtmlClass: "(arithmatex|jp-RenderedMarkdown|jp-RenderedHTMLCommon)",
   },
 };

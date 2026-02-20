@@ -24,13 +24,13 @@ Generate and interpret velocity-dependent G-G envelopes for both model families.
 
 For each speed sample $v_j$, the script evaluates a feasible acceleration set:
 
-$$
+\[
 \mathcal{E}(v_j)=
 \left\{(a_y,a_x)\,\middle|\,
 a_y\in\left[-a_{y,\mathrm{lim}}(v_j),+a_{y,\mathrm{lim}}(v_j)\right],\;
 a_x\in\left[a_{x,\min}(v_j),a_{x,\max}(v_j)\right]
 \right\}
-$$
+\]
 
 In the exported arrays, this becomes a discretized family of G-G slices indexed
 by speed. The point-mass and single-track models provide $a_{y,\mathrm{lim}}(v)$ and

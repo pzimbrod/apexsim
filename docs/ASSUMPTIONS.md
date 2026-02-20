@@ -7,8 +7,16 @@
 - Longitudinal force limits are represented by configurable accel/brake envelopes.
 - Point-mass backend uses an isotropic friction-circle with speed-dependent normal
   load from aerodynamic downforce.
-- Lateral speed envelope is solved as a fixed-point iteration with configurable
-  tolerance and iteration cap in `SimulationConfig`.
+- Quasi-static mode solves a lateral speed envelope via fixed-point iteration with
+  configurable tolerance and iteration cap in `SimulationConfig.numerics`.
+- Transient mode solves a minimum-time optimal-control problem on the fixed centerline
+  with bounded controls and dynamic-state propagation.
+- In transient mode, `SingleTrackModel` steering limits are configured through
+  `SingleTrackPhysics.max_steer_angle` and `SingleTrackPhysics.max_steer_rate`.
+- Transient PID gain scheduling (when enabled) is speed-only in v1:
+  no preview controller, no explicit curvature/load-state scheduling.
+- `pid_gain_scheduling_mode="physics_informed"` uses deterministic heuristics
+  based on flat-road longitudinal authority and clipped speed scaling.
 - Aero model uses constant coefficients (`c_l`, `c_d`) and rigid ride height.
 - The lap-time solver is decoupled from specific vehicle equations and only
   depends on the `VehicleModel` API contract.

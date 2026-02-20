@@ -16,7 +16,8 @@ lateral force and diagnostic equations layered on top.
 ## 1. Scope
 
 The single-track model keeps the solver API contract and adds axle-level lateral
-tire force modeling, quasi-static load transfer, and yaw-moment diagnostics.
+tire force modeling and quasi-static load transfer, while transient runs expose
+dynamic yaw behavior through residual diagnostics.
 
 State assumptions in the lap-time solver context:
 
@@ -29,7 +30,7 @@ State assumptions in the lap-time solver context:
 
 At speed $v$ and banking angle $\beta$, the model solves lateral capacity by a
 fixed-point iteration because normal load and lateral force depend on the
-lateral-acceleration estimate itself.
+lateral-acceleration estimate itself [1, Ch. 10].
 
 Given current iterate $a_y^{(k)}$:
 
@@ -40,28 +41,28 @@ Given current iterate $a_y^{(k)}$:
    previous iterate is carried by the axle normal loads used in tire-force
    evaluation:
 
-$$
+\[
 a_y^{(k+1)} = \max\left(
 a_{y,\min},
 \frac{2F_y\!\left(\alpha_\text{peak}, F_{z,f}\!\left(a_y^{(k)}\right)/2\right) + 2F_y\!\left(\alpha_\text{peak}, F_{z,r}\!\left(a_y^{(k)}\right)/2\right)}{m} + g\sin\beta
 \right).
-$$
+\]
 
 Equivalently, writing axle-level lateral forces explicitly as
 $F_{y,f}^{(k)}$ and $F_{y,r}^{(k)}$:
 
-$$
+\[
 a_y^{(k+1)} = \max\left(a_{y,\min}, \frac{F_{y,f}^{(k)} + F_{y,r}^{(k)}}{m} + g\sin\beta\right),
-$$
+\]
 
 with $F_{y,f}^{(k)}, F_{y,r}^{(k)}$ computed from $F_{z,f}(a_y^{(k)})$ and
-$F_{z,r}(a_y^{(k)})$.
+$F_{z,r}(a_y^{(k)})$ [1, Ch. 10].
 
 Stop criterion:
 
-$$
+\[
 \left|a_y^{(k+1)} - a_y^{(k)}\right| \le \text{tol}_y
-$$
+\]
 
 or max iteration count.
 
@@ -69,94 +70,105 @@ or max iteration count.
 
 Each axle force is the sum of two equivalent tires:
 
-$$
+\[
 F_{y,f} = 2\,F_y(\alpha_f, F_{z,f}/2), \quad
 F_{y,r} = 2\,F_y(\alpha_r, F_{z,r}/2).
-$$
+\]
 
 Per-tire Pacejka-style lateral force:
 
-$$
-F_y = D\,\mu_\text{scale}(F_z)\,F_z\,\sin\left(C\,\arctan\left(\xi\right)\right),
-$$
+\[
+F_y = D\left(\frac{F_z}{F_{z,\text{ref}}}\right)\mu_\text{scale}(F_z)\sin\left(C\,\arctan\left(\xi\right)\right),
+\]
 
-$$
+\[
 \xi = B\alpha - E\left(B\alpha - \arctan(B\alpha)\right),
-$$
+\]
 
 with load sensitivity factor:
 
-$$
+\[
 \mu_\text{scale}(F_z) = \max\left(1 + s\,\frac{F_z - F_{z,\text{ref}}}{F_{z,\text{ref}}},\ \mu_{\min}\right).
-$$
+\]
+
+Here, $D$ is the peak lateral force at the reference load $F_{z,\text{ref}}$
+with unit newton [1], [2].
 
 ## 4. Quasi-Static Normal Loads
 
 Total vertical load:
 
-$$
+\[
 F_{z,\text{tot}} = mg + F_\text{down}(v), \quad F_\text{down}(v)=\tfrac{1}{2}\rho C_L A v^2.
-$$
+\]
 
 Front axle raw load with longitudinal transfer:
 
-$$
+\[
 F_{z,f}^\text{raw} = mg\,\phi_f + F_{\text{down},f} - \frac{m a_x h}{L}.
-$$
+\]
 
 Rear axle load follows from equilibrium:
 
-$$
+\[
 F_{z,r} = F_{z,\text{tot}} - F_{z,f}.
-$$
+\]
 
 Lateral transfer is distributed by effective front roll-stiffness share and
-split to left/right wheel loads while preserving axle totals.
+split to left/right wheel loads while preserving axle totals [1, Ch. 9], [3].
 
 ## 5. Longitudinal Limits with Friction Circle
 
 For required lateral acceleration magnitude $|a_{y,\text{req}}|$:
 
-$$
+\[
 \lambda = \sqrt{\max\left(0,\ 1 - \left(\frac{|a_{y,\text{req}}|}{a_{y,\text{lim}}}\right)^2\right)}.
-$$
+\]
 
 Drive and brake envelopes:
 
-$$
+\[
 a_{x,\text{drive}} = a_{x,\text{drive,max}}\,\lambda,\quad
 a_{x,\text{brake}} = a_{x,\text{brake,max}}\,\lambda.
-$$
+\]
 
 Net along-track acceleration:
 
-$$
+\[
 a_{x,\text{net}} = a_{x,\text{drive}} - \frac{D(v)}{m} - g\gamma,
-$$
+\]
 
 available deceleration magnitude:
 
-$$
+\[
 a_{x,\text{decel,avail}} = \max\left(a_{x,\text{brake}} + \frac{D(v)}{m} + g\gamma,\ 0\right),
-$$
+\]
 
 with
 
-$$
+\[
 D(v)=\tfrac{1}{2}\rho C_D A v^2.
-$$
+\]
+
+The coupling above follows the common friction-circle approximation used in
+race-vehicle performance analysis [3].
 
 ## 6. Diagnostics
 
 The backend reports at each operating point:
 
-- yaw moment from 3-DOF single-track force balance,
+- yaw moment according to solver-mode semantics:
+  - quasi-static mode: zero by steady-state model assumption,
+  - transient mode: dynamic residual
+\[
+M_z = I_z \dot r,
+\]
 - front and rear axle normal loads,
 - tractive power:
 
-$$
+\[
 P = \left(m a_x + D(v)\right)v.
-$$
+\]
 
 The solver uses quasi-steady envelopes for speed profile generation; the
 3-DOF single-track dynamics model is used primarily for physically meaningful
@@ -184,3 +196,14 @@ analysis diagnostics (e.g., yaw-moment traces).
   `examples/spa/spa_lap_single_track.py`
 - Side-by-side comparison against point-mass model:
   `examples/spa/spa_model_comparison.py`
+
+## References
+
+[1] D. Schramm, M. Hiller, and R. Bardini, *Vehicle Dynamics: Modeling and
+Simulation*. Berlin, Heidelberg: Springer, 2014.
+
+[2] H. B. Pacejka, *Tyre and Vehicle Dynamics*, 2nd ed. Oxford:
+Butterworth-Heinemann, 2006.
+
+[3] W. F. Milliken and D. L. Milliken, *Race Car Vehicle Dynamics*.
+Warrendale, PA: Society of Automotive Engineers, 1995.

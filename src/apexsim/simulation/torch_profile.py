@@ -7,10 +7,16 @@ from typing import Any, Protocol
 
 import numpy as np
 
+from apexsim.simulation._profile_core import (
+    ProfileOps,
+    SpeedProfileCoreCallbacks,
+    SpeedProfileCoreInputs,
+    resolve_profile_start_speed,
+    solve_speed_profile_core,
+)
 from apexsim.simulation.config import SimulationConfig
 from apexsim.simulation.profile import SpeedProfileResult
 from apexsim.track.models import TrackData
-from apexsim.utils.constants import SMALL_EPS
 from apexsim.utils.exceptions import ConfigurationError
 
 TORCH_COMPILE_MODE = "reduce-overhead"
@@ -110,6 +116,40 @@ class TorchSpeedProfileResult:
         )
 
 
+def _build_torch_profile_ops(*, torch: Any, dtype: Any, device: str) -> ProfileOps:
+    """Build torch operation bundle for the shared profile core.
+
+    Args:
+        torch: Imported torch module.
+        dtype: Tensor dtype used for solver computations.
+        device: Target torch device string.
+
+    Returns:
+        ``ProfileOps`` instance backed by torch tensor primitives.
+    """
+
+    def _to_value(value: Any) -> Any:
+        return torch.as_tensor(value, dtype=dtype, device=device)
+
+    return ProfileOps(
+        full=lambda size, value: torch.full((size,), value, dtype=dtype, device=device),
+        copy=lambda value: value.clone(),
+        scalar=lambda value: _to_value(value),
+        abs=lambda value: torch.abs(value),
+        maximum=lambda left, right: torch.maximum(left, _to_value(right)),
+        minimum=lambda left, right: torch.minimum(left, _to_value(right)),
+        clip=lambda value, low, high: torch.clamp(value, min=low, max=high),
+        sqrt=lambda value: torch.sqrt(value),
+        where=lambda condition, left, right: torch.where(condition, left, right),
+        stack=lambda values: torch.stack(values),
+        cat_tail=lambda core: torch.cat((core, core[-1:])),
+        zeros_like=lambda ref: torch.zeros_like(ref),
+        max=lambda value: torch.max(value),
+        sum=lambda value: torch.sum(value),
+        to_float=lambda value: float(value.detach().cpu().item()),
+    )
+
+
 def _require_torch() -> Any:
     """Import torch lazily and fail with a configuration-level message.
 
@@ -128,33 +168,6 @@ def _require_torch() -> Any:
         )
         raise ConfigurationError(msg) from exc
     return torch
-
-
-def _lateral_speed_limit_torch(
-    torch: Any,
-    curvature_abs: Any,
-    lateral_accel_limit: Any,
-    max_speed: float,
-) -> Any:
-    """Compute lateral-speed envelope in torch.
-
-    Args:
-        torch: Imported torch module.
-        curvature_abs: Absolute curvature tensor [1/m].
-        lateral_accel_limit: Lateral acceleration limit tensor [m/s^2].
-        max_speed: Runtime maximum speed [m/s].
-
-    Returns:
-        Speed-limit tensor from lateral envelope constraints [m/s].
-    """
-    max_speed_tensor = torch.full_like(curvature_abs, float(max_speed))
-
-    safe_denominator = torch.clamp(curvature_abs, min=SMALL_EPS)
-    safe_numerator = torch.clamp(lateral_accel_limit, min=0.0)
-    lateral_limited_speed = torch.sqrt(safe_numerator / safe_denominator)
-
-    bounded_speed = torch.minimum(lateral_limited_speed, max_speed_tensor)
-    return torch.where(curvature_abs > SMALL_EPS, bounded_speed, max_speed_tensor)
 
 
 def _compiled_solver(
@@ -247,110 +260,39 @@ def _solve_speed_profile_torch_impl(
     dtype = torch.float64
 
     arc_length = torch.as_tensor(track.arc_length, dtype=dtype, device=device)
-    curvature = torch.as_tensor(track.curvature, dtype=dtype, device=device)
-    curvature_abs = torch.abs(curvature)
-    grade = torch.as_tensor(track.grade, dtype=dtype, device=device)
-    banking = torch.as_tensor(track.banking, dtype=dtype, device=device)
-
-    n = int(arc_length.numel())
-    ds = arc_length[1:] - arc_length[:-1]
-
-    min_speed = float(config.numerics.min_speed)
-    max_speed = float(config.runtime.max_speed)
-    start_speed = (
-        max_speed
-        if config.runtime.initial_speed is None
-        else float(config.runtime.initial_speed)
+    inputs = SpeedProfileCoreInputs(
+        ds=arc_length[1:] - arc_length[:-1],
+        curvature=torch.as_tensor(track.curvature, dtype=dtype, device=device),
+        grade=torch.as_tensor(track.grade, dtype=dtype, device=device),
+        banking=torch.as_tensor(track.banking, dtype=dtype, device=device),
+        max_speed=float(config.runtime.max_speed),
+        min_speed=float(config.numerics.min_speed),
+        start_speed=resolve_profile_start_speed(
+            max_speed=float(config.runtime.max_speed),
+            initial_speed=config.runtime.initial_speed,
+        ),
+        lateral_envelope_max_iterations=int(config.numerics.lateral_envelope_max_iterations),
+        lateral_envelope_convergence_tolerance=float(
+            config.numerics.lateral_envelope_convergence_tolerance
+        ),
+    )
+    callbacks = SpeedProfileCoreCallbacks(
+        lateral_accel_limit=model.lateral_accel_limit_torch,
+        max_longitudinal_accel=model.max_longitudinal_accel_torch,
+        max_longitudinal_decel=model.max_longitudinal_decel_torch,
+    )
+    core = solve_speed_profile_core(
+        inputs=inputs,
+        callbacks=callbacks,
+        ops=_build_torch_profile_ops(torch=torch, dtype=dtype, device=device),
     )
 
-    max_speed_tensor = torch.as_tensor(max_speed, dtype=dtype, device=device)
-    start_speed_tensor = torch.as_tensor(start_speed, dtype=dtype, device=device)
-    min_speed_squared = min_speed * min_speed
-
-    lateral_accel_limit_torch = model.lateral_accel_limit_torch
-    max_longitudinal_accel_torch = model.max_longitudinal_accel_torch
-    max_longitudinal_decel_torch = model.max_longitudinal_decel_torch
-
-    v_lat = torch.full((n,), max_speed, dtype=dtype, device=device)
-    lateral_envelope_iterations = 0
-
-    for iteration_idx in range(config.numerics.lateral_envelope_max_iterations):
-        previous_v_lat = v_lat
-        ay_limit = lateral_accel_limit_torch(speed=v_lat, banking=banking)
-
-        v_lat = _lateral_speed_limit_torch(
-            torch=torch,
-            curvature_abs=curvature_abs,
-            lateral_accel_limit=ay_limit,
-            max_speed=max_speed,
-        )
-        v_lat = torch.clamp(v_lat, min=min_speed, max=max_speed)
-
-        lateral_envelope_iterations = iteration_idx + 1
-        max_delta_speed = torch.max(torch.abs(v_lat - previous_v_lat))
-        if float(max_delta_speed.item()) <= config.numerics.lateral_envelope_convergence_tolerance:
-            break
-
-    forward_speeds: list[Any] = [
-        torch.minimum(v_lat[0], torch.minimum(start_speed_tensor, max_speed_tensor))
-    ]
-    for idx in range(n - 1):
-        speed_value = forward_speeds[-1]
-        ay_required = speed_value * speed_value * curvature_abs[idx]
-        net_accel = max_longitudinal_accel_torch(
-            speed=speed_value,
-            lateral_accel_required=ay_required,
-            grade=grade[idx],
-            banking=banking[idx],
-        )
-
-        next_speed_squared = speed_value * speed_value + 2.0 * net_accel * ds[idx]
-        v_candidate = torch.sqrt(torch.clamp(next_speed_squared, min=min_speed_squared))
-
-        bounded = torch.minimum(v_lat[idx + 1], v_candidate)
-        bounded = torch.minimum(bounded, max_speed_tensor)
-        forward_speeds.append(bounded)
-
-    v_forward = torch.stack(forward_speeds)
-
-    backward_reverse: list[Any] = [v_forward[-1]]
-    for idx in range(n - 2, -1, -1):
-        speed_value = backward_reverse[-1]
-        ay_required = speed_value * speed_value * curvature_abs[idx + 1]
-        available_decel = max_longitudinal_decel_torch(
-            speed=speed_value,
-            lateral_accel_required=ay_required,
-            grade=grade[idx + 1],
-            banking=banking[idx + 1],
-        )
-
-        entry_speed_squared = speed_value * speed_value + 2.0 * available_decel * ds[idx]
-        v_entry = torch.sqrt(torch.clamp(entry_speed_squared, min=min_speed_squared))
-
-        bounded = torch.minimum(v_forward[idx], v_entry)
-        bounded = torch.minimum(bounded, v_lat[idx])
-        bounded = torch.minimum(bounded, max_speed_tensor)
-        backward_reverse.append(bounded)
-
-    v_profile = torch.stack(backward_reverse[::-1])
-
-    if n > 1:
-        ax_core = (v_profile[1:] * v_profile[1:] - v_profile[:-1] * v_profile[:-1]) / (2.0 * ds)
-        ax = torch.cat((ax_core, ax_core[-1:]))
-    else:
-        ax = torch.zeros_like(v_profile)
-
-    ay = v_profile * v_profile * curvature
-
-    segment_speed_avg = torch.clamp(0.5 * (v_profile[:-1] + v_profile[1:]), min=SMALL_EPS)
-    lap_time = torch.sum(ds / segment_speed_avg)
-
     return TorchSpeedProfileResult(
-        speed=v_profile,
-        longitudinal_accel=ax,
-        lateral_accel=ay,
-        lateral_envelope_iterations=lateral_envelope_iterations,
-        lap_time=lap_time,
+        speed=core.speed,
+        longitudinal_accel=core.longitudinal_accel,
+        lateral_accel=core.lateral_accel,
+        lateral_envelope_iterations=core.lateral_envelope_iterations,
+        lap_time=core.lap_time,
     )
 
 

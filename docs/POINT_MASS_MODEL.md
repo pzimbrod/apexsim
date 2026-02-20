@@ -14,19 +14,22 @@ State assumptions at each track point:
 - isotropic tire friction-circle coupling,
 - normal load from gravity plus aerodynamic downforce.
 
+This corresponds to a reduced longitudinal/lateral envelope model commonly used
+for first-order lap-time studies [1], [3].
+
 ## 2. Tire Normal-Acceleration Budget
 
 At speed $v$:
 
-$$
+\[
 a_n(v) = g + \frac{F_\text{down}(v)}{m},
-$$
+\]
 
 with
 
-$$
+\[
 F_\text{down}(v) = \frac{1}{2}\rho C_L A v^2.
-$$
+\]
 
 The model applies a lower bound $a_n(v)\ge\varepsilon$ for numerical robustness.
 
@@ -34,63 +37,67 @@ The model applies a lower bound $a_n(v)\ge\varepsilon$ for numerical robustness.
 
 With isotropic friction coefficient $\mu$:
 
-$$
+\[
 a_{y,\text{tire}}(v) = \mu a_n(v).
-$$
+\]
 
 Including banking contribution:
 
-$$
+\[
 a_{y,\text{lim}}(v,\beta) = \max\left(a_{y,\text{tire}}(v) + g\sin\beta,\ \varepsilon\right).
-$$
+\]
+
+The friction-circle and combined-acceleration interpretation follows [3].
 
 ## 4. Friction-Circle Coupling
 
 For required lateral acceleration magnitude $|a_{y,\text{req}}|$:
 
-$$
+\[
 \lambda = \sqrt{\max\left(0,\ 1 - \left(\frac{|a_{y,\text{req}}|}{a_{y,\text{lim}}}\right)^2\right)}.
-$$
+\]
 
 ## 5. Longitudinal Limits
 
 Tire-limited longitudinal acceleration magnitude:
 
-$$
+\[
 a_{x,\text{tire,lim}}(v) = \mu a_n(v).
-$$
+\]
 
 Drive envelope:
 
-$$
+\[
 a_{x,\text{drive}}(v) =
 \min\left(a_{x,\text{drive,max}},\ a_{x,\text{tire,lim}}(v)\right)\lambda.
-$$
+\]
 
 Brake envelope:
 
-$$
+\[
 a_{x,\text{brake}}(v) =
 \min\left(a_{x,\text{brake,max}},\ a_{x,\text{tire,lim}}(v)\right)\lambda.
-$$
+\]
 
 Net along-track acceleration:
 
-$$
+\[
 a_{x,\text{net}} = a_{x,\text{drive}} - \frac{D(v)}{m} - g\,\gamma,
-$$
+\]
 
 available deceleration magnitude:
 
-$$
+\[
 a_{x,\text{decel,avail}} = \max\left(a_{x,\text{brake}} + \frac{D(v)}{m} + g\,\gamma,\ 0\right),
-$$
+\]
 
 with
 
-$$
+\[
 D(v)=\frac{1}{2}\rho C_D A v^2.
-$$
+\]
+
+The aerodynamic force expressions follow the standard quadratic law [1], [3].
 
 ## 6. Diagnostics
 
@@ -101,9 +108,9 @@ The backend reports:
   - $F_{z,f} = mg\phi_f + F_{\text{down},f}$,
   - $F_{z,r} = mg(1-\phi_f) + F_{\text{down},r}$,
 - tractive power:
-  $$
+\[
   P = \left(m a_x + D(v)\right)v.
-  $$
+\]
 
 ## 7. Equation-to-Code Mapping
 
@@ -128,9 +135,9 @@ library provides:
 
 This identifies an effective isotropic $\mu$ by least-squares fitting:
 
-$$
+\[
 \mu^\star = \arg\min_\mu \sum_i \left(\mu a_n(v_i) - a_{y,\text{lim,single-track}}(v_i)\right)^2.
-$$
+\]
 
 The comparison example uses this calibration before running the point-mass model.
 
@@ -140,3 +147,14 @@ The comparison example uses this calibration before running the point-mass model
   `examples/spa/spa_lap_point_mass.py`
 - Side-by-side comparison against single-track model:
   `examples/spa/spa_model_comparison.py`
+
+## References
+
+[1] D. Schramm, M. Hiller, and R. Bardini, *Vehicle Dynamics: Modeling and
+Simulation*. Berlin, Heidelberg: Springer, 2014.
+
+[2] H. B. Pacejka, *Tyre and Vehicle Dynamics*, 2nd ed. Oxford:
+Butterworth-Heinemann, 2006.
+
+[3] W. F. Milliken and D. L. Milliken, *Race Car Vehicle Dynamics*.
+Warrendale, PA: Society of Automotive Engineers, 1995.
