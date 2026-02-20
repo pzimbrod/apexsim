@@ -9,7 +9,7 @@ from apexsim.utils.exceptions import ConfigurationError
 
 @dataclass(frozen=True)
 class PacejkaParameters:
-    """Pacejka lateral model coefficients and load-sensitivity behavior.
+    r"""Pacejka lateral model coefficients and load-sensitivity behavior.
 
     The lateral force model uses coefficients ``B``, ``C``, ``D``, ``E`` in the
     Pacejka Magic Formula.  ``D`` is the peak lateral force at the reference normal

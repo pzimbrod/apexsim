@@ -434,8 +434,14 @@ def _single_track_speed_profile_kernel(
                     front_min_mu_scale,
                 )
                 fy_front = (
-                    front_d * (front_left_load / front_reference_load) * front_left_mu * front_shape
-                    + front_d * (front_right_load / front_reference_load) * front_right_mu * front_shape
+                    front_d
+                    * (front_left_load / front_reference_load)
+                    * front_left_mu
+                    * front_shape
+                    + front_d
+                    * (front_right_load / front_reference_load)
+                    * front_right_mu
+                    * front_shape
                 )
 
                 rear_slip_term = rear_b * peak_slip_angle
@@ -553,8 +559,14 @@ def _single_track_speed_profile_kernel(
                 front_min_mu_scale,
             )
             fy_front = (
-                front_d * (front_left_load / front_reference_load) * front_left_mu * front_shape
-                + front_d * (front_right_load / front_reference_load) * front_right_mu * front_shape
+                front_d
+                * (front_left_load / front_reference_load)
+                * front_left_mu
+                * front_shape
+                + front_d
+                * (front_right_load / front_reference_load)
+                * front_right_mu
+                * front_shape
             )
 
             rear_slip_term = rear_b * peak_slip_angle
@@ -669,8 +681,14 @@ def _single_track_speed_profile_kernel(
                 front_min_mu_scale,
             )
             fy_front = (
-                front_d * (front_left_load / front_reference_load) * front_left_mu * front_shape
-                + front_d * (front_right_load / front_reference_load) * front_right_mu * front_shape
+                front_d
+                * (front_left_load / front_reference_load)
+                * front_left_mu
+                * front_shape
+                + front_d
+                * (front_right_load / front_reference_load)
+                * front_right_mu
+                * front_shape
             )
 
             rear_slip_term = rear_b * peak_slip_angle
