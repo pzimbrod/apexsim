@@ -12,6 +12,9 @@ core (`src/apexsim/simulation/_profile_core.py`) and backend adapters
 Section 11 summarizes the transient formulations
 (`src/apexsim/simulation/transient_*.py`).
 
+The underlying equations are based on standard vehicle-dynamics and lap-time
+simulation formulations [1], [3].
+
 ## 1. Discretization and State
 
 The track is represented in arc-length domain by points
@@ -54,6 +57,8 @@ with clipping to $[v_{\min}, v_{\max}]$.
 
 `SingleTrackModel.lateral_accel_limit(...)` solves a fixed-point problem because tire force capacity depends
 on normal load, and normal load depends on lateral acceleration through load transfer.
+This is the quasi-steady coupled load-transfer/tire-force formulation described
+in [1, Ch. 10].
 
 For fixed speed $v$:
 
@@ -79,6 +84,8 @@ Available longitudinal capability is reduced by lateral usage:
 - Brake limit: $a_{x,\text{brake},i} = a_{x,\text{brake,max}}\,\lambda_i$
 
 This is a simplified isotropic friction-circle approximation.
+It follows the standard combined-acceleration envelope approximation used in
+race-car analysis [3].
 
 ## 4. Forward Pass (Acceleration-Limited)
 
@@ -107,6 +114,7 @@ where drag force is
 \[
 D(v) = \tfrac{1}{2}\rho c_d A v^2.
 \]
+The aerodynamic force law follows [1], [3].
 
 Then enforce bounds:
 \[
@@ -298,6 +306,7 @@ Single-track update uses Euler or RK4 integration of:
 \dot{x} = f(x, u),
 \]
 with a 3-DOF single-track dynamic model.
+The state-space structure matches the single-track equations in [1, Ch. 10].
 
 ### 11.3 Constraint penalties and objective terms
 
@@ -413,3 +422,14 @@ Rationale:
 - Longitudinal gains rise with available traction/braking authority.
 - Steering gains decrease with speed because yaw response sensitivity grows.
 - Lateral-velocity damping increases with speed to stabilize transient sideslip.
+
+## References
+
+[1] D. Schramm, M. Hiller, and R. Bardini, *Vehicle Dynamics: Modeling and
+Simulation*. Berlin, Heidelberg: Springer, 2014.
+
+[2] H. B. Pacejka, *Tyre and Vehicle Dynamics*, 2nd ed. Oxford:
+Butterworth-Heinemann, 2006.
+
+[3] W. F. Milliken and D. L. Milliken, *Race Car Vehicle Dynamics*.
+Warrendale, PA: Society of Automotive Engineers, 1995.

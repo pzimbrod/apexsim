@@ -30,7 +30,7 @@ State assumptions in the lap-time solver context:
 
 At speed $v$ and banking angle $\beta$, the model solves lateral capacity by a
 fixed-point iteration because normal load and lateral force depend on the
-lateral-acceleration estimate itself.
+lateral-acceleration estimate itself [1, Ch. 10].
 
 Given current iterate $a_y^{(k)}$:
 
@@ -56,7 +56,7 @@ a_y^{(k+1)} = \max\left(a_{y,\min}, \frac{F_{y,f}^{(k)} + F_{y,r}^{(k)}}{m} + g\
 \]
 
 with $F_{y,f}^{(k)}, F_{y,r}^{(k)}$ computed from $F_{z,f}(a_y^{(k)})$ and
-$F_{z,r}(a_y^{(k)})$.
+$F_{z,r}(a_y^{(k)})$ [1, Ch. 10].
 
 Stop criterion:
 
@@ -78,7 +78,7 @@ F_{y,r} = 2\,F_y(\alpha_r, F_{z,r}/2).
 Per-tire Pacejka-style lateral force:
 
 \[
-F_y = D\,\mu_\text{scale}(F_z)\,F_z\,\sin\left(C\,\arctan\left(\xi\right)\right),
+F_y = D\left(\frac{F_z}{F_{z,\text{ref}}}\right)\mu_\text{scale}(F_z)\sin\left(C\,\arctan\left(\xi\right)\right),
 \]
 
 \[
@@ -90,6 +90,9 @@ with load sensitivity factor:
 \[
 \mu_\text{scale}(F_z) = \max\left(1 + s\,\frac{F_z - F_{z,\text{ref}}}{F_{z,\text{ref}}},\ \mu_{\min}\right).
 \]
+
+Here, $D$ is the peak lateral force at the reference load $F_{z,\text{ref}}$
+with unit newton [1], [2].
 
 ## 4. Quasi-Static Normal Loads
 
@@ -112,7 +115,7 @@ F_{z,r} = F_{z,\text{tot}} - F_{z,f}.
 \]
 
 Lateral transfer is distributed by effective front roll-stiffness share and
-split to left/right wheel loads while preserving axle totals.
+split to left/right wheel loads while preserving axle totals [1, Ch. 9], [3].
 
 ## 5. Longitudinal Limits with Friction Circle
 
@@ -146,6 +149,9 @@ with
 \[
 D(v)=\tfrac{1}{2}\rho C_D A v^2.
 \]
+
+The coupling above follows the common friction-circle approximation used in
+race-vehicle performance analysis [3].
 
 ## 6. Diagnostics
 
@@ -190,3 +196,14 @@ analysis diagnostics (e.g., yaw-moment traces).
   `examples/spa/spa_lap_single_track.py`
 - Side-by-side comparison against point-mass model:
   `examples/spa/spa_model_comparison.py`
+
+## References
+
+[1] D. Schramm, M. Hiller, and R. Bardini, *Vehicle Dynamics: Modeling and
+Simulation*. Berlin, Heidelberg: Springer, 2014.
+
+[2] H. B. Pacejka, *Tyre and Vehicle Dynamics*, 2nd ed. Oxford:
+Butterworth-Heinemann, 2006.
+
+[3] W. F. Milliken and D. L. Milliken, *Race Car Vehicle Dynamics*.
+Warrendale, PA: Society of Automotive Engineers, 1995.
