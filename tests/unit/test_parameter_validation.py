@@ -56,6 +56,7 @@ class ParameterValidationTests(unittest.TestCase):
             front_spring_rate=150000.0,
             rear_spring_rate=140000.0,
             front_arb_distribution=0.5,
+            arb_roll_stiffness_fraction=0.5,
             front_ride_height=0.03,
             rear_ride_height=0.05,
             air_density=1.225,
@@ -75,6 +76,10 @@ class ParameterValidationTests(unittest.TestCase):
             VehicleParameters(**{**base, "frontal_area": 0.0}).validate()
         with self.assertRaises(ConfigurationError):
             VehicleParameters(**{**base, "front_arb_distribution": 1.5}).validate()
+        with self.assertRaises(ConfigurationError):
+            VehicleParameters(**{**base, "arb_roll_stiffness_fraction": -0.1}).validate()
+        with self.assertRaises(ConfigurationError):
+            VehicleParameters(**{**base, "arb_roll_stiffness_fraction": 1.1}).validate()
         with self.assertRaises(ConfigurationError):
             VehicleParameters(**{**base, "air_density": 0.0}).validate()
 

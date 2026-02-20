@@ -715,7 +715,10 @@ def _single_track_wheel_loads_torch(
     front_roll_share = roll_stiffness_front_share_numpy(
         front_spring_rate=model.vehicle.front_spring_rate,
         rear_spring_rate=model.vehicle.rear_spring_rate,
+        front_track=model.vehicle.front_track,
+        rear_track=model.vehicle.rear_track,
         front_arb_distribution=model.vehicle.front_arb_distribution,
+        arb_roll_stiffness_fraction=model.vehicle.arb_roll_stiffness_fraction,
     )
     (
         _front_axle_load,

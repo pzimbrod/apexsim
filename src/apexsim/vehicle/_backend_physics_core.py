@@ -367,21 +367,38 @@ def roll_stiffness_front_share_numpy(
     *,
     front_spring_rate: float,
     rear_spring_rate: float,
+    front_track: float,
+    rear_track: float,
     front_arb_distribution: float,
-) -> float:
+    arb_roll_stiffness_fraction: float,
+) -> Any:
     """Return bounded front-axle roll-stiffness share.
 
     Args:
         front_spring_rate: Front spring rate [N/m].
         rear_spring_rate: Rear spring rate [N/m].
+        front_track: Front track width [m].
+        rear_track: Rear track width [m].
         front_arb_distribution: Front anti-roll-bar distribution in ``[0, 1]``.
+        arb_roll_stiffness_fraction: Fraction of total roll stiffness
+            contributed by anti-roll bars in ``[0, 1]``.
 
     Returns:
         Bounded front roll-stiffness share.
     """
-    spring_sum = max(front_spring_rate + rear_spring_rate, SMALL_EPS)
-    spring_share = front_spring_rate / spring_sum
-    blended_share = 0.5 * (spring_share + front_arb_distribution)
+    spring_roll_front = front_spring_rate * (front_track * 0.5) ** 2
+    spring_roll_rear = rear_spring_rate * (rear_track * 0.5) ** 2
+    spring_sum = max(spring_roll_front + spring_roll_rear, SMALL_EPS)
+    spring_share = spring_roll_front / spring_sum
+    blended_share = (
+        (1.0 - arb_roll_stiffness_fraction) * spring_share
+        + arb_roll_stiffness_fraction * front_arb_distribution
+    )
+    if hasattr(blended_share, "clamp"):
+        return blended_share.clamp(
+            min=ROLL_STIFFNESS_FRONT_SHARE_MIN,
+            max=ROLL_STIFFNESS_FRONT_SHARE_MAX,
+        )
     return float(
         np.clip(
             blended_share,

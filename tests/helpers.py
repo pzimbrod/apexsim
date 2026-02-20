@@ -28,6 +28,7 @@ def sample_vehicle_parameters() -> VehicleParameters:
         front_spring_rate=180000.0,
         rear_spring_rate=165000.0,
         front_arb_distribution=0.55,
+        arb_roll_stiffness_fraction=0.5,
         front_ride_height=0.030,
         rear_ride_height=0.050,
         air_density=STANDARD_AIR_DENSITY,

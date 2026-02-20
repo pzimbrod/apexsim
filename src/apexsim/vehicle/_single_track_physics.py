@@ -107,7 +107,10 @@ class SingleTrackPhysicalMixin(PointMassPhysicalMixin):
         front_roll_share = roll_stiffness_front_share_numpy(
             front_spring_rate=self.vehicle.front_spring_rate,
             rear_spring_rate=self.vehicle.rear_spring_rate,
+            front_track=self.vehicle.front_track,
+            rear_track=self.vehicle.rear_track,
             front_arb_distribution=self.vehicle.front_arb_distribution,
+            arb_roll_stiffness_fraction=self.vehicle.arb_roll_stiffness_fraction,
         )
         ay_estimate = np.full(
             np.shape(ay_banking_array),

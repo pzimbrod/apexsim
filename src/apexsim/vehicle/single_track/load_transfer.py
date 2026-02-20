@@ -56,7 +56,10 @@ def estimate_normal_loads(
     front_share = roll_stiffness_front_share_numpy(
         front_spring_rate=vehicle.front_spring_rate,
         rear_spring_rate=vehicle.rear_spring_rate,
+        front_track=vehicle.front_track,
+        rear_track=vehicle.rear_track,
         front_arb_distribution=vehicle.front_arb_distribution,
+        arb_roll_stiffness_fraction=vehicle.arb_roll_stiffness_fraction,
     )
     (
         front_axle_load,
