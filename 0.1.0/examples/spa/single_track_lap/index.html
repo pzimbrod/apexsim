@@ -978,7 +978,7 @@
   <span class="md-ellipsis">
     
   
-    Sensitivity
+    Transient
   
 
     
@@ -991,6 +991,145 @@
         
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Transient
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../transient/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../transient/point_mass_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Point-Mass Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../transient/single_track_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single-Track Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensitivity
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1588,7 +1727,7 @@ and interpret its outputs correctly.</p>
 <h2 id="why-start-with-single-track">Why start with single-track<a class="headerlink" href="#why-start-with-single-track" title="Permanent link">&para;</a></h2>
 <ul>
 <li>It captures lateral tire behavior with load sensitivity.</li>
-<li>It provides yaw-moment and axle-load diagnostics.</li>
+<li>It provides axle-load diagnostics and supports transient yaw-residual analysis.</li>
 <li>It is a strong baseline before simplifying to point-mass.</li>
 </ul>
 <h2 id="outputs-to-inspect-first">Outputs to inspect first<a class="headerlink" href="#outputs-to-inspect-first" title="Permanent link">&para;</a></h2>
@@ -1605,10 +1744,8 @@ representation. In quasi-steady use, the key balances are:</p>
 <div class="arithmatex">\[
 a_y = \frac{F_{y,f} + F_{y,r}}{m}
 \]</div>
-<p>Yaw moment balance signal:</p>
-<div class="arithmatex">\[
-M_z = l_f F_{y,f} - l_r F_{y,r}
-\]</div>
+<p>In quasi-static mode, yaw-moment output is zero by steady-state model
+assumption. Dynamic yaw residuals are available in transient mode.</p>
 <p>Path-kinematics coupling:</p>
 <div class="arithmatex">\[
 a_y = v^2 \kappa
@@ -1626,7 +1763,8 @@ relevant for cornering limits.</p>
 <ol>
 <li>Check lap-time and speed-trace shape together, not separately.</li>
 <li>Validate that high <span class="arithmatex">\(|a_y|\)</span> regions align with curved track sectors.</li>
-<li>Use yaw-moment traces as consistency diagnostics for lateral balance.</li>
+<li>In transient runs, use yaw-residual traces as consistency diagnostics for
+   dynamic balance.</li>
 <li>If output magnitudes are implausible, re-check physical inputs before changing numerics.</li>
 </ol>
 

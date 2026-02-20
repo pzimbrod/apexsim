@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#vehicle-parameter-sensitivities-at-spa-using-a-single-track-model" class="md-skip">
+        <a href="#spa-single-track-sensitivity-quasi-static-vs-transient" class="md-skip">
           Skip to content
         </a>
       
@@ -820,6 +820,145 @@
                 
   
   
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Transient
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Transient
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../transient/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../transient/point_mass_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Point-Mass Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../transient/single_track_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single-Track Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -833,10 +972,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
             
   
   
@@ -854,8 +993,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3_4">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -999,10 +1138,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-computation-method" class="md-nav__link">
+  <a href="#2-local-sensitivity-method" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Computation Method
+        2. Local Sensitivity Method
       
     </span>
   </a>
@@ -1010,10 +1149,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-solver-and-model-assumptions" class="md-nav__link">
+  <a href="#3-solver-assumptions-and-expected-behavior" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Solver and Model Assumptions
+        3. Solver Assumptions and Expected Behavior
       
     </span>
   </a>
@@ -1021,10 +1160,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-result-plots-in-absolute-kpi-units" class="md-nav__link">
+  <a href="#4-quasi-static-baseline-torch-ad-default" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Result Plots in Absolute KPI Units
+        4. Quasi-Static Baseline (Torch + AD default)
       
     </span>
   </a>
@@ -1032,10 +1171,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#-" class="md-nav__link">
+  <a href="#5-transient-study-pid-autodiff" class="md-nav__link">
     <span class="md-ellipsis">
       
-        -
+        5. Transient Study (PID + Autodiff)
       
     </span>
   </a>
@@ -1043,10 +1182,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-validation-of-the-observed-near-zero-sensitivities" class="md-nav__link">
+  <a href="#6-solver-comparison-and-yaw-inertia-focus" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Validation of the Observed Near-Zero Sensitivities
+        6. Solver Comparison and Yaw-Inertia Focus
       
     </span>
   </a>
@@ -1054,10 +1193,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-engineering-interpretation-for-spa" class="md-nav__link">
+  <a href="#7-engineering-interpretation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Engineering Interpretation for Spa
+        7. Engineering Interpretation
       
     </span>
   </a>
@@ -1458,10 +1597,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-computation-method" class="md-nav__link">
+  <a href="#2-local-sensitivity-method" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Computation Method
+        2. Local Sensitivity Method
       
     </span>
   </a>
@@ -1469,10 +1608,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-solver-and-model-assumptions" class="md-nav__link">
+  <a href="#3-solver-assumptions-and-expected-behavior" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Solver and Model Assumptions
+        3. Solver Assumptions and Expected Behavior
       
     </span>
   </a>
@@ -1480,10 +1619,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-result-plots-in-absolute-kpi-units" class="md-nav__link">
+  <a href="#4-quasi-static-baseline-torch-ad-default" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Result Plots in Absolute KPI Units
+        4. Quasi-Static Baseline (Torch + AD default)
       
     </span>
   </a>
@@ -1491,10 +1630,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#-" class="md-nav__link">
+  <a href="#5-transient-study-pid-autodiff" class="md-nav__link">
     <span class="md-ellipsis">
       
-        -
+        5. Transient Study (PID + Autodiff)
       
     </span>
   </a>
@@ -1502,10 +1641,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-validation-of-the-observed-near-zero-sensitivities" class="md-nav__link">
+  <a href="#6-solver-comparison-and-yaw-inertia-focus" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Validation of the Observed Near-Zero Sensitivities
+        6. Solver Comparison and Yaw-Inertia Focus
       
     </span>
   </a>
@@ -1513,10 +1652,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-engineering-interpretation-for-spa" class="md-nav__link">
+  <a href="#7-engineering-interpretation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Engineering Interpretation for Spa
+        7. Engineering Interpretation
       
     </span>
   </a>
@@ -2264,33 +2403,38 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e81ec33f">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=0a03b35b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="vehicle-parameter-sensitivities-at-spa-using-a-single-track-model">Vehicle Parameter Sensitivities at Spa using a Single Track Model<a class="anchor-link" href="#vehicle-parameter-sensitivities-at-spa-using-a-single-track-model">¶</a></h1><p>This notebook documents a full local sensitivity study on Spa-Francorchamps using the AD-first API <code>run_lap_sensitivity_study(...)</code>.</p>
-<p>KPIs:</p>
-<ul>
-<li><strong>Lap time</strong> (<code>lap_time_s</code>)</li>
-<li><strong>Energy consumption</strong> (<code>energy_kwh</code>)</li>
-</ul>
+<h1 id="spa-single-track-sensitivity-quasi-static-vs-transient">Spa Single-Track Sensitivity: Quasi-Static vs Transient<a class="anchor-link" href="#spa-single-track-sensitivity-quasi-static-vs-transient">¶</a></h1><p>This notebook demonstrates how solver choice affects local sensitivity results.
+We run the same parameter study twice:</p>
+<ol>
+<li>Quasi-static speed-profile solver (torch backend, autodiff default)</li>
+<li>Transient PID solver (torch backend, autodiff sensitivities)</li>
+</ol>
+<p>The goal is to highlight why yaw-inertia sensitivity is often near zero in quasi-static studies and becomes visible in transient analyses.</p>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=20782ede">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=4226c27a">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="1-engineering-question">1. Engineering Question<a class="anchor-link" href="#1-engineering-question">¶</a></h2><p>Which of the selected vehicle parameters has the strongest influence on lap time and energy in the current quasi-static setup at Spa?</p>
-<p>We vary:</p>
+<h2 id="1-engineering-question">1. Engineering Question<a class="anchor-link" href="#1-engineering-question">¶</a></h2><p>For Spa-Francorchamps, how do four physical parameters affect:</p>
+<ol>
+<li>Lap time</li>
+<li>Energy consumption</li>
+</ol>
+<p>Parameters:</p>
 <ol>
 <li>Vehicle mass</li>
-<li>Center-of-gravity height</li>
+<li>CoG height</li>
 <li>Yaw inertia</li>
 <li>Drag coefficient</li>
 </ol>
@@ -2298,43 +2442,41 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=1df35d6a">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=beccf275">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="2-computation-method">2. Computation Method<a class="anchor-link" href="#2-computation-method">¶</a></h2><p>Local sensitivity:</p>
+<h2 id="2-local-sensitivity-method">2. Local Sensitivity Method<a class="anchor-link" href="#2-local-sensitivity-method">¶</a></h2><p>For each objective $y$ and parameter $p_i$, we use local derivatives:</p>
 <p>$$
 S_i = \frac{\partial y}{\partial p_i}
 $$</p>
-<p>Absolute KPI change for a +10% parameter variation:</p>
+<p>For interpretation at +10% variation:</p>
 <p>$$
 \Delta y_{+10\%} \approx S_i \cdot (0.10 \cdot p_{i,0})
 $$</p>
-<p>This is then plotted as <code>Delta lap time [s]</code> and <code>Delta energy [Wh]</code>.</p>
+<p>We compare these deltas between quasi-static and transient solver paths.</p>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=f804000b">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b5580e73">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="3-solver-and-model-assumptions">3. Solver and Model Assumptions<a class="anchor-link" href="#3-solver-and-model-assumptions">¶</a></h2><ul>
-<li>Quasi-static forward/backward speed-profile solver</li>
-<li>Torch backend (autodiff default)</li>
-<li>Single-track vehicle model</li>
+<h2 id="3-solver-assumptions-and-expected-behavior">3. Solver Assumptions and Expected Behavior<a class="anchor-link" href="#3-solver-assumptions-and-expected-behavior">¶</a></h2><ul>
+<li><strong>Quasi-static</strong> solver neglects transient state dynamics, so parameters that primarily act through yaw transients (for example, yaw inertia) can appear weak.</li>
+<li><strong>Transient PID</strong> solver evolves $v_x$, $v_y$, and yaw-rate states over the lap, so yaw-inertia effects can propagate into lap time and energy.</li>
 </ul>
-<p>Interpretation note:</p>
-<p>Parameters that mainly act through transient state dynamics can appear near zero in this workflow.</p>
+<p>This is a model-path comparison at one operating point, not a global design-space claim.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=6a790cfe">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=d7c51fa8">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2357,7 +2499,6 @@ $$</p>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 
@@ -2376,26 +2517,33 @@ $$</p>
 <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">examples_sensitivity</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">examples_sensitivity</span><span class="p">))</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.analysis</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">SensitivityRuntime</span><span class="p">,</span>
-    <span class="n">SensitivityStudyParameter</span><span class="p">,</span>
-    <span class="n">run_lap_sensitivity_study</span><span class="p">,</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.analysis</span><span class="w"> </span><span class="kn">import</span> <span class="n">SensitivityStudyParameter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TransientConfig</span><span class="p">,</span>
+    <span class="n">TransientNumericsConfig</span><span class="p">,</span>
+    <span class="n">TransientRuntimeConfig</span><span class="p">,</span>
+    <span class="n">build_simulation_config</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_simulation_config</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.tire</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_axle_tire_parameters</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.track</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_track_csv</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.vehicle</span><span class="w"> </span><span class="kn">import</span> <span class="n">SingleTrackPhysics</span><span class="p">,</span> <span class="n">build_single_track_model</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">common</span><span class="w"> </span><span class="kn">import</span> <span class="n">example_vehicle_parameters</span><span class="p">,</span> <span class="n">sensitivity_output_root</span><span class="p">,</span> <span class="n">spa_track_path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">common</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">build_solver_comparison_table</span><span class="p">,</span>
+    <span class="n">example_vehicle_parameters</span><span class="p">,</span>
+    <span class="n">plot_yaw_inertia_solver_comparison</span><span class="p">,</span>
+    <span class="n">run_single_track_sensitivity_study</span><span class="p">,</span>
+    <span class="n">sensitivity_output_root</span><span class="p">,</span>
+    <span class="n">spa_track_path</span><span class="p">,</span>
+<span class="p">)</span>
 
-<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">"display.max_columns"</span><span class="p">,</span> <span class="mi">40</span><span class="p">)</span>
-<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">"display.width"</span><span class="p">,</span> <span class="mi">180</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">"display.max_columns"</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">"display.width"</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.vehicle</span><span class="w"> </span><span class="kn">import</span> <span class="n">SingleTrackPhysics</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-1">from __future__ import annotations
 
 from pathlib import Path
 import sys
 
-import matplotlib.pyplot as plt
 import pandas as pd
 
 
@@ -2414,26 +2562,35 @@ examples_sensitivity = repo_root / "examples" / "sensitivity"
 if str(examples_sensitivity) not in sys.path:
     sys.path.insert(0, str(examples_sensitivity))
 
-from apexsim.analysis import (
-    SensitivityRuntime,
-    SensitivityStudyParameter,
-    run_lap_sensitivity_study,
+from apexsim.analysis import SensitivityStudyParameter
+from apexsim.simulation import (
+    TransientConfig,
+    TransientNumericsConfig,
+    TransientRuntimeConfig,
+    build_simulation_config,
 )
-from apexsim.simulation import build_simulation_config
-from apexsim.tire import default_axle_tire_parameters
 from apexsim.track import load_track_csv
-from apexsim.vehicle import SingleTrackPhysics, build_single_track_model
-from common import example_vehicle_parameters, sensitivity_output_root, spa_track_path
+from common import (
+    build_solver_comparison_table,
+    example_vehicle_parameters,
+    plot_yaw_inertia_solver_comparison,
+    run_single_track_sensitivity_study,
+    sensitivity_output_root,
+    spa_track_path,
+)
 
-pd.set_option("display.max_columns", 40)
-pd.set_option("display.width", 180)</div>
+pd.set_option("display.max_columns", 60)
+pd.set_option("display.width", 200)
+
+from apexsim.vehicle import SingleTrackPhysics
+</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=5b37b425">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=3cf0357b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2454,17 +2611,6 @@ pd.set_option("display.width", 180)</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">variation_pct</span> <span class="o">=</span> <span class="mf">10.0</span>
 
 <span class="n">track</span> <span class="o">=</span> <span class="n">load_track_csv</span><span class="p">(</span><span class="n">spa_track_path</span><span class="p">())</span>
-<span class="n">vehicle</span> <span class="o">=</span> <span class="n">example_vehicle_parameters</span><span class="p">()</span>
-<span class="n">tires</span> <span class="o">=</span> <span class="n">default_axle_tire_parameters</span><span class="p">()</span>
-<span class="n">physics</span> <span class="o">=</span> <span class="n">SingleTrackPhysics</span><span class="p">()</span>
-
-<span class="n">simulation_config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span>
-    <span class="n">compute_backend</span><span class="o">=</span><span class="s2">"torch"</span><span class="p">,</span>
-    <span class="n">torch_device</span><span class="o">=</span><span class="s2">"cpu"</span><span class="p">,</span>
-    <span class="n">torch_compile</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">,</span>
-<span class="p">)</span>
-
 <span class="n">parameter_definitions</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">SensitivityStudyParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"mass"</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">"vehicle.mass"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Vehicle mass"</span><span class="p">),</span>
     <span class="n">SensitivityStudyParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"cg_height"</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">"vehicle.cg_height"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Center of gravity height"</span><span class="p">),</span>
@@ -2472,10 +2618,34 @@ pd.set_option("display.width", 180)</div>
     <span class="n">SensitivityStudyParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"drag_coefficient"</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">"vehicle.drag_coefficient"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Drag coefficient"</span><span class="p">),</span>
 <span class="p">]</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">build_single_track_model</span><span class="p">(</span>
-    <span class="n">vehicle</span><span class="o">=</span><span class="n">vehicle</span><span class="p">,</span>
-    <span class="n">tires</span><span class="o">=</span><span class="n">tires</span><span class="p">,</span>
-    <span class="n">physics</span><span class="o">=</span><span class="n">physics</span><span class="p">,</span>
+<span class="n">root_output_dir</span> <span class="o">=</span> <span class="n">sensitivity_output_root</span><span class="p">()</span> <span class="o">/</span> <span class="s2">"spa_single_track"</span>
+<span class="n">quasi_output_dir</span> <span class="o">=</span> <span class="n">root_output_dir</span> <span class="o">/</span> <span class="s2">"quasi_static"</span>
+<span class="n">transient_output_dir</span> <span class="o">=</span> <span class="n">root_output_dir</span> <span class="o">/</span> <span class="s2">"transient_pid_ad"</span>
+
+<span class="n">study_physics</span> <span class="o">=</span> <span class="n">SingleTrackPhysics</span><span class="p">(</span>
+    <span class="n">max_steer_angle</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
+    <span class="n">max_steer_rate</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+    <span class="n">reference_mass</span><span class="o">=</span><span class="n">example_vehicle_parameters</span><span class="p">()</span><span class="o">.</span><span class="n">mass</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">quasi_simulation_config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span>
+    <span class="n">compute_backend</span><span class="o">=</span><span class="s2">"torch"</span><span class="p">,</span>
+    <span class="n">torch_device</span><span class="o">=</span><span class="s2">"cpu"</span><span class="p">,</span>
+    <span class="n">torch_compile</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">transient_simulation_config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span>
+    <span class="n">compute_backend</span><span class="o">=</span><span class="s2">"torch"</span><span class="p">,</span>
+    <span class="n">torch_device</span><span class="o">=</span><span class="s2">"cpu"</span><span class="p">,</span>
+    <span class="n">torch_compile</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">,</span>
+    <span class="n">initial_speed</span><span class="o">=</span><span class="mf">12.0</span><span class="p">,</span>
+    <span class="n">solver_mode</span><span class="o">=</span><span class="s2">"transient_oc"</span><span class="p">,</span>
+    <span class="n">transient</span><span class="o">=</span><span class="n">TransientConfig</span><span class="p">(</span>
+        <span class="n">numerics</span><span class="o">=</span><span class="n">TransientNumericsConfig</span><span class="p">(</span><span class="n">max_time_step</span><span class="o">=</span><span class="mf">1.0</span><span class="p">),</span>
+        <span class="n">runtime</span><span class="o">=</span><span class="n">TransientRuntimeConfig</span><span class="p">(</span><span class="n">driver_model</span><span class="o">=</span><span class="s2">"pid"</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+    <span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
@@ -2489,17 +2659,6 @@ pd.set_option("display.width", 180)</div>
 <div class="clipboard-copy-txt" id="cell-2">variation_pct = 10.0
 
 track = load_track_csv(spa_track_path())
-vehicle = example_vehicle_parameters()
-tires = default_axle_tire_parameters()
-physics = SingleTrackPhysics()
-
-simulation_config = build_simulation_config(
-    compute_backend="torch",
-    torch_device="cpu",
-    torch_compile=False,
-    max_speed=115.0,
-)
-
 parameter_definitions = [
     SensitivityStudyParameter(name="mass", target="vehicle.mass", label="Vehicle mass"),
     SensitivityStudyParameter(name="cg_height", target="vehicle.cg_height", label="Center of gravity height"),
@@ -2507,10 +2666,34 @@ parameter_definitions = [
     SensitivityStudyParameter(name="drag_coefficient", target="vehicle.drag_coefficient", label="Drag coefficient"),
 ]
 
-model = build_single_track_model(
-    vehicle=vehicle,
-    tires=tires,
-    physics=physics,
+root_output_dir = sensitivity_output_root() / "spa_single_track"
+quasi_output_dir = root_output_dir / "quasi_static"
+transient_output_dir = root_output_dir / "transient_pid_ad"
+
+study_physics = SingleTrackPhysics(
+    max_steer_angle=0.3,
+    max_steer_rate=2.0,
+    reference_mass=example_vehicle_parameters().mass,
+)
+
+quasi_simulation_config = build_simulation_config(
+    compute_backend="torch",
+    torch_device="cpu",
+    torch_compile=False,
+    max_speed=115.0,
+)
+
+transient_simulation_config = build_simulation_config(
+    compute_backend="torch",
+    torch_device="cpu",
+    torch_compile=False,
+    max_speed=115.0,
+    initial_speed=12.0,
+    solver_mode="transient_oc",
+    transient=TransientConfig(
+        numerics=TransientNumericsConfig(max_time_step=1.0),
+        runtime=TransientRuntimeConfig(driver_model="pid", verbosity=0),
+    ),
 )
 
 pd.DataFrame(
@@ -2519,14 +2702,26 @@ pd.DataFrame(
         "target": [p.target for p in parameter_definitions],
         "variation_used": [f"+/-{variation_pct:.0f}%"] * len(parameter_definitions),
     }
-)</div>
+)
 </div>
 </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d6663f02">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="4-quasi-static-baseline-torch-ad-default">4. Quasi-Static Baseline (Torch + AD default)<a class="anchor-link" href="#4-quasi-static-baseline-torch-ad-default">¶</a></h2>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=08682102">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=438815c3">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2544,71 +2739,58 @@ pd.DataFrame(
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">study_result</span> <span class="o">=</span> <span class="n">run_lap_sensitivity_study</span><span class="p">(</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">quasi_long_df</span><span class="p">,</span> <span class="n">quasi_pivot_df</span> <span class="o">=</span> <span class="n">run_single_track_sensitivity_study</span><span class="p">(</span>
     <span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span>
-    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-    <span class="n">simulation_config</span><span class="o">=</span><span class="n">simulation_config</span><span class="p">,</span>
+    <span class="n">track_label</span><span class="o">=</span><span class="s2">"Spa-Francorchamps"</span><span class="p">,</span>
+    <span class="n">output_dir</span><span class="o">=</span><span class="n">quasi_output_dir</span><span class="p">,</span>
+    <span class="n">simulation_config</span><span class="o">=</span><span class="n">quasi_simulation_config</span><span class="p">,</span>
     <span class="n">parameters</span><span class="o">=</span><span class="n">parameter_definitions</span><span class="p">,</span>
-    <span class="n">label</span><span class="o">=</span><span class="s2">"Spa-Francorchamps"</span><span class="p">,</span>
+    <span class="n">physics</span><span class="o">=</span><span class="n">study_physics</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">long_df</span> <span class="o">=</span> <span class="n">study_result</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s2">"objective"</span><span class="p">,</span> <span class="s2">"parameter"</span><span class="p">],</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)</span>
-<span class="n">long_df</span><span class="p">[</span><span class="s2">"absolute_delta_plus"</span><span class="p">]</span> <span class="o">=</span> <span class="n">long_df</span><span class="p">[</span><span class="s2">"predicted_objective_plus"</span><span class="p">]</span> <span class="o">-</span> <span class="n">long_df</span><span class="p">[</span><span class="s2">"objective_value"</span><span class="p">]</span>
-<span class="n">long_df</span><span class="p">[</span><span class="s2">"absolute_delta_minus"</span><span class="p">]</span> <span class="o">=</span> <span class="n">long_df</span><span class="p">[</span><span class="s2">"predicted_objective_minus"</span><span class="p">]</span> <span class="o">-</span> <span class="n">long_df</span><span class="p">[</span><span class="s2">"objective_value"</span><span class="p">]</span>
-
-<span class="n">long_df</span><span class="p">[[</span>
+<span class="n">quasi_long_df</span><span class="p">[[</span>
     <span class="s2">"objective"</span><span class="p">,</span>
     <span class="s2">"parameter_label"</span><span class="p">,</span>
-    <span class="s2">"objective_value"</span><span class="p">,</span>
     <span class="s2">"sensitivity_raw"</span><span class="p">,</span>
-    <span class="s2">"sensitivity_pct_per_pct"</span><span class="p">,</span>
     <span class="s2">"absolute_delta_plus"</span><span class="p">,</span>
     <span class="s2">"absolute_delta_minus"</span><span class="p">,</span>
-<span class="p">]]</span>
+<span class="p">]]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s2">"objective"</span><span class="p">,</span> <span class="s2">"parameter_label"</span><span class="p">],</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">study_result = run_lap_sensitivity_study(
+<div class="clipboard-copy-txt" id="cell-3">quasi_long_df, quasi_pivot_df = run_single_track_sensitivity_study(
     track=track,
-    model=model,
-    simulation_config=simulation_config,
+    track_label="Spa-Francorchamps",
+    output_dir=quasi_output_dir,
+    simulation_config=quasi_simulation_config,
     parameters=parameter_definitions,
-    label="Spa-Francorchamps",
+    physics=study_physics,
 )
 
-long_df = study_result.to_dataframe().sort_values(["objective", "parameter"], kind="stable")
-long_df["absolute_delta_plus"] = long_df["predicted_objective_plus"] - long_df["objective_value"]
-long_df["absolute_delta_minus"] = long_df["predicted_objective_minus"] - long_df["objective_value"]
-
-long_df[[
+quasi_long_df[[
     "objective",
     "parameter_label",
-    "objective_value",
     "sensitivity_raw",
-    "sensitivity_pct_per_pct",
     "absolute_delta_plus",
     "absolute_delta_minus",
-]]</div>
+]].sort_values(["objective", "parameter_label"], kind="stable")
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=9a2120f8">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ae3d1454">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="4-result-plots-in-absolute-kpi-units">4. Result Plots in Absolute KPI Units<a class="anchor-link" href="#4-result-plots-in-absolute-kpi-units">¶</a></h2><p>We plot the estimated KPI change for a <strong>+10%</strong> parameter increase:</p>
-<ul>
-<li><code>Delta lap time [s]</code></li>
-<li><code>Delta energy [Wh]</code></li>
-</ul>
+<h2 id="5-transient-study-pid-autodiff">5. Transient Study (PID + Autodiff)<a class="anchor-link" href="#5-transient-study-pid-autodiff">¶</a></h2>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=d62ccb01">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=f3713682">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2626,99 +2808,58 @@ long_df[[
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">sensitivity_output_root</span><span class="p">()</span> <span class="o">/</span> <span class="s2">"spa_single_track"</span>
-<span class="n">output_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="n">long_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">"sensitivities_long.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">study_result</span><span class="o">.</span><span class="n">to_pivot</span><span class="p">()</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">"sensitivities_pivot.csv"</span><span class="p">)</span>
-
-<span class="n">plot_df</span> <span class="o">=</span> <span class="n">long_df</span><span class="p">[[</span><span class="s2">"parameter_label"</span><span class="p">,</span> <span class="s2">"objective"</span><span class="p">,</span> <span class="s2">"absolute_delta_plus"</span><span class="p">]]</span><span class="o">.</span><span class="n">pivot</span><span class="p">(</span>
-    <span class="n">index</span><span class="o">=</span><span class="s2">"parameter_label"</span><span class="p">,</span>
-    <span class="n">columns</span><span class="o">=</span><span class="s2">"objective"</span><span class="p">,</span>
-    <span class="n">values</span><span class="o">=</span><span class="s2">"absolute_delta_plus"</span><span class="p">,</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">transient_long_df</span><span class="p">,</span> <span class="n">transient_pivot_df</span> <span class="o">=</span> <span class="n">run_single_track_sensitivity_study</span><span class="p">(</span>
+    <span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span>
+    <span class="n">track_label</span><span class="o">=</span><span class="s2">"Spa-Francorchamps (transient PID + autodiff)"</span><span class="p">,</span>
+    <span class="n">output_dir</span><span class="o">=</span><span class="n">transient_output_dir</span><span class="p">,</span>
+    <span class="n">simulation_config</span><span class="o">=</span><span class="n">transient_simulation_config</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="o">=</span><span class="n">parameter_definitions</span><span class="p">,</span>
+    <span class="n">physics</span><span class="o">=</span><span class="n">study_physics</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">12.0</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">),</span> <span class="n">constrained_layout</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">plot_df</span><span class="p">[</span><span class="s2">"lap_time_s"</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-    <span class="n">kind</span><span class="o">=</span><span class="s2">"bar"</span><span class="p">,</span>
-    <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-    <span class="n">color</span><span class="o">=</span><span class="s2">"#1565c0"</span><span class="p">,</span>
-    <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Lap-time delta for +</span><span class="si">{</span><span class="n">variation_pct</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">% parameter variation"</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="p">(</span><span class="n">plot_df</span><span class="p">[</span><span class="s2">"energy_kwh"</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1000.0</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-    <span class="n">kind</span><span class="o">=</span><span class="s2">"bar"</span><span class="p">,</span>
-    <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-    <span class="n">color</span><span class="o">=</span><span class="s2">"#2e7d32"</span><span class="p">,</span>
-    <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Energy delta for +</span><span class="si">{</span><span class="n">variation_pct</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">% parameter variation"</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Delta lap time [s]"</span><span class="p">)</span>
-<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Delta energy [Wh]"</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">axis</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
-    <span class="n">axis</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">"x"</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
-    <span class="n">axis</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s2">"y"</span><span class="p">)</span>
-
-<span class="n">plot_path</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="s2">"sensitivity_bars.png"</span>
-<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plot_path</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">160</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Artifacts written to: </span><span class="si">{</span><span class="n">output_dir</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="n">plot_df</span>
+<span class="n">transient_long_df</span><span class="p">[[</span>
+    <span class="s2">"objective"</span><span class="p">,</span>
+    <span class="s2">"parameter_label"</span><span class="p">,</span>
+    <span class="s2">"sensitivity_raw"</span><span class="p">,</span>
+    <span class="s2">"absolute_delta_plus"</span><span class="p">,</span>
+    <span class="s2">"absolute_delta_minus"</span><span class="p">,</span>
+<span class="p">]]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s2">"objective"</span><span class="p">,</span> <span class="s2">"parameter_label"</span><span class="p">],</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4">output_dir = sensitivity_output_root() / "spa_single_track"
-output_dir.mkdir(parents=True, exist_ok=True)
-
-long_df.to_csv(output_dir / "sensitivities_long.csv", index=False)
-study_result.to_pivot().sort_index(kind="stable").to_csv(output_dir / "sensitivities_pivot.csv")
-
-plot_df = long_df[["parameter_label", "objective", "absolute_delta_plus"]].pivot(
-    index="parameter_label",
-    columns="objective",
-    values="absolute_delta_plus",
+<div class="clipboard-copy-txt" id="cell-4">transient_long_df, transient_pivot_df = run_single_track_sensitivity_study(
+    track=track,
+    track_label="Spa-Francorchamps (transient PID + autodiff)",
+    output_dir=transient_output_dir,
+    simulation_config=transient_simulation_config,
+    parameters=parameter_definitions,
+    physics=study_physics,
 )
 
-fig, axes = plt.subplots(1, 2, figsize=(12.0, 4.5), constrained_layout=True)
-plot_df["lap_time_s"].plot(
-    kind="bar",
-    ax=axes[0],
-    color="#1565c0",
-    title=f"Lap-time delta for +{variation_pct:.0f}% parameter variation",
-)
-(plot_df["energy_kwh"] * 1000.0).plot(
-    kind="bar",
-    ax=axes[1],
-    color="#2e7d32",
-    title=f"Energy delta for +{variation_pct:.0f}% parameter variation",
-)
-axes[0].set_ylabel("Delta lap time [s]")
-axes[1].set_ylabel("Delta energy [Wh]")
-for axis in axes:
-    axis.tick_params(axis="x", rotation=20)
-    axis.grid(alpha=0.25, axis="y")
-
-plot_path = output_dir / "sensitivity_bars.png"
-fig.savefig(plot_path, dpi=160)
-plt.close(fig)
-
-print(f"Artifacts written to: {output_dir}")
-plot_df</div>
+transient_long_df[[
+    "objective",
+    "parameter_label",
+    "sensitivity_raw",
+    "absolute_delta_plus",
+    "absolute_delta_minus",
+]].sort_values(["objective", "parameter_label"], kind="stable")
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=bd11b205">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=72caee63">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="5-validation-of-the-observed-near-zero-sensitivities">5. Validation of the Observed Near-Zero Sensitivities<a class="anchor-link" href="#5-validation-of-the-observed-near-zero-sensitivities">¶</a></h2><p>As a robustness check, we compare AD and finite differences specifically for <code>cg_height</code> and <code>yaw_inertia</code>.</p>
+<h2 id="6-solver-comparison-and-yaw-inertia-focus">6. Solver Comparison and Yaw-Inertia Focus<a class="anchor-link" href="#6-solver-comparison-and-yaw-inertia-focus">¶</a></h2><p>Now we merge both tables and compare the same local derivatives across solver paths.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=8845763e">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=cfcb33e1">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2736,77 +2877,66 @@ plot_df</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">zero_check_parameters</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">SensitivityStudyParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"cg_height"</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">"vehicle.cg_height"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Center of gravity height"</span><span class="p">),</span>
-    <span class="n">SensitivityStudyParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"yaw_inertia"</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">"vehicle.yaw_inertia"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">"Yaw inertia"</span><span class="p">),</span>
-<span class="p">]</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">comparison_df</span> <span class="o">=</span> <span class="n">build_solver_comparison_table</span><span class="p">(</span>
+    <span class="n">quasi_static_long</span><span class="o">=</span><span class="n">quasi_long_df</span><span class="p">,</span>
+    <span class="n">transient_long</span><span class="o">=</span><span class="n">transient_long_df</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">comparison_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">root_output_dir</span> <span class="o">/</span> <span class="s2">"solver_comparison.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-<span class="n">fd_check</span> <span class="o">=</span> <span class="n">run_lap_sensitivity_study</span><span class="p">(</span>
-    <span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span>
-    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-    <span class="n">simulation_config</span><span class="o">=</span><span class="n">simulation_config</span><span class="p">,</span>
-    <span class="n">parameters</span><span class="o">=</span><span class="n">zero_check_parameters</span><span class="p">,</span>
-    <span class="n">runtime</span><span class="o">=</span><span class="n">SensitivityRuntime</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">"finite_difference"</span><span class="p">),</span>
+<span class="n">plot_yaw_inertia_solver_comparison</span><span class="p">(</span>
+    <span class="n">comparison_table</span><span class="o">=</span><span class="n">comparison_df</span><span class="p">,</span>
+    <span class="n">path</span><span class="o">=</span><span class="n">root_output_dir</span> <span class="o">/</span> <span class="s2">"solver_comparison_yaw_inertia.png"</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">comparison_rows</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">objective</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"lap_time_s"</span><span class="p">,</span> <span class="s2">"energy_kwh"</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"cg_height"</span><span class="p">,</span> <span class="s2">"yaw_inertia"</span><span class="p">):</span>
-        <span class="n">comparison_rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="p">{</span>
-                <span class="s2">"objective"</span><span class="p">:</span> <span class="n">objective</span><span class="p">,</span>
-                <span class="s2">"parameter"</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
-                <span class="s2">"autodiff"</span><span class="p">:</span> <span class="n">study_result</span><span class="o">.</span><span class="n">sensitivity_results</span><span class="p">[</span><span class="n">objective</span><span class="p">]</span><span class="o">.</span><span class="n">sensitivities</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
-                <span class="s2">"finite_difference"</span><span class="p">:</span> <span class="n">fd_check</span><span class="o">.</span><span class="n">sensitivity_results</span><span class="p">[</span><span class="n">objective</span><span class="p">]</span><span class="o">.</span><span class="n">sensitivities</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
-            <span class="p">}</span>
-        <span class="p">)</span>
-
-<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">comparison_rows</span><span class="p">)</span>
+<span class="n">comparison_df</span><span class="p">[</span><span class="n">comparison_df</span><span class="p">[</span><span class="s2">"parameter"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"yaw_inertia"</span><span class="p">][[</span>
+    <span class="s2">"objective"</span><span class="p">,</span>
+    <span class="s2">"sensitivity_raw_quasi_static"</span><span class="p">,</span>
+    <span class="s2">"sensitivity_raw_transient_pid_ad"</span><span class="p">,</span>
+    <span class="s2">"absolute_delta_plus_quasi_static"</span><span class="p">,</span>
+    <span class="s2">"absolute_delta_plus_transient_pid_ad"</span><span class="p">,</span>
+    <span class="s2">"sensitivity_raw_change"</span><span class="p">,</span>
+    <span class="s2">"absolute_delta_plus_change"</span><span class="p">,</span>
+<span class="p">]]</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5">zero_check_parameters = [
-    SensitivityStudyParameter(name="cg_height", target="vehicle.cg_height", label="Center of gravity height"),
-    SensitivityStudyParameter(name="yaw_inertia", target="vehicle.yaw_inertia", label="Yaw inertia"),
-]
+<div class="clipboard-copy-txt" id="cell-5">comparison_df = build_solver_comparison_table(
+    quasi_static_long=quasi_long_df,
+    transient_long=transient_long_df,
+)
+comparison_df.to_csv(root_output_dir / "solver_comparison.csv", index=False)
 
-fd_check = run_lap_sensitivity_study(
-    track=track,
-    model=model,
-    simulation_config=simulation_config,
-    parameters=zero_check_parameters,
-    runtime=SensitivityRuntime(method="finite_difference"),
+plot_yaw_inertia_solver_comparison(
+    comparison_table=comparison_df,
+    path=root_output_dir / "solver_comparison_yaw_inertia.png",
 )
 
-comparison_rows = []
-for objective in ("lap_time_s", "energy_kwh"):
-    for name in ("cg_height", "yaw_inertia"):
-        comparison_rows.append(
-            {
-                "objective": objective,
-                "parameter": name,
-                "autodiff": study_result.sensitivity_results[objective].sensitivities[name],
-                "finite_difference": fd_check.sensitivity_results[objective].sensitivities[name],
-            }
-        )
-
-pd.DataFrame(comparison_rows)</div>
+comparison_df[comparison_df["parameter"] == "yaw_inertia"][[
+    "objective",
+    "sensitivity_raw_quasi_static",
+    "sensitivity_raw_transient_pid_ad",
+    "absolute_delta_plus_quasi_static",
+    "absolute_delta_plus_transient_pid_ad",
+    "sensitivity_raw_change",
+    "absolute_delta_plus_change",
+]]
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=57695214">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=c7b888ed">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="6-engineering-interpretation-for-spa">6. Engineering Interpretation for Spa<a class="anchor-link" href="#6-engineering-interpretation-for-spa">¶</a></h2><ol>
-<li><strong>Mass and drag</strong> dominate the KPI response in this setup.</li>
-<li><strong>CoG height and yaw inertia</strong> are near zero and are consistently confirmed by AD and FD.</li>
-<li>This is not a contradiction of vehicle dynamics theory; it reflects the active quasi-static solver path used here.</li>
+<h2 id="7-engineering-interpretation">7. Engineering Interpretation<a class="anchor-link" href="#7-engineering-interpretation">¶</a></h2><ol>
+<li>If yaw-inertia sensitivity is near zero in the quasi-static run but non-zero in transient PID, the difference reflects <strong>solver-model assumptions</strong>, not a contradiction.</li>
+<li>Quasi-static remains useful for fast screening and trend studies.</li>
+<li>Transient analyses are preferred when control-rate limits and yaw-state dynamics materially influence the performance metric.</li>
+<li>For design decisions, use both views together: quasi-static for broad scanning, transient for dynamic-importance confirmation.</li>
 </ol>
-<p>Conclusion: as a local engineering study, the result is internally consistent and clearly shows which parameters are active in the current model path.</p>
 </div>
 </div>
 </div>

@@ -965,7 +965,7 @@
   <span class="md-ellipsis">
     
   
-    Sensitivity
+    Transient
   
 
     
@@ -978,6 +978,145 @@
         
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Transient
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/point_mass_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Point-Mass Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/single_track_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single-Track Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensitivity
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1556,12 +1695,14 @@ It is designed for race engineers and Students who want practical onboarding.</p
 <ol>
 <li><a href="../EXAMPLES_SYNTHETIC/">Synthetic Track Walkthrough</a></li>
 <li><a href="../examples/spa/">Spa Walkthrough</a></li>
+<li><a href="../examples/transient/">Transient Solver Walkthrough</a></li>
 <li><a href="../examples/sensitivity/">Sensitivity Walkthrough</a></li>
 </ol>
 <p>Reason:</p>
 <ul>
 <li>Synthetic tracks isolate single effects and simplify debugging.</li>
 <li>Spa introduces full-track interactions and realistic complexity.</li>
+<li>Transient examples introduce state/control trajectories beyond quasi-static envelopes.</li>
 <li>Sensitivity examples connect parameter changes to lap-time and energy outcomes.</li>
 </ul>
 <h2 id="mapping-scripts-to-engineering-questions">Mapping scripts to engineering questions<a class="headerlink" href="#mapping-scripts-to-engineering-questions" title="Permanent link">&para;</a></h2>
@@ -1578,6 +1719,10 @@ It is designed for race engineers and Students who want practical onboarding.</p
 <li>"How does the speed-dependent G-G envelope differ by model complexity?"</li>
 <li><code>examples/backend_benchmarks.py</code></li>
 <li>"Which compute backend should I use for my workload?"</li>
+<li><code>examples/transient/transient_point_mass_lap.py</code></li>
+<li>"How does transient minimum-time launch behavior look for point-mass dynamics?"</li>
+<li><code>examples/transient/transient_single_track_lap.py</code></li>
+<li>"How do steering-rate and yaw dynamics affect a maneuver-heavy transient lap?"</li>
 <li><code>examples/sensitivity/synthetic_single_track_sensitivity.py</code></li>
 <li>"How sensitive are lap time and energy to key parameters on a canonical track via the Sensitivity API?"</li>
 <li><code>examples/sensitivity/spa_single_track_sensitivity.py</code></li>
@@ -1586,6 +1731,7 @@ It is designed for race engineers and Students who want practical onboarding.</p
 <h2 id="what-the-example-suite-covers-well">What the example suite covers well<a class="headerlink" href="#what-the-example-suite-covers-well" title="Permanent link">&para;</a></h2>
 <ul>
 <li>End-to-end solver use on real and synthetic tracks.</li>
+<li>Side-by-side transient and quasi-static solver usage through the same public API.</li>
 <li>KPI and plot export workflows.</li>
 <li>Direct model-complexity comparison.</li>
 <li>Practical interpretation of speed/acceleration/yaw diagnostics.</li>
@@ -1599,7 +1745,8 @@ It is designed for race engineers and Students who want practical onboarding.</p
 </ul>
 <h2 id="output-structure">Output structure<a class="headerlink" href="#output-structure" title="Permanent link">&para;</a></h2>
 <p>All scripts export into <code>examples/output/</code> with consistent folder logic
-(<code>examples/output/spa/</code> for Spa-specific workflows).
+(<code>examples/output/spa/</code> for Spa-specific workflows and
+<code>examples/output/transient/</code> for transient-specific workflows).
 Typical artifacts:</p>
 <ul>
 <li><code>kpis.json</code></li>

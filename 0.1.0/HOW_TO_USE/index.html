@@ -1104,7 +1104,7 @@
   <span class="md-ellipsis">
     
   
-    Sensitivity
+    Transient
   
 
     
@@ -1117,6 +1117,145 @@
         
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Transient
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/point_mass_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Point-Mass Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/single_track_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single-Track Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensitivity
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1829,6 +1968,7 @@ vehicle models.</p>
 <p>Main strengths:</p>
 <ul>
 <li>Quasi-steady lap-time simulation on arbitrary track centerlines.</li>
+<li>Transient lap simulation through the same <code>simulate_lap(...)</code> API.</li>
 <li>Interchangeable vehicle models behind one solver API.</li>
 <li>Clear separation between physical inputs and numerical solver settings.</li>
 <li>Reproducible engineering outputs (KPIs + standardized plots).</li>
@@ -1837,8 +1977,7 @@ vehicle models.</p>
 <h2 id="what-apexsim-does-not-do-yet">What ApexSim does not do (yet)<a class="headerlink" href="#what-apexsim-does-not-do-yet" title="Permanent link">&para;</a></h2>
 <p>Current model boundaries are important for correct interpretation:</p>
 <ul>
-<li>No full transient lap solver in production path yet.</li>
-<li>No driver model or closed-loop control strategy model.</li>
+<li>No human-driver identification or preview-control model yet.</li>
 <li>No detailed powertrain/energy management model yet.</li>
 <li>No full multi-body chassis compliance model.</li>
 <li>No direct tire thermal/wear state evolution.</li>
@@ -1926,7 +2065,8 @@ vehicle models.</p>
 </code></pre></div>
 <p>When to use which:</p>
 <ul>
-<li>Single-track (bicycle): better diagnostics (yaw moment, axle-load dynamics), better cornering interpretation.</li>
+<li>Single-track (bicycle): better cornering interpretation and richer diagnostics
+  (axle-load dynamics in all modes, dynamic yaw-residual signal in transient mode).</li>
 <li>Point-mass: fast baseline and sensitivity sweeps.</li>
 </ul>
 <h2 id="step-3-load-or-generate-track">Step 3: Load or generate track<a class="headerlink" href="#step-3-load-or-generate-track" title="Permanent link">&para;</a></h2>
@@ -1958,16 +2098,83 @@ vehicle models.</p>
 <p>Simple setup:</p>
 <div class="highlight"><pre><span></span><code><span class="n">config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span><span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">)</span>
 </code></pre></div>
-<p>Explicit setup:</p>
+<p>Explicit quasi-static setup:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">NumericsConfig</span><span class="p">,</span> <span class="n">RuntimeConfig</span><span class="p">,</span> <span class="n">SimulationConfig</span>
 
 <span class="n">config</span> <span class="o">=</span> <span class="n">SimulationConfig</span><span class="p">(</span>
-    <span class="n">runtime</span><span class="o">=</span><span class="n">RuntimeConfig</span><span class="p">(</span><span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">,</span> <span class="n">initial_speed</span><span class="o">=</span><span class="mf">20.0</span><span class="p">),</span>
+    <span class="n">runtime</span><span class="o">=</span><span class="n">RuntimeConfig</span><span class="p">(</span>
+        <span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">,</span>
+        <span class="n">initial_speed</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span>
+        <span class="n">solver_mode</span><span class="o">=</span><span class="s2">&quot;quasi_static&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
     <span class="n">numerics</span><span class="o">=</span><span class="n">NumericsConfig</span><span class="p">(</span>
         <span class="n">min_speed</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span>
         <span class="n">lateral_envelope_max_iterations</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
         <span class="n">lateral_envelope_convergence_tolerance</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
         <span class="n">transient_step</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Explicit transient setup:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PidSpeedSchedule</span><span class="p">,</span>
+    <span class="n">TransientConfig</span><span class="p">,</span>
+    <span class="n">TransientNumericsConfig</span><span class="p">,</span>
+    <span class="n">TransientPidGainSchedulingConfig</span><span class="p">,</span>
+    <span class="n">TransientRuntimeConfig</span><span class="p">,</span>
+    <span class="n">build_simulation_config</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">config_transient</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span>
+    <span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;numpy&quot;</span><span class="p">,</span>
+    <span class="n">solver_mode</span><span class="o">=</span><span class="s2">&quot;transient_oc&quot;</span><span class="p">,</span>
+    <span class="n">initial_speed</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>  <span class="c1"># standing start</span>
+    <span class="n">transient</span><span class="o">=</span><span class="n">TransientConfig</span><span class="p">(</span>
+        <span class="n">numerics</span><span class="o">=</span><span class="n">TransientNumericsConfig</span><span class="p">(</span>
+            <span class="n">integration_method</span><span class="o">=</span><span class="s2">&quot;rk4&quot;</span><span class="p">,</span>
+            <span class="n">max_iterations</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+            <span class="n">control_interval</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>  <span class="c1"># optimize on coarser control mesh, then interpolate</span>
+            <span class="n">pid_gain_scheduling_mode</span><span class="o">=</span><span class="s2">&quot;off&quot;</span><span class="p">,</span>  <span class="c1"># legacy-compatible default</span>
+        <span class="p">),</span>
+        <span class="n">runtime</span><span class="o">=</span><span class="n">TransientRuntimeConfig</span><span class="p">(</span>
+            <span class="n">ode_backend_policy</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+            <span class="n">optimizer_backend_policy</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+            <span class="n">driver_model</span><span class="o">=</span><span class="s2">&quot;pid&quot;</span><span class="p">,</span>  <span class="c1"># default</span>
+            <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># 1: optimizer progress, 2: +track progress</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Physics-informed PID scheduling (recommended start for transient PID studies):</p>
+<div class="highlight"><pre><span></span><code><span class="n">config_transient_pid_sched</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span>
+    <span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;numpy&quot;</span><span class="p">,</span>
+    <span class="n">solver_mode</span><span class="o">=</span><span class="s2">&quot;transient_oc&quot;</span><span class="p">,</span>
+    <span class="n">initial_speed</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">transient</span><span class="o">=</span><span class="n">TransientConfig</span><span class="p">(</span>
+        <span class="n">numerics</span><span class="o">=</span><span class="n">TransientNumericsConfig</span><span class="p">(</span>
+            <span class="n">pid_gain_scheduling_mode</span><span class="o">=</span><span class="s2">&quot;physics_informed&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Custom PWL schedule example:</p>
+<div class="highlight"><pre><span></span><code><span class="n">custom_schedule</span> <span class="o">=</span> <span class="n">TransientPidGainSchedulingConfig</span><span class="p">(</span>
+    <span class="n">longitudinal_kp</span><span class="o">=</span><span class="n">PidSpeedSchedule</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">60.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">)),</span>
+    <span class="n">longitudinal_ki</span><span class="o">=</span><span class="n">PidSpeedSchedule</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">60.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)),</span>
+    <span class="n">longitudinal_kd</span><span class="o">=</span><span class="n">PidSpeedSchedule</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">60.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.07</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)),</span>
+    <span class="n">steer_kp</span><span class="o">=</span><span class="n">PidSpeedSchedule</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">60.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.8</span><span class="p">,</span> <span class="mf">1.4</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">)),</span>
+    <span class="n">steer_ki</span><span class="o">=</span><span class="n">PidSpeedSchedule</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">60.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">)),</span>
+    <span class="n">steer_kd</span><span class="o">=</span><span class="n">PidSpeedSchedule</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">60.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.16</span><span class="p">,</span> <span class="mf">0.12</span><span class="p">,</span> <span class="mf">0.09</span><span class="p">)),</span>
+    <span class="n">steer_vy_damping</span><span class="o">=</span><span class="n">PidSpeedSchedule</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">60.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.27</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">)),</span>
+<span class="p">)</span>
+<span class="n">config_transient_custom</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span>
+    <span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;numpy&quot;</span><span class="p">,</span>
+    <span class="n">solver_mode</span><span class="o">=</span><span class="s2">&quot;transient_oc&quot;</span><span class="p">,</span>
+    <span class="n">transient</span><span class="o">=</span><span class="n">TransientConfig</span><span class="p">(</span>
+        <span class="n">numerics</span><span class="o">=</span><span class="n">TransientNumericsConfig</span><span class="p">(</span>
+            <span class="n">pid_gain_scheduling_mode</span><span class="o">=</span><span class="s2">&quot;custom&quot;</span><span class="p">,</span>
+            <span class="n">pid_gain_scheduling</span><span class="o">=</span><span class="n">custom_schedule</span><span class="p">,</span>
+        <span class="p">),</span>
     <span class="p">),</span>
 <span class="p">)</span>
 </code></pre></div>
@@ -1985,7 +2192,7 @@ vehicle models.</p>
 <ul>
 <li><code>numpy</code>: robust baseline and easiest debugging.</li>
 <li><code>numba</code>: fastest CPU sweeps (currently with <code>PointMassModel</code> and <code>SingleTrackModel</code>).</li>
-<li><code>torch</code>: CPU/GPU execution and tensor-native workflows.</li>
+<li><code>torch</code>: CPU/GPU execution and AD-native workflows.</li>
 </ul>
 <p>For quantitative guidance, see <a href="../BACKENDS/">Compute Backends</a>.</p>
 <p>Critical distinction:</p>
@@ -1998,6 +2205,30 @@ vehicle models.</p>
 start behavior. Set it explicitly when you need controlled acceleration phases
 from the first sample (for example, straight-line bottleneck studies or
 standing starts with <code>initial_speed=0.0</code>).</p>
+<p><code>solver_mode</code> selects the algorithm:</p>
+<ul>
+<li><code>quasi_static</code>: envelope-based speed-profile solver (default).</li>
+<li><code>transient_oc</code>: transient dynamic solver mode.</li>
+<li>Default driver model: PID (<code>TransientRuntimeConfig.driver_model="pid"</code>).</li>
+<li>Optional full optimizer path: <code>driver_model="optimal_control"</code>.<ul>
+<li>Non-converged OC runs fail fast with <code>ConfigurationError</code> (no silent fallback).</li>
+<li>OC is validated against quasi-static references on simple straight/circle cases.</li>
+</ul>
+</li>
+<li>PID scheduling modes:<ul>
+<li><code>off</code> (default): scalar gains only.</li>
+<li><code>physics_informed</code>: deterministic speed-dependent PWL schedule from vehicle physics.</li>
+<li><code>custom</code>: user-provided <code>TransientPidGainSchedulingConfig</code>.</li>
+</ul>
+</li>
+</ul>
+<p>Transient dependency note:</p>
+<ul>
+<li><code>driver_model="pid"</code> does not require transient optimizer extras.</li>
+<li><code>numpy</code> / <code>numba</code> with <code>driver_model="optimal_control"</code> requires <code>scipy</code>.</li>
+<li><code>torch</code> with <code>driver_model="optimal_control"</code> requires <code>torchdiffeq</code>.</li>
+<li>Both are part of the default package dependencies.</li>
+</ul>
 <h2 id="step-5-run-the-lap-simulation">Step 5: Run the lap simulation<a class="headerlink" href="#step-5-run-the-lap-simulation" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">simulate_lap</span><span class="p">(</span><span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
 </code></pre></div>
@@ -2010,6 +2241,12 @@ standing starts with <code>initial_speed=0.0</code>).</p>
 <li>axle loads</li>
 <li>power trace</li>
 <li>integrated energy</li>
+</ul>
+<p>When <code>solver_mode="transient_oc"</code>, <code>result</code> also contains:</p>
+<ul>
+<li><code>time</code></li>
+<li><code>vx</code>, <code>vy</code>, <code>yaw_rate</code></li>
+<li><code>steer_cmd</code>, <code>ax_cmd</code></li>
 </ul>
 <h2 id="step-6-postprocess-and-export">Step 6: Postprocess and export<a class="headerlink" href="#step-6-postprocess-and-export" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">kpis</span> <span class="o">=</span> <span class="n">compute_kpis</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
@@ -2061,7 +2298,11 @@ standing starts with <code>initial_speed=0.0</code>).</p>
 <span class="n">long_table</span> <span class="o">=</span> <span class="n">study</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
 <span class="n">pivot_table</span> <span class="o">=</span> <span class="n">study</span><span class="o">.</span><span class="n">to_pivot</span><span class="p">()</span>
 </code></pre></div>
-<p>To force finite differences (for regression checks), pass:</p>
+<p>For transient studies, AD is supported with PID driver mode. AD for
+<code>solver_mode="transient_oc"</code> with <code>driver_model="optimal_control"</code> is currently
+not supported.</p>
+<p>To force finite differences (for regression checks or transient
+<code>optimal_control</code> studies), pass:</p>
 <div class="highlight"><pre><span></span><code><span class="n">study_fd</span> <span class="o">=</span> <span class="n">run_lap_sensitivity_study</span><span class="p">(</span>
     <span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span>
     <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
@@ -2098,6 +2339,23 @@ for custom gradient workflows:</p>
 <span class="n">torch_result</span> <span class="o">=</span> <span class="n">solve_speed_profile_torch</span><span class="p">(</span><span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">torch_config</span><span class="p">)</span>
 <span class="n">lap_time_tensor</span> <span class="o">=</span> <span class="n">torch_result</span><span class="o">.</span><span class="n">lap_time</span>
 </code></pre></div>
+<p>Optional: run the public differentiable torch transient API directly:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">solve_transient_lap_torch</span>
+
+<span class="n">torch_transient_config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span>
+    <span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;torch&quot;</span><span class="p">,</span>
+    <span class="n">solver_mode</span><span class="o">=</span><span class="s2">&quot;transient_oc&quot;</span><span class="p">,</span>
+    <span class="n">torch_device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+    <span class="n">torch_compile</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">initial_speed</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">torch_transient_result</span> <span class="o">=</span> <span class="n">solve_transient_lap_torch</span><span class="p">(</span>
+    <span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">config</span><span class="o">=</span><span class="n">torch_transient_config</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">lap_time_tensor</span> <span class="o">=</span> <span class="n">torch_transient_result</span><span class="o">.</span><span class="n">lap_time</span>
+</code></pre></div>
 <p>Minimum review set:</p>
 <ul>
 <li>lap time</li>
@@ -2119,7 +2377,8 @@ for custom gradient workflows:</p>
 <li>"The solver should always accelerate to max speed."</li>
 <li>Not necessarily. At high speed, drag can exceed available drive force.</li>
 <li>"Yaw moment should always be visible."</li>
-<li>Not with point-mass model (yaw moment is structurally zero).</li>
+<li>Not in quasi-static mode (steady-state assumption -&gt; zero yaw moment), and
+     not with point-mass model (structurally zero in both modes).</li>
 <li>"Changing numerics changed physics dramatically."</li>
 <li>Re-check physical parameters first; numerics should refine stability, not redefine behavior.</li>
 <li>"My results jump near lap closure."</li>

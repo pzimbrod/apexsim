@@ -839,7 +839,7 @@
   <span class="md-ellipsis">
     
   
-    Sensitivity
+    Transient
   
 
     
@@ -852,6 +852,145 @@
         
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Transient
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/transient/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/transient/point_mass_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Point-Mass Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/transient/single_track_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single-Track Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensitivity
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1806,9 +1945,14 @@ coefficient sets are invalid.</p>
 
 
         <p>Pacejka lateral model coefficients and load-sensitivity behavior.</p>
-<p>The lateral force model uses coefficients <code>B, C, D, E</code> in a Magic Formula style
-equation. <code>D</code> is treated as an effective friction coefficient at the current
-reference condition.</p>
+<p>The lateral force model uses coefficients <code>B</code>, <code>C</code>, <code>D</code>, <code>E</code> in the
+Pacejka Magic Formula.  <code>D</code> is the peak lateral force at the reference normal
+load <code>Fz0</code> [N].  The load-sensitive force is</p>
+<p>.. math::</p>
+<pre><code>F_y = D \\cdot \\frac{F_z}{F_{z0}} \\cdot \\mu_{\\text{scale}} \\cdot
+      \\sin\\!\\left(C \\arctan\\!\\left(B\\alpha - E(B\\alpha -
+      \\arctan(B\\alpha))\\right)\\right)
+</code></pre>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1863,7 +2007,7 @@ reference condition.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Peak friction-like factor at reference load (-).</p>
+                <p>Peak lateral force at reference normal load <code>reference_load</code> [N].</p>
               </div>
             </td>
             <td>
@@ -1895,7 +2039,7 @@ reference condition.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Reference normal load used by load sensitivity [N].</p>
+                <p>Reference normal load <code>Fz0</code> [N].</p>
               </div>
             </td>
             <td>

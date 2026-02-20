@@ -851,7 +851,7 @@
   <span class="md-ellipsis">
     
   
-    Sensitivity
+    Transient
   
 
     
@@ -864,6 +864,145 @@
         
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Transient
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/point_mass_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Point-Mass Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/single_track_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single-Track Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensitivity
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1351,8 +1490,16 @@
 <li>Longitudinal force limits are represented by configurable accel/brake envelopes.</li>
 <li>Point-mass backend uses an isotropic friction-circle with speed-dependent normal
   load from aerodynamic downforce.</li>
-<li>Lateral speed envelope is solved as a fixed-point iteration with configurable
-  tolerance and iteration cap in <code>SimulationConfig</code>.</li>
+<li>Quasi-static mode solves a lateral speed envelope via fixed-point iteration with
+  configurable tolerance and iteration cap in <code>SimulationConfig.numerics</code>.</li>
+<li>Transient mode solves a minimum-time optimal-control problem on the fixed centerline
+  with bounded controls and dynamic-state propagation.</li>
+<li>In transient mode, <code>SingleTrackModel</code> steering limits are configured through
+  <code>SingleTrackPhysics.max_steer_angle</code> and <code>SingleTrackPhysics.max_steer_rate</code>.</li>
+<li>Transient PID gain scheduling (when enabled) is speed-only in v1:
+  no preview controller, no explicit curvature/load-state scheduling.</li>
+<li><code>pid_gain_scheduling_mode="physics_informed"</code> uses deterministic heuristics
+  based on flat-road longitudinal authority and clipped speed scaling.</li>
 <li>Aero model uses constant coefficients (<code>c_l</code>, <code>c_d</code>) and rigid ride height.</li>
 <li>The lap-time solver is decoupled from specific vehicle equations and only
   depends on the <code>VehicleModel</code> API contract.</li>

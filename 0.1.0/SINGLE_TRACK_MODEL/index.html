@@ -839,7 +839,7 @@
   <span class="md-ellipsis">
     
   
-    Sensitivity
+    Transient
   
 
     
@@ -852,6 +852,145 @@
         
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Transient
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/point_mass_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Point-Mass Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/single_track_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single-Track Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensitivity
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1157,6 +1296,17 @@
     <span class="md-ellipsis">
       
         8. Example
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
       
     </span>
   </a>
@@ -1543,6 +1693,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1577,7 +1738,8 @@ point-mass physical core (<code>PointMassPhysicalMixin</code>), with single-trac
 lateral force and diagnostic equations layered on top.</p>
 <h2 id="1-scope">1. Scope<a class="headerlink" href="#1-scope" title="Permanent link">&para;</a></h2>
 <p>The single-track model keeps the solver API contract and adds axle-level lateral
-tire force modeling, quasi-static load transfer, and yaw-moment diagnostics.</p>
+tire force modeling and quasi-static load transfer, while transient runs expose
+dynamic yaw behavior through residual diagnostics.</p>
 <p>State assumptions in the lap-time solver context:</p>
 <ul>
 <li>quasi-steady envelope evaluation (no transient tire relaxation in profile solve),</li>
@@ -1588,7 +1750,7 @@ tire force modeling, quasi-static load transfer, and yaw-moment diagnostics.</p>
 <h2 id="2-lateral-limit">2. Lateral Limit<a class="headerlink" href="#2-lateral-limit" title="Permanent link">&para;</a></h2>
 <p>At speed <span class="arithmatex">\(v\)</span> and banking angle <span class="arithmatex">\(\beta\)</span>, the model solves lateral capacity by a
 fixed-point iteration because normal load and lateral force depend on the
-lateral-acceleration estimate itself.</p>
+lateral-acceleration estimate itself [1, Ch. 10].</p>
 <p>Given current iterate <span class="arithmatex">\(a_y^{(k)}\)</span>:</p>
 <ol>
 <li>Estimate axle loads from quasi-static vertical balance and load transfer.</li>
@@ -1610,7 +1772,7 @@ a_{y,\min},
 a_y^{(k+1)} = \max\left(a_{y,\min}, \frac{F_{y,f}^{(k)} + F_{y,r}^{(k)}}{m} + g\sin\beta\right),
 \]</div>
 <p>with <span class="arithmatex">\(F_{y,f}^{(k)}, F_{y,r}^{(k)}\)</span> computed from <span class="arithmatex">\(F_{z,f}(a_y^{(k)})\)</span> and
-<span class="arithmatex">\(F_{z,r}(a_y^{(k)})\)</span>.</p>
+<span class="arithmatex">\(F_{z,r}(a_y^{(k)})\)</span> [1, Ch. 10].</p>
 <p>Stop criterion:</p>
 <div class="arithmatex">\[
 \left|a_y^{(k+1)} - a_y^{(k)}\right| \le \text{tol}_y
@@ -1624,7 +1786,7 @@ F_{y,r} = 2\,F_y(\alpha_r, F_{z,r}/2).
 \]</div>
 <p>Per-tire Pacejka-style lateral force:</p>
 <div class="arithmatex">\[
-F_y = D\,\mu_\text{scale}(F_z)\,F_z\,\sin\left(C\,\arctan\left(\xi\right)\right),
+F_y = D\left(\frac{F_z}{F_{z,\text{ref}}}\right)\mu_\text{scale}(F_z)\sin\left(C\,\arctan\left(\xi\right)\right),
 \]</div>
 <div class="arithmatex">\[
 \xi = B\alpha - E\left(B\alpha - \arctan(B\alpha)\right),
@@ -1633,6 +1795,8 @@ F_y = D\,\mu_\text{scale}(F_z)\,F_z\,\sin\left(C\,\arctan\left(\xi\right)\right)
 <div class="arithmatex">\[
 \mu_\text{scale}(F_z) = \max\left(1 + s\,\frac{F_z - F_{z,\text{ref}}}{F_{z,\text{ref}}},\ \mu_{\min}\right).
 \]</div>
+<p>Here, <span class="arithmatex">\(D\)</span> is the peak lateral force at the reference load <span class="arithmatex">\(F_{z,\text{ref}}\)</span>
+with unit newton [1], [2].</p>
 <h2 id="4-quasi-static-normal-loads">4. Quasi-Static Normal Loads<a class="headerlink" href="#4-quasi-static-normal-loads" title="Permanent link">&para;</a></h2>
 <p>Total vertical load:</p>
 <div class="arithmatex">\[
@@ -1647,7 +1811,7 @@ F_{z,f}^\text{raw} = mg\,\phi_f + F_{\text{down},f} - \frac{m a_x h}{L}.
 F_{z,r} = F_{z,\text{tot}} - F_{z,f}.
 \]</div>
 <p>Lateral transfer is distributed by effective front roll-stiffness share and
-split to left/right wheel loads while preserving axle totals.</p>
+split to left/right wheel loads while preserving axle totals [1, Ch. 9], [3].</p>
 <h2 id="5-longitudinal-limits-with-friction-circle">5. Longitudinal Limits with Friction Circle<a class="headerlink" href="#5-longitudinal-limits-with-friction-circle" title="Permanent link">&para;</a></h2>
 <p>For required lateral acceleration magnitude <span class="arithmatex">\(|a_{y,\text{req}}|\)</span>:</p>
 <div class="arithmatex">\[
@@ -1670,10 +1834,17 @@ a_{x,\text{decel,avail}} = \max\left(a_{x,\text{brake}} + \frac{D(v)}{m} + g\gam
 <div class="arithmatex">\[
 D(v)=\tfrac{1}{2}\rho C_D A v^2.
 \]</div>
+<p>The coupling above follows the common friction-circle approximation used in
+race-vehicle performance analysis [3].</p>
 <h2 id="6-diagnostics">6. Diagnostics<a class="headerlink" href="#6-diagnostics" title="Permanent link">&para;</a></h2>
 <p>The backend reports at each operating point:</p>
 <ul>
-<li>yaw moment from 3-DOF single-track force balance,</li>
+<li>yaw moment according to solver-mode semantics:</li>
+<li>quasi-static mode: zero by steady-state model assumption,</li>
+<li>transient mode: dynamic residual
+[
+M_z = I_z \dot r,
+]</li>
 <li>front and rear axle normal loads,</li>
 <li>tractive power:</li>
 </ul>
@@ -1706,6 +1877,13 @@ analysis diagnostics (e.g., yaw-moment traces).</p>
 <li>Side-by-side comparison against point-mass model:
   <code>examples/spa/spa_model_comparison.py</code></li>
 </ul>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>[1] D. Schramm, M. Hiller, and R. Bardini, <em>Vehicle Dynamics: Modeling and
+Simulation</em>. Berlin, Heidelberg: Springer, 2014.</p>
+<p>[2] H. B. Pacejka, <em>Tyre and Vehicle Dynamics</em>, 2nd ed. Oxford:
+Butterworth-Heinemann, 2006.</p>
+<p>[3] W. F. Milliken and D. L. Milliken, <em>Race Car Vehicle Dynamics</em>.
+Warrendale, PA: Society of Automotive Engineers, 1995.</p>
 
 
 

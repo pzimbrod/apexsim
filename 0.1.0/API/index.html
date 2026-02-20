@@ -1032,7 +1032,7 @@
   <span class="md-ellipsis">
     
   
-    Sensitivity
+    Transient
   
 
     
@@ -1045,6 +1045,145 @@
         
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Transient
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/point_mass_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Point-Mass Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/single_track_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single-Track Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensitivity
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1727,23 +1866,44 @@
 <ul>
 <li><code>apexsim.simulation.RuntimeConfig</code></li>
 <li><code>apexsim.simulation.NumericsConfig</code></li>
+<li><code>apexsim.simulation.TransientConfig</code></li>
+<li><code>apexsim.simulation.TransientNumericsConfig</code></li>
+<li><code>apexsim.simulation.TransientPidGainSchedulingConfig</code></li>
+<li><code>apexsim.simulation.TransientRuntimeConfig</code></li>
+<li><code>apexsim.simulation.PidSpeedSchedule</code></li>
 <li><code>apexsim.simulation.SimulationConfig</code></li>
 <li><code>apexsim.simulation.build_simulation_config(...)</code></li>
+<li><code>apexsim.simulation.build_physics_informed_pid_gain_scheduling(...)</code></li>
 <li><code>apexsim.simulation.simulate_lap(track, model, config) -&gt; LapResult</code></li>
 <li><code>apexsim.simulation.solve_speed_profile_torch(track, model, config) -&gt; TorchSpeedProfileResult</code></li>
+<li><code>apexsim.simulation.solve_transient_lap_torch(track, model, config) -&gt; TorchTransientProfileResult</code></li>
 </ul>
 <p>Backend runtime controls:</p>
 <ul>
 <li><code>RuntimeConfig.compute_backend</code>: <code>"numpy"</code>, <code>"numba"</code>, or <code>"torch"</code></li>
+<li><code>RuntimeConfig.solver_mode</code>: <code>"quasi_static"</code> or <code>"transient_oc"</code></li>
 <li><code>RuntimeConfig.torch_device</code>: keep <code>"cpu"</code> for <code>numpy</code>/<code>numba</code>; use <code>"cpu"</code> or <code>"cuda:0"</code> for <code>torch</code></li>
 <li><code>RuntimeConfig.torch_compile</code>: reserved flag, must currently remain <code>False</code> for simulation</li>
 <li><code>RuntimeConfig.initial_speed</code>: optional start speed at first track sample [m/s]
   (supports <code>0.0</code> for standing starts)</li>
+<li><code>TransientRuntimeConfig.driver_model</code>: <code>"pid"</code> (default) or <code>"optimal_control"</code></li>
+<li><code>TransientNumericsConfig.pid_gain_scheduling_mode</code>: <code>"off"</code> (default),
+  <code>"physics_informed"</code>, or <code>"custom"</code></li>
+<li><code>TransientNumericsConfig.pid_gain_scheduling</code>: optional
+  <code>TransientPidGainSchedulingConfig</code> (required for <code>"custom"</code> mode)</li>
+<li><code>driver_model="optimal_control"</code> raises <code>ConfigurationError</code> if the optimizer
+  does not converge or returns a non-finite final profile.</li>
 </ul>
 <p>Constraint for differentiable solver use:</p>
 <ul>
 <li><code>solve_speed_profile_torch(...)</code> is the differentiable torch solver and requires
   <code>RuntimeConfig.torch_compile = False</code></li>
+</ul>
+<p><code>PidSpeedSchedule</code> defines one gain table:</p>
+<ul>
+<li><code>speed_nodes_mps</code>: strictly increasing speed nodes [m/s]</li>
+<li><code>values</code>: gain values at each node</li>
+<li>interpolation: piecewise-linear with boundary clamping</li>
 </ul>
 <p>See <a href="../BACKENDS/">Compute Backends</a> for selection guidance and benchmarks.</p>
 <p>Vehicle-model solver contract:</p>
@@ -1780,8 +1940,12 @@
 <li>lap time</li>
 <li>speed / longitudinal acceleration / lateral acceleration traces</li>
 <li>yaw moment</li>
+<li>quasi-static mode: zero by model assumption</li>
+<li>transient mode: dynamic residual <span class="arithmatex">\(M_z = I_z \dot r\)</span></li>
 <li>front/rear axle loads</li>
 <li>power and energy</li>
+<li>solver mode identifier (<code>quasi_static</code> or <code>transient_oc</code>)</li>
+<li>transient-only traces (<code>time</code>, <code>vx</code>, <code>vy</code>, <code>yaw_rate</code>, <code>steer_cmd</code>, <code>ax_cmd</code>)</li>
 </ul>
 <p><code>PerformanceEnvelopeResult</code> provides:</p>
 <ul>
@@ -1803,6 +1967,9 @@
 <li>multi-objective lap sensitivity outputs (<code>lap_time_s</code>, <code>energy_kwh</code>)</li>
 <li>long-form tabular export via <code>.to_dataframe()</code></li>
 <li>compact parameter × objective table via <code>.to_pivot()</code></li>
+<li>AD-first evaluation on torch backend, including transient PID studies
+  (<code>solver_mode="transient_oc"</code>, <code>driver_model="pid"</code>).</li>
+<li><code>driver_model="optimal_control"</code> currently requires explicit finite differences.</li>
 </ul>
 <h2 id="5-minimal-usage-pattern">5. Minimal usage pattern<a class="headerlink" href="#5-minimal-usage-pattern" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">track</span> <span class="o">=</span> <span class="n">load_track_csv</span><span class="p">(</span><span class="s2">&quot;data/spa_francorchamps.csv&quot;</span><span class="p">)</span>

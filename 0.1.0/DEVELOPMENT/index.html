@@ -605,6 +605,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#backend-unification-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend Unification Rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#refreshing-spa-data" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -954,7 +965,7 @@
   <span class="md-ellipsis">
     
   
-    Sensitivity
+    Transient
   
 
     
@@ -967,6 +978,145 @@
         
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Transient
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/point_mass_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Point-Mass Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/single_track_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single-Track Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensitivity
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1489,6 +1639,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#backend-unification-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend Unification Rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#refreshing-spa-data" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1616,6 +1777,32 @@ drag/grade-corrected longitudinal limits.</p>
 <li>Single-track-specific dynamics/supporting components live in
   <code>src/apexsim/vehicle/single_track/</code> (for example <code>dynamics.py</code>,
   <code>load_transfer.py</code>) to keep model-specific code grouped together.</li>
+</ul>
+<h2 id="backend-unification-rules">Backend Unification Rules<a class="headerlink" href="#backend-unification-rules" title="Permanent link">&para;</a></h2>
+<p>When changing solver backend behavior:</p>
+<ul>
+<li>Do not duplicate core algorithmics per backend when a shared implementation
+  is feasible.</li>
+<li>Extend shared solver cores first:</li>
+<li><code>src/apexsim/simulation/_profile_core.py</code></li>
+<li><code>src/apexsim/simulation/_transient_pid_core.py</code></li>
+<li><code>src/apexsim/simulation/_transient_controls_core.py</code></li>
+<li><code>src/apexsim/simulation/_progress.py</code></li>
+<li>Keep backend modules (<code>profile.py</code>, <code>torch_profile.py</code>, <code>transient_*</code>) as
+  thin adapters around the shared core plus backend-specific primitives.</li>
+<li>Keep vehicle backend physics formulas centralized in
+  <code>src/apexsim/vehicle/_backend_physics_core.py</code> and consume those helpers
+  from point-mass and single-track backends.</li>
+<li>If a new backend-specific branch is unavoidable for performance, add a parity
+  test against the shared semantics and document why specialization is needed.</li>
+</ul>
+<p>Performance policy for refactors:</p>
+<ul>
+<li>Run <code>scripts/benchmark_solver_matrix.py</code> before and after significant backend
+  refactors.</li>
+<li>Compare with <code>scripts/compare_solver_benchmarks.py</code>.</li>
+<li>Any case slower than 5% requires either optimization or explicit, documented
+  justification.</li>
 </ul>
 <h2 id="refreshing-spa-data">Refreshing Spa Data<a class="headerlink" href="#refreshing-spa-data" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>.venv/bin/activate

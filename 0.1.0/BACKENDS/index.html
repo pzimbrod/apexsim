@@ -438,6 +438,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#shared-core-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shared Core Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#backend-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -484,6 +495,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#transient-dependency-note" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transient dependency note
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1021,7 +1043,7 @@
   <span class="md-ellipsis">
     
   
-    Sensitivity
+    Transient
   
 
     
@@ -1034,6 +1056,145 @@
         
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Transient
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/point_mass_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Point-Mass Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/single_track_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single-Track Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensitivity
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1501,6 +1662,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#shared-core-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shared Core Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#backend-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1547,6 +1719,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#transient-dependency-note" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transient dependency note
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1656,6 +1839,25 @@
 <h1 id="compute-backends">Compute Backends<a class="headerlink" href="#compute-backends" title="Permanent link">&para;</a></h1>
 <p>ApexSim separates physical modeling from numerical execution backends.
 This page helps you choose the right backend for your study.</p>
+<h2 id="shared-core-architecture">Shared Core Architecture<a class="headerlink" href="#shared-core-architecture" title="Permanent link">&para;</a></h2>
+<p>Solver backends intentionally share one algorithmic core where possible:</p>
+<ul>
+<li>Quasi-static speed profile:</li>
+<li>shared core: <code>src/apexsim/simulation/_profile_core.py</code></li>
+<li>numpy adapter: <code>src/apexsim/simulation/profile.py</code></li>
+<li>torch adapter: <code>src/apexsim/simulation/torch_profile.py</code></li>
+<li>numba keeps specialized kernels in <code>src/apexsim/simulation/numba_profile.py</code>
+    with parity checks against shared semantics.</li>
+<li>Transient PID infrastructure:</li>
+<li>shared helpers: <code>src/apexsim/simulation/_transient_pid_core.py</code></li>
+<li>shared control mesh/encoding: <code>src/apexsim/simulation/_transient_controls_core.py</code></li>
+<li>shared progress reporting: <code>src/apexsim/simulation/_progress.py</code></li>
+<li>Vehicle backend physics primitives:</li>
+<li>shared formulas: <code>src/apexsim/vehicle/_backend_physics_core.py</code></li>
+<li>consumed by point-mass and single-track backend adapters.</li>
+</ul>
+<p>This reduces backend-specific formula drift while preserving specialized
+performance paths (especially numba kernels).</p>
 <h2 id="backend-policy">Backend policy<a class="headerlink" href="#backend-policy" title="Permanent link">&para;</a></h2>
 <p>Supported backends are intentionally restricted to:</p>
 <ul>
@@ -1663,11 +1865,22 @@ This page helps you choose the right backend for your study.</p>
 <li><code>numba</code>: CPU-only JIT-accelerated backend.</li>
 <li><code>torch</code>: CPU and GPU backend (device via <code>torch_device</code>).</li>
 </ul>
+<p>Solver modes:</p>
+<ul>
+<li><code>quasi_static</code> (default)</li>
+<li><code>transient_oc</code></li>
+</ul>
 <p>The runtime validator enforces this policy:</p>
 <ul>
 <li><code>numpy</code> and <code>numba</code> require <code>torch_device="cpu"</code>.</li>
 <li><code>compute_backend="torch"</code> currently requires <code>torch_compile=False</code> so the
   solver path remains AD-compatible by default.</li>
+<li><code>solver_mode="transient_oc"</code> with <code>driver_model="optimal_control"</code> requires
+  backend-specific extras:</li>
+<li><code>numpy</code> and <code>numba</code>: <code>scipy</code></li>
+<li><code>torch</code>: <code>torchdiffeq</code></li>
+<li><code>TransientNumericsConfig.pid_gain_scheduling_mode</code> is supported in PID mode
+  on all three backends (<code>numpy</code>, <code>numba</code>, <code>torch</code>).</li>
 </ul>
 <h2 id="current-model-support">Current model support<a class="headerlink" href="#current-model-support" title="Permanent link">&para;</a></h2>
 <p>Backend support is model-dependent:</p>
@@ -1687,8 +1900,8 @@ clear <code>ConfigurationError</code> describing the missing model-side methods.
 <ol>
 <li>Use <code>numpy</code> when you need robust baseline behavior and easiest debugging.</li>
 <li>Use <code>numba</code> for large CPU parameter sweeps with <code>PointMassModel</code> or <code>SingleTrackModel</code>.</li>
-<li>Use <code>torch</code> when you need tensor-native workflows, GPU execution, or future
-   differentiable optimization pipelines.</li>
+<li>Use <code>torch</code> when you need tensor-native workflows, GPU execution, or AD-first
+   optimization workflows.</li>
 </ol>
 <h3 id="trade-offs-at-a-glance">Trade-offs at a glance<a class="headerlink" href="#trade-offs-at-a-glance" title="Permanent link">&para;</a></h3>
 <table>
@@ -1721,6 +1934,12 @@ clear <code>ConfigurationError</code> describing the missing model-side methods.
 </tr>
 </tbody>
 </table>
+<h2 id="transient-dependency-note">Transient dependency note<a class="headerlink" href="#transient-dependency-note" title="Permanent link">&para;</a></h2>
+<p>The transient solver dependencies are included in the default install:</p>
+<ul>
+<li><code>scipy</code> for NumPy/Numba transient optimal-control paths</li>
+<li><code>torchdiffeq</code> for Torch transient optimal-control ODE integration</li>
+</ul>
 <h2 id="configuration-examples">Configuration examples<a class="headerlink" href="#configuration-examples" title="Permanent link">&para;</a></h2>
 <h3 id="numpy-cpu-reference">NumPy (CPU reference)<a class="headerlink" href="#numpy-cpu-reference" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_simulation_config</span>
@@ -1756,8 +1975,11 @@ clear <code>ConfigurationError</code> describing the missing model-side methods.
 <span class="p">)</span>
 </code></pre></div>
 <h2 id="benchmark-methodology">Benchmark methodology<a class="headerlink" href="#benchmark-methodology" title="Permanent link">&para;</a></h2>
-<p>Reference script:</p>
+<p>Reference scripts:</p>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>examples/backend_benchmarks.py<span class="w"> </span>--warmup-runs<span class="w"> </span><span class="m">5</span><span class="w"> </span>--timed-runs<span class="w"> </span><span class="m">20</span>
+python<span class="w"> </span>scripts/benchmark_solver_matrix.py<span class="w"> </span>--warmup-runs<span class="w"> </span><span class="m">2</span><span class="w"> </span>--timed-runs<span class="w"> </span><span class="m">5</span><span class="w"> </span>--output<span class="w"> </span>baseline.json
+python<span class="w"> </span>scripts/benchmark_solver_matrix.py<span class="w"> </span>--warmup-runs<span class="w"> </span><span class="m">2</span><span class="w"> </span>--timed-runs<span class="w"> </span><span class="m">5</span><span class="w"> </span>--output<span class="w"> </span>candidate.json
+python<span class="w"> </span>scripts/compare_solver_benchmarks.py<span class="w"> </span>--baseline<span class="w"> </span>baseline.json<span class="w"> </span>--candidate<span class="w"> </span>candidate.json<span class="w"> </span>--max-slowdown-pct<span class="w"> </span><span class="m">5</span><span class="w"> </span>--require-same-cases
 </code></pre></div>
 <p>Notes:</p>
 <ul>
@@ -1765,6 +1987,12 @@ clear <code>ConfigurationError</code> describing the missing model-side methods.
 <li>"First Call" includes startup/JIT/compile effects.</li>
 <li>"Steady" values are from repeated post-warmup runs.</li>
 <li>Use your own machine data for final backend decisions.</li>
+<li>The solver matrix script covers:</li>
+<li>models: <code>PointMassModel</code>, <code>SingleTrackModel</code></li>
+<li>solver modes: <code>quasi_static</code>, <code>transient_oc</code> (PID)</li>
+<li>tracks: straight, circle, plus Spa smoke (unless <code>--skip-spa</code>).</li>
+<li><code>compare_solver_benchmarks.py</code> is intended as a PR gate for the
+  5%-slowdown policy.</li>
 </ul>
 <h2 id="benchmark-snapshot-february-17-2026">Benchmark snapshot (February 17, 2026)<a class="headerlink" href="#benchmark-snapshot-february-17-2026" title="Permanent link">&para;</a></h2>
 <p>Environment used for this snapshot:</p>
