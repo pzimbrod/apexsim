@@ -17,7 +17,7 @@ class TireModelTests(unittest.TestCase):
     _BASE_TIRE_ARGS = dict(
         B=10.0,
         C=1.3,
-        D=1.8,
+        D=5400.0,
         E=0.97,
         reference_load=3000.0,
         load_sensitivity=-0.08,
@@ -41,7 +41,7 @@ class TireModelTests(unittest.TestCase):
         params = PacejkaParameters(
             **{
                 **self._BASE_TIRE_ARGS,
-                "D": 1.9,
+                "D": 5700.0,
                 "E": 0.96,
                 "load_sensitivity": -0.2,
             }

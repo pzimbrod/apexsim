@@ -434,8 +434,8 @@ def _single_track_speed_profile_kernel(
                     front_min_mu_scale,
                 )
                 fy_front = (
-                    front_d * front_left_mu * front_left_load * front_shape
-                    + front_d * front_right_mu * front_right_load * front_shape
+                    front_d * (front_left_load / front_reference_load) * front_left_mu * front_shape
+                    + front_d * (front_right_load / front_reference_load) * front_right_mu * front_shape
                 )
 
                 rear_slip_term = rear_b * peak_slip_angle
@@ -454,8 +454,8 @@ def _single_track_speed_profile_kernel(
                     rear_min_mu_scale,
                 )
                 fy_rear = (
-                    rear_d * rear_left_mu * rear_left_load * rear_shape
-                    + rear_d * rear_right_mu * rear_right_load * rear_shape
+                    rear_d * (rear_left_load / rear_reference_load) * rear_left_mu * rear_shape
+                    + rear_d * (rear_right_load / rear_reference_load) * rear_right_mu * rear_shape
                 )
 
                 ay_tire = (fy_front + fy_rear) / mass
@@ -553,8 +553,8 @@ def _single_track_speed_profile_kernel(
                 front_min_mu_scale,
             )
             fy_front = (
-                front_d * front_left_mu * front_left_load * front_shape
-                + front_d * front_right_mu * front_right_load * front_shape
+                front_d * (front_left_load / front_reference_load) * front_left_mu * front_shape
+                + front_d * (front_right_load / front_reference_load) * front_right_mu * front_shape
             )
 
             rear_slip_term = rear_b * peak_slip_angle
@@ -571,8 +571,8 @@ def _single_track_speed_profile_kernel(
                 rear_min_mu_scale,
             )
             fy_rear = (
-                rear_d * rear_left_mu * rear_left_load * rear_shape
-                + rear_d * rear_right_mu * rear_right_load * rear_shape
+                rear_d * (rear_left_load / rear_reference_load) * rear_left_mu * rear_shape
+                + rear_d * (rear_right_load / rear_reference_load) * rear_right_mu * rear_shape
             )
 
             ay_tire = (fy_front + fy_rear) / mass
@@ -669,8 +669,8 @@ def _single_track_speed_profile_kernel(
                 front_min_mu_scale,
             )
             fy_front = (
-                front_d * front_left_mu * front_left_load * front_shape
-                + front_d * front_right_mu * front_right_load * front_shape
+                front_d * (front_left_load / front_reference_load) * front_left_mu * front_shape
+                + front_d * (front_right_load / front_reference_load) * front_right_mu * front_shape
             )
 
             rear_slip_term = rear_b * peak_slip_angle
@@ -687,8 +687,8 @@ def _single_track_speed_profile_kernel(
                 rear_min_mu_scale,
             )
             fy_rear = (
-                rear_d * rear_left_mu * rear_left_load * rear_shape
-                + rear_d * rear_right_mu * rear_right_load * rear_shape
+                rear_d * (rear_left_load / rear_reference_load) * rear_left_mu * rear_shape
+                + rear_d * (rear_right_load / rear_reference_load) * rear_right_mu * rear_shape
             )
 
             ay_tire = (fy_front + fy_rear) / mass

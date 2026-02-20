@@ -18,7 +18,7 @@ class ParameterValidationTests(unittest.TestCase):
     _BASE_TIRE_ARGS = dict(
         B=9.0,
         C=1.2,
-        D=1.5,
+        D=4500.0,
         E=0.9,
         reference_load=3000.0,
         load_sensitivity=-0.08,

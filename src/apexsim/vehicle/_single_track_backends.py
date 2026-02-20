@@ -129,7 +129,7 @@ class SingleTrackTorchBackendMixin(PointMassTorchBackendMixin):
             1.0 + params.load_sensitivity * load_delta,
             min=params.min_mu_scale,
         )
-        return params.D * mu_scale * fz * shape
+        return params.D * (fz / params.reference_load) * mu_scale * shape
 
     def _backend_wheel_loads(
         self,
