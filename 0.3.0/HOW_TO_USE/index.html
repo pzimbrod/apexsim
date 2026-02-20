@@ -1,0 +1,2454 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Lap time simulation library with interchangeable vehicle models">
+      
+      
+      
+        <link rel="canonical" href="https://pzimbrod.github.io/apexsim/0.3.0/HOW_TO_USE/">
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../BACKENDS/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/icon.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>How to Use - ApexSim</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#how-to-use-apexsim" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ApexSim" class="md-header__button md-logo" aria-label="ApexSim" data-md-component="logo">
+      
+  <img src="../assets/icon.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ApexSim
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              How to Use
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Use system theme"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Use system theme" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pzimbrod/apexsim" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pzimbrod/apexsim
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ApexSim" class="md-nav__button md-logo" aria-label="ApexSim" data-md-component="logo">
+      
+  <img src="../assets/icon.svg" alt="logo">
+
+    </a>
+    ApexSim
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pzimbrod/apexsim" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pzimbrod/apexsim
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How to Use
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How to Use
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-apexsim-is-designed-to-do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What ApexSim is designed to do
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-apexsim-does-not-do-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What ApexSim does not do (yet)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-6-step-workflow-always-the-same" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The 6-step workflow (always the same)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-imports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Imports
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-define-physical-model-inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Define physical model inputs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 2: Define physical model inputs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-vehicle-parameters-real-system-inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Vehicle parameters (real-system inputs)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-tire-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Tire data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-choose-model-complexity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Choose model complexity
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-load-or-generate-track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Load or generate track
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 3: Load or generate track">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-a-real-track-from-csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option A: Real track from CSV
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-b-synthetic-validation-tracks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option B: Synthetic validation tracks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-4-configure-runtime-and-numerics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Configure runtime and numerics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 4: Configure runtime and numerics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backend-selection-numerical-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend selection (numerical execution)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-5-run-the-lap-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Run the lap simulation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-6-postprocess-and-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 6: Postprocess and export
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#engineering-interpretation-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Engineering interpretation checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#typical-pitfalls-and-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Typical pitfalls (and fixes)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-onboarding-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended onboarding path
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../BACKENDS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compute Backends
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../SOLVER/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Solver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ASSUMPTIONS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Assumptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DEVELOPMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXAMPLES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../EXAMPLES_SYNTHETIC/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synthetic Tracks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spa
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Spa
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/spa/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/spa/single_track_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single-Track Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/spa/point_mass_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Point-Mass Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/spa/model_comparison/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/spa/performance_envelope/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance Envelope
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Transient
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Transient
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/point_mass_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Point-Mass Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/transient/single_track_lap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single-Track Lap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_5" id="__nav_3_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensitivity
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Sensitivity
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/sensitivity/synthetic_single_track_sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synthetic Single-Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/sensitivity/spa_single_track_sensitivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spa Single-Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vehicle Models
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Vehicle Models
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../SINGLE_TRACK_MODEL/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Single-Track Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../POINT_MASS_MODEL/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Point-Mass Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/apexsim/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Package
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/simulation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Simulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/vehicle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vehicle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/tire/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tire
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/track/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-apexsim-is-designed-to-do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What ApexSim is designed to do
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-apexsim-does-not-do-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What ApexSim does not do (yet)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-6-step-workflow-always-the-same" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The 6-step workflow (always the same)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-imports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Imports
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-define-physical-model-inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Define physical model inputs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 2: Define physical model inputs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-vehicle-parameters-real-system-inputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Vehicle parameters (real-system inputs)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-tire-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Tire data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-choose-model-complexity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Choose model complexity
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-load-or-generate-track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Load or generate track
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 3: Load or generate track">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-a-real-track-from-csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option A: Real track from CSV
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-b-synthetic-validation-tracks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option B: Synthetic validation tracks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-4-configure-runtime-and-numerics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Configure runtime and numerics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 4: Configure runtime and numerics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backend-selection-numerical-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend selection (numerical execution)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-5-run-the-lap-simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Run the lap simulation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-6-postprocess-and-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 6: Postprocess and export
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#engineering-interpretation-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Engineering interpretation checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#typical-pitfalls-and-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Typical pitfalls (and fixes)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-onboarding-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended onboarding path
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="how-to-use-apexsim">How to Use ApexSim<a class="headerlink" href="#how-to-use-apexsim" title="Permanent link">&para;</a></h1>
+<p>This guide is a practical, engineer-oriented walkthrough of the complete workflow.
+It is written for race engineers and Students who may have strong dynamics knowledge
+but limited software background.</p>
+<h2 id="what-apexsim-is-designed-to-do">What ApexSim is designed to do<a class="headerlink" href="#what-apexsim-is-designed-to-do" title="Permanent link">&para;</a></h2>
+<p>ApexSim is optimized for fast, physically grounded lap-time studies with modular
+vehicle models.</p>
+<p>Main strengths:</p>
+<ul>
+<li>Quasi-steady lap-time simulation on arbitrary track centerlines.</li>
+<li>Transient lap simulation through the same <code>simulate_lap(...)</code> API.</li>
+<li>Interchangeable vehicle models behind one solver API.</li>
+<li>Clear separation between physical inputs and numerical solver settings.</li>
+<li>Reproducible engineering outputs (KPIs + standardized plots).</li>
+<li>Fast iteration loops for setup changes and what-if studies.</li>
+</ul>
+<h2 id="what-apexsim-does-not-do-yet">What ApexSim does not do (yet)<a class="headerlink" href="#what-apexsim-does-not-do-yet" title="Permanent link">&para;</a></h2>
+<p>Current model boundaries are important for correct interpretation:</p>
+<ul>
+<li>No human-driver identification or preview-control model yet.</li>
+<li>No detailed powertrain/energy management model yet.</li>
+<li>No full multi-body chassis compliance model.</li>
+<li>No direct tire thermal/wear state evolution.</li>
+</ul>
+<p>Interpretation rule:</p>
+<ul>
+<li>Use ApexSim for comparative setup studies and first-order lap-time sensitivity,
+  not as final truth for every transient detail.</li>
+</ul>
+<h2 id="the-6-step-workflow-always-the-same">The 6-step workflow (always the same)<a class="headerlink" href="#the-6-step-workflow-always-the-same" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Import modules.</li>
+<li>Define physical model inputs.</li>
+<li>Load or generate a track.</li>
+<li>Configure numerics and runtime bounds.</li>
+<li>Run the simulation.</li>
+<li>Postprocess and review outputs.</li>
+</ol>
+<p>This pattern is identical across all examples.</p>
+<h2 id="step-1-imports">Step 1: Imports<a class="headerlink" href="#step-1-imports" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.analysis</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_kpis</span><span class="p">,</span> <span class="n">export_standard_plots</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.analysis.export</span><span class="w"> </span><span class="kn">import</span> <span class="n">export_kpi_json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_simulation_config</span><span class="p">,</span> <span class="n">simulate_lap</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.tire</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_axle_tire_parameters</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.track</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_track_csv</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.utils.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">STANDARD_AIR_DENSITY</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.vehicle</span><span class="w"> </span><span class="kn">import</span> <span class="n">SingleTrackPhysics</span><span class="p">,</span> <span class="n">VehicleParameters</span><span class="p">,</span> <span class="n">build_single_track_model</span>
+</code></pre></div>
+<p>How to read these imports as an engineer:</p>
+<ul>
+<li><code>track</code>: geometry and road profile.</li>
+<li><code>vehicle</code> + <code>tire</code>: physical car model.</li>
+<li><code>simulation</code>: numerical solver and runtime bounds.</li>
+<li><code>analysis</code>: KPI and visualization outputs.</li>
+</ul>
+<h2 id="step-2-define-physical-model-inputs">Step 2: Define physical model inputs<a class="headerlink" href="#step-2-define-physical-model-inputs" title="Permanent link">&para;</a></h2>
+<h3 id="21-vehicle-parameters-real-system-inputs">2.1 Vehicle parameters (real-system inputs)<a class="headerlink" href="#21-vehicle-parameters-real-system-inputs" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">vehicle</span> <span class="o">=</span> <span class="n">VehicleParameters</span><span class="p">(</span>
+    <span class="n">mass</span><span class="o">=</span><span class="mf">798.0</span><span class="p">,</span>
+    <span class="n">yaw_inertia</span><span class="o">=</span><span class="mf">1120.0</span><span class="p">,</span>
+    <span class="n">cg_height</span><span class="o">=</span><span class="mf">0.31</span><span class="p">,</span>
+    <span class="n">wheelbase</span><span class="o">=</span><span class="mf">3.60</span><span class="p">,</span>
+    <span class="n">front_track</span><span class="o">=</span><span class="mf">1.60</span><span class="p">,</span>
+    <span class="n">rear_track</span><span class="o">=</span><span class="mf">1.55</span><span class="p">,</span>
+    <span class="n">front_weight_fraction</span><span class="o">=</span><span class="mf">0.46</span><span class="p">,</span>
+    <span class="n">cop_position</span><span class="o">=</span><span class="mf">0.10</span><span class="p">,</span>
+    <span class="n">lift_coefficient</span><span class="o">=</span><span class="mf">3.20</span><span class="p">,</span>
+    <span class="n">drag_coefficient</span><span class="o">=</span><span class="mf">0.90</span><span class="p">,</span>
+    <span class="n">frontal_area</span><span class="o">=</span><span class="mf">1.50</span><span class="p">,</span>
+    <span class="n">roll_rate</span><span class="o">=</span><span class="mf">4200.0</span><span class="p">,</span>
+    <span class="n">front_spring_rate</span><span class="o">=</span><span class="mf">180000.0</span><span class="p">,</span>
+    <span class="n">rear_spring_rate</span><span class="o">=</span><span class="mf">165000.0</span><span class="p">,</span>
+    <span class="n">front_arb_distribution</span><span class="o">=</span><span class="mf">0.55</span><span class="p">,</span>
+    <span class="n">front_ride_height</span><span class="o">=</span><span class="mf">0.030</span><span class="p">,</span>
+    <span class="n">rear_ride_height</span><span class="o">=</span><span class="mf">0.050</span><span class="p">,</span>
+    <span class="n">air_density</span><span class="o">=</span><span class="n">STANDARD_AIR_DENSITY</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>This block should reflect the best available engineering estimate of the real car.</p>
+<h3 id="22-tire-data">2.2 Tire data<a class="headerlink" href="#22-tire-data" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">tires</span> <span class="o">=</span> <span class="n">default_axle_tire_parameters</span><span class="p">()</span>
+</code></pre></div>
+<p>Recommendation:</p>
+<ul>
+<li>Start with defaults for initial integration.</li>
+<li>Replace with identified tire parameters for decision-quality studies.</li>
+</ul>
+<h3 id="23-choose-model-complexity">2.3 Choose model complexity<a class="headerlink" href="#23-choose-model-complexity" title="Permanent link">&para;</a></h3>
+<p>Single-track model:</p>
+<div class="highlight"><pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">build_single_track_model</span><span class="p">(</span>
+    <span class="n">vehicle</span><span class="o">=</span><span class="n">vehicle</span><span class="p">,</span>
+    <span class="n">tires</span><span class="o">=</span><span class="n">tires</span><span class="p">,</span>
+    <span class="n">physics</span><span class="o">=</span><span class="n">SingleTrackPhysics</span><span class="p">(),</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Point-mass model:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.vehicle</span><span class="w"> </span><span class="kn">import</span> <span class="n">PointMassPhysics</span><span class="p">,</span> <span class="n">build_point_mass_model</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">build_point_mass_model</span><span class="p">(</span>
+    <span class="n">vehicle</span><span class="o">=</span><span class="n">vehicle</span><span class="p">,</span>
+    <span class="n">physics</span><span class="o">=</span><span class="n">PointMassPhysics</span><span class="p">(),</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>When to use which:</p>
+<ul>
+<li>Single-track (bicycle): better cornering interpretation and richer diagnostics
+  (axle-load dynamics in all modes, dynamic yaw-residual signal in transient mode).</li>
+<li>Point-mass: fast baseline and sensitivity sweeps.</li>
+</ul>
+<h2 id="step-3-load-or-generate-track">Step 3: Load or generate track<a class="headerlink" href="#step-3-load-or-generate-track" title="Permanent link">&para;</a></h2>
+<h3 id="option-a-real-track-from-csv">Option A: Real track from CSV<a class="headerlink" href="#option-a-real-track-from-csv" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">project_root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">track</span> <span class="o">=</span> <span class="n">load_track_csv</span><span class="p">(</span><span class="n">project_root</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;spa_francorchamps.csv&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Required columns:</p>
+<ul>
+<li><code>x</code></li>
+<li><code>y</code></li>
+<li><code>elevation</code></li>
+<li><code>banking</code></li>
+</ul>
+<p>Internally, ApexSim derives arc length, heading, curvature, and grade.</p>
+<h3 id="option-b-synthetic-validation-tracks">Option B: Synthetic validation tracks<a class="headerlink" href="#option-b-synthetic-validation-tracks" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.track</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_straight_track</span><span class="p">,</span> <span class="n">build_circular_track</span><span class="p">,</span> <span class="n">build_figure_eight_track</span>
+
+<span class="n">straight</span> <span class="o">=</span> <span class="n">build_straight_track</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mf">1000.0</span><span class="p">)</span>
+<span class="n">circle</span> <span class="o">=</span> <span class="n">build_circular_track</span><span class="p">(</span><span class="n">radius</span><span class="o">=</span><span class="mf">50.0</span><span class="p">)</span>
+<span class="n">figure_eight</span> <span class="o">=</span> <span class="n">build_figure_eight_track</span><span class="p">(</span><span class="n">lobe_radius</span><span class="o">=</span><span class="mf">80.0</span><span class="p">)</span>
+</code></pre></div>
+<p>Why synthetic tracks matter:</p>
+<ul>
+<li>You can verify single effects in isolation.</li>
+<li>Debugging is easier than on a full GP circuit.</li>
+</ul>
+<h2 id="step-4-configure-runtime-and-numerics">Step 4: Configure runtime and numerics<a class="headerlink" href="#step-4-configure-runtime-and-numerics" title="Permanent link">&para;</a></h2>
+<p>Simple setup:</p>
+<div class="highlight"><pre><span></span><code><span class="n">config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span><span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">)</span>
+</code></pre></div>
+<p>Explicit quasi-static setup:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">NumericsConfig</span><span class="p">,</span> <span class="n">RuntimeConfig</span><span class="p">,</span> <span class="n">SimulationConfig</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">SimulationConfig</span><span class="p">(</span>
+    <span class="n">runtime</span><span class="o">=</span><span class="n">RuntimeConfig</span><span class="p">(</span>
+        <span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">,</span>
+        <span class="n">initial_speed</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span>
+        <span class="n">solver_mode</span><span class="o">=</span><span class="s2">&quot;quasi_static&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">numerics</span><span class="o">=</span><span class="n">NumericsConfig</span><span class="p">(</span>
+        <span class="n">min_speed</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span>
+        <span class="n">lateral_envelope_max_iterations</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+        <span class="n">lateral_envelope_convergence_tolerance</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">transient_step</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Explicit transient setup:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PidSpeedSchedule</span><span class="p">,</span>
+    <span class="n">TransientConfig</span><span class="p">,</span>
+    <span class="n">TransientNumericsConfig</span><span class="p">,</span>
+    <span class="n">TransientPidGainSchedulingConfig</span><span class="p">,</span>
+    <span class="n">TransientRuntimeConfig</span><span class="p">,</span>
+    <span class="n">build_simulation_config</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">config_transient</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span>
+    <span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;numpy&quot;</span><span class="p">,</span>
+    <span class="n">solver_mode</span><span class="o">=</span><span class="s2">&quot;transient_oc&quot;</span><span class="p">,</span>
+    <span class="n">initial_speed</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>  <span class="c1"># standing start</span>
+    <span class="n">transient</span><span class="o">=</span><span class="n">TransientConfig</span><span class="p">(</span>
+        <span class="n">numerics</span><span class="o">=</span><span class="n">TransientNumericsConfig</span><span class="p">(</span>
+            <span class="n">integration_method</span><span class="o">=</span><span class="s2">&quot;rk4&quot;</span><span class="p">,</span>
+            <span class="n">max_iterations</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+            <span class="n">control_interval</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>  <span class="c1"># optimize on coarser control mesh, then interpolate</span>
+            <span class="n">pid_gain_scheduling_mode</span><span class="o">=</span><span class="s2">&quot;off&quot;</span><span class="p">,</span>  <span class="c1"># legacy-compatible default</span>
+        <span class="p">),</span>
+        <span class="n">runtime</span><span class="o">=</span><span class="n">TransientRuntimeConfig</span><span class="p">(</span>
+            <span class="n">ode_backend_policy</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+            <span class="n">optimizer_backend_policy</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+            <span class="n">driver_model</span><span class="o">=</span><span class="s2">&quot;pid&quot;</span><span class="p">,</span>  <span class="c1"># default</span>
+            <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># 1: optimizer progress, 2: +track progress</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Physics-informed PID scheduling (recommended start for transient PID studies):</p>
+<div class="highlight"><pre><span></span><code><span class="n">config_transient_pid_sched</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span>
+    <span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;numpy&quot;</span><span class="p">,</span>
+    <span class="n">solver_mode</span><span class="o">=</span><span class="s2">&quot;transient_oc&quot;</span><span class="p">,</span>
+    <span class="n">initial_speed</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">transient</span><span class="o">=</span><span class="n">TransientConfig</span><span class="p">(</span>
+        <span class="n">numerics</span><span class="o">=</span><span class="n">TransientNumericsConfig</span><span class="p">(</span>
+            <span class="n">pid_gain_scheduling_mode</span><span class="o">=</span><span class="s2">&quot;physics_informed&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Custom PWL schedule example:</p>
+<div class="highlight"><pre><span></span><code><span class="n">custom_schedule</span> <span class="o">=</span> <span class="n">TransientPidGainSchedulingConfig</span><span class="p">(</span>
+    <span class="n">longitudinal_kp</span><span class="o">=</span><span class="n">PidSpeedSchedule</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">60.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">)),</span>
+    <span class="n">longitudinal_ki</span><span class="o">=</span><span class="n">PidSpeedSchedule</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">60.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)),</span>
+    <span class="n">longitudinal_kd</span><span class="o">=</span><span class="n">PidSpeedSchedule</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">60.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.07</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)),</span>
+    <span class="n">steer_kp</span><span class="o">=</span><span class="n">PidSpeedSchedule</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">60.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.8</span><span class="p">,</span> <span class="mf">1.4</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">)),</span>
+    <span class="n">steer_ki</span><span class="o">=</span><span class="n">PidSpeedSchedule</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">60.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">)),</span>
+    <span class="n">steer_kd</span><span class="o">=</span><span class="n">PidSpeedSchedule</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">60.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.16</span><span class="p">,</span> <span class="mf">0.12</span><span class="p">,</span> <span class="mf">0.09</span><span class="p">)),</span>
+    <span class="n">steer_vy_damping</span><span class="o">=</span><span class="n">PidSpeedSchedule</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">60.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.27</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">)),</span>
+<span class="p">)</span>
+<span class="n">config_transient_custom</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span>
+    <span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;numpy&quot;</span><span class="p">,</span>
+    <span class="n">solver_mode</span><span class="o">=</span><span class="s2">&quot;transient_oc&quot;</span><span class="p">,</span>
+    <span class="n">transient</span><span class="o">=</span><span class="n">TransientConfig</span><span class="p">(</span>
+        <span class="n">numerics</span><span class="o">=</span><span class="n">TransientNumericsConfig</span><span class="p">(</span>
+            <span class="n">pid_gain_scheduling_mode</span><span class="o">=</span><span class="s2">&quot;custom&quot;</span><span class="p">,</span>
+            <span class="n">pid_gain_scheduling</span><span class="o">=</span><span class="n">custom_schedule</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="backend-selection-numerical-execution">Backend selection (numerical execution)<a class="headerlink" href="#backend-selection-numerical-execution" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">config_numpy</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span><span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;numpy&quot;</span><span class="p">,</span> <span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">)</span>
+<span class="n">config_numba</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span><span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;numba&quot;</span><span class="p">,</span> <span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">)</span>
+<span class="n">config_torch</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span>
+    <span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;torch&quot;</span><span class="p">,</span>
+    <span class="n">torch_device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>  <span class="c1"># or &quot;cuda:0&quot;</span>
+    <span class="n">torch_compile</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Selection rule:</p>
+<ul>
+<li><code>numpy</code>: robust baseline and easiest debugging.</li>
+<li><code>numba</code>: fastest CPU sweeps (currently with <code>PointMassModel</code> and <code>SingleTrackModel</code>).</li>
+<li><code>torch</code>: CPU/GPU execution and AD-native workflows.</li>
+</ul>
+<p>For quantitative guidance, see <a href="../BACKENDS/">Compute Backends</a>.</p>
+<p>Critical distinction:</p>
+<ul>
+<li>Physical parameters represent the car/track reality.</li>
+<li>Numerical parameters control solver stability and convergence.</li>
+</ul>
+<p>Do not compensate wrong physics by over-tuning numerics.</p>
+<p><code>initial_speed</code> is optional. If omitted (<code>None</code>), the solver keeps the legacy
+start behavior. Set it explicitly when you need controlled acceleration phases
+from the first sample (for example, straight-line bottleneck studies or
+standing starts with <code>initial_speed=0.0</code>).</p>
+<p><code>solver_mode</code> selects the algorithm:</p>
+<ul>
+<li><code>quasi_static</code>: envelope-based speed-profile solver (default).</li>
+<li><code>transient_oc</code>: transient dynamic solver mode.</li>
+<li>Default driver model: PID (<code>TransientRuntimeConfig.driver_model="pid"</code>).</li>
+<li>Optional full optimizer path: <code>driver_model="optimal_control"</code>.<ul>
+<li>Non-converged OC runs fail fast with <code>ConfigurationError</code> (no silent fallback).</li>
+<li>OC is validated against quasi-static references on simple straight/circle cases.</li>
+</ul>
+</li>
+<li>PID scheduling modes:<ul>
+<li><code>off</code> (default): scalar gains only.</li>
+<li><code>physics_informed</code>: deterministic speed-dependent PWL schedule from vehicle physics.</li>
+<li><code>custom</code>: user-provided <code>TransientPidGainSchedulingConfig</code>.</li>
+</ul>
+</li>
+</ul>
+<p>Transient dependency note:</p>
+<ul>
+<li><code>driver_model="pid"</code> does not require transient optimizer extras.</li>
+<li><code>numpy</code> / <code>numba</code> with <code>driver_model="optimal_control"</code> requires <code>scipy</code>.</li>
+<li><code>torch</code> with <code>driver_model="optimal_control"</code> requires <code>torchdiffeq</code>.</li>
+<li>Both are part of the default package dependencies.</li>
+</ul>
+<h2 id="step-5-run-the-lap-simulation">Step 5: Run the lap simulation<a class="headerlink" href="#step-5-run-the-lap-simulation" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">simulate_lap</span><span class="p">(</span><span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+</code></pre></div>
+<p><code>result</code> includes:</p>
+<ul>
+<li>lap time</li>
+<li>speed trace</li>
+<li>longitudinal/lateral accelerations</li>
+<li>yaw moment</li>
+<li>axle loads</li>
+<li>power trace</li>
+<li>integrated energy</li>
+</ul>
+<p>When <code>solver_mode="transient_oc"</code>, <code>result</code> also contains:</p>
+<ul>
+<li><code>time</code></li>
+<li><code>vx</code>, <code>vy</code>, <code>yaw_rate</code></li>
+<li><code>steer_cmd</code>, <code>ax_cmd</code></li>
+</ul>
+<h2 id="step-6-postprocess-and-export">Step 6: Postprocess and export<a class="headerlink" href="#step-6-postprocess-and-export" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">kpis</span> <span class="o">=</span> <span class="n">compute_kpis</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+<span class="n">output_dir</span> <span class="o">=</span> <span class="n">project_root</span> <span class="o">/</span> <span class="s2">&quot;examples&quot;</span> <span class="o">/</span> <span class="s2">&quot;output&quot;</span>
+<span class="n">export_standard_plots</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">)</span>
+<span class="n">export_kpi_json</span><span class="p">(</span><span class="n">kpis</span><span class="p">,</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;kpis.json&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Optional: generate a speed-dependent performance envelope (G-G map family):</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.analysis</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PerformanceEnvelopeNumerics</span><span class="p">,</span>
+    <span class="n">PerformanceEnvelopePhysics</span><span class="p">,</span>
+    <span class="n">compute_performance_envelope</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">envelope</span> <span class="o">=</span> <span class="n">compute_performance_envelope</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">physics</span><span class="o">=</span><span class="n">PerformanceEnvelopePhysics</span><span class="p">(</span><span class="n">speed_min</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">speed_max</span><span class="o">=</span><span class="mf">90.0</span><span class="p">),</span>
+    <span class="n">numerics</span><span class="o">=</span><span class="n">PerformanceEnvelopeNumerics</span><span class="p">(</span><span class="n">speed_samples</span><span class="o">=</span><span class="mi">31</span><span class="p">,</span> <span class="n">lateral_accel_samples</span><span class="o">=</span><span class="mi">41</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">envelope_array</span> <span class="o">=</span> <span class="n">envelope</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+</code></pre></div>
+<p>Optional: run a local lap-sensitivity study (AD default on torch backend):</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.analysis</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SensitivityStudyParameter</span><span class="p">,</span>
+    <span class="n">SensitivityRuntime</span><span class="p">,</span>
+    <span class="n">run_lap_sensitivity_study</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">build_single_track_model</span><span class="p">(</span>
+    <span class="n">vehicle</span><span class="o">=</span><span class="n">vehicle</span><span class="p">,</span>
+    <span class="n">tires</span><span class="o">=</span><span class="n">tires</span><span class="p">,</span>
+    <span class="n">physics</span><span class="o">=</span><span class="n">SingleTrackPhysics</span><span class="p">(),</span>
+<span class="p">)</span>
+<span class="n">study</span> <span class="o">=</span> <span class="n">run_lap_sensitivity_study</span><span class="p">(</span>
+    <span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">simulation_config</span><span class="o">=</span><span class="n">config_torch</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">SensitivityStudyParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mass&quot;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">&quot;vehicle.mass&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Vehicle mass&quot;</span><span class="p">),</span>
+        <span class="n">SensitivityStudyParameter</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;drag_coefficient&quot;</span><span class="p">,</span>
+            <span class="n">target</span><span class="o">=</span><span class="s2">&quot;vehicle.drag_coefficient&quot;</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Drag coefficient&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">],</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Spa single-track&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">long_table</span> <span class="o">=</span> <span class="n">study</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
+<span class="n">pivot_table</span> <span class="o">=</span> <span class="n">study</span><span class="o">.</span><span class="n">to_pivot</span><span class="p">()</span>
+</code></pre></div>
+<p>For transient studies, AD is supported with PID driver mode. AD for
+<code>solver_mode="transient_oc"</code> with <code>driver_model="optimal_control"</code> is currently
+not supported.</p>
+<p>To force finite differences (for regression checks or transient
+<code>optimal_control</code> studies), pass:</p>
+<div class="highlight"><pre><span></span><code><span class="n">study_fd</span> <span class="o">=</span> <span class="n">run_lap_sensitivity_study</span><span class="p">(</span>
+    <span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">simulation_config</span><span class="o">=</span><span class="n">config_torch</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="o">=</span><span class="p">[</span><span class="n">SensitivityStudyParameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mass&quot;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">&quot;vehicle.mass&quot;</span><span class="p">)],</span>
+    <span class="n">runtime</span><span class="o">=</span><span class="n">SensitivityRuntime</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;finite_difference&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>To support custom model classes, register an adapter once:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.analysis</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_sensitivity_model_adapter</span>
+
+<span class="n">register_sensitivity_model_adapter</span><span class="p">(</span>
+    <span class="n">model_type</span><span class="o">=</span><span class="n">TwinTrackModel</span><span class="p">,</span>
+    <span class="n">model_factory</span><span class="o">=</span><span class="n">build_twin_track_model</span><span class="p">,</span>
+    <span class="n">model_inputs_getter</span><span class="o">=</span><span class="k">lambda</span> <span class="n">model</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;vehicle&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">vehicle</span><span class="p">,</span>
+        <span class="s2">&quot;tires&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">tires</span><span class="p">,</span>
+        <span class="s2">&quot;physics&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">physics</span><span class="p">,</span>
+        <span class="s2">&quot;numerics&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">numerics</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Optional: run the public differentiable torch speed-profile API directly
+for custom gradient workflows:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_simulation_config</span><span class="p">,</span> <span class="n">solve_speed_profile_torch</span>
+
+<span class="n">torch_config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span>
+    <span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;torch&quot;</span><span class="p">,</span>
+    <span class="n">torch_device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+    <span class="n">torch_compile</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># torch backend keeps AD-compatible behavior</span>
+    <span class="n">max_speed</span><span class="o">=</span><span class="mf">115.0</span><span class="p">,</span>
+    <span class="n">initial_speed</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">torch_result</span> <span class="o">=</span> <span class="n">solve_speed_profile_torch</span><span class="p">(</span><span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">torch_config</span><span class="p">)</span>
+<span class="n">lap_time_tensor</span> <span class="o">=</span> <span class="n">torch_result</span><span class="o">.</span><span class="n">lap_time</span>
+</code></pre></div>
+<p>Optional: run the public differentiable torch transient API directly:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">apexsim.simulation</span><span class="w"> </span><span class="kn">import</span> <span class="n">solve_transient_lap_torch</span>
+
+<span class="n">torch_transient_config</span> <span class="o">=</span> <span class="n">build_simulation_config</span><span class="p">(</span>
+    <span class="n">compute_backend</span><span class="o">=</span><span class="s2">&quot;torch&quot;</span><span class="p">,</span>
+    <span class="n">solver_mode</span><span class="o">=</span><span class="s2">&quot;transient_oc&quot;</span><span class="p">,</span>
+    <span class="n">torch_device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+    <span class="n">torch_compile</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">initial_speed</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">torch_transient_result</span> <span class="o">=</span> <span class="n">solve_transient_lap_torch</span><span class="p">(</span>
+    <span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">config</span><span class="o">=</span><span class="n">torch_transient_config</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">lap_time_tensor</span> <span class="o">=</span> <span class="n">torch_transient_result</span><span class="o">.</span><span class="n">lap_time</span>
+</code></pre></div>
+<p>Minimum review set:</p>
+<ul>
+<li>lap time</li>
+<li>max lateral acceleration</li>
+<li>max longitudinal acceleration/deceleration</li>
+<li>speed trace shape vs track layout</li>
+</ul>
+<h2 id="engineering-interpretation-checklist">Engineering interpretation checklist<a class="headerlink" href="#engineering-interpretation-checklist" title="Permanent link">&para;</a></h2>
+<p>Before using results for decisions:</p>
+<ol>
+<li>Straight track check: near-zero lateral acceleration.</li>
+<li>Constant-radius check: quasi-steady cornering in interior segments.</li>
+<li>Figure-eight check: lateral acceleration sign change and entry/exit transitions.</li>
+<li>Magnitude check: compare against realistic bounds for your car class.</li>
+<li>Model check: verify whether selected model complexity can represent the effect you study.</li>
+</ol>
+<h2 id="typical-pitfalls-and-fixes">Typical pitfalls (and fixes)<a class="headerlink" href="#typical-pitfalls-and-fixes" title="Permanent link">&para;</a></h2>
+<ol>
+<li>"The solver should always accelerate to max speed."</li>
+<li>Not necessarily. At high speed, drag can exceed available drive force.</li>
+<li>"Yaw moment should always be visible."</li>
+<li>Not in quasi-static mode (steady-state assumption -&gt; zero yaw moment), and
+     not with point-mass model (structurally zero in both modes).</li>
+<li>"Changing numerics changed physics dramatically."</li>
+<li>Re-check physical parameters first; numerics should refine stability, not redefine behavior.</li>
+<li>"My results jump near lap closure."</li>
+<li>For closed loops, inspect interior segments and avoid over-interpreting seam points.</li>
+</ol>
+<h2 id="recommended-onboarding-path">Recommended onboarding path<a class="headerlink" href="#recommended-onboarding-path" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Read <a href="../EXAMPLES_SYNTHETIC/">Synthetic Track Walkthrough</a>.</li>
+<li>Run <a href="../examples/spa/">Spa Walkthrough</a>.</li>
+<li>Compare model complexity with <code>examples/spa/spa_model_comparison.py</code>.</li>
+<li>Move from default tire/model settings to identified vehicle data.</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
